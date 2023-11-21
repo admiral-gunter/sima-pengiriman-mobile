@@ -1,0 +1,393 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:sima_pengiriman/helper/database_helper.dart';
+import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
+import 'package:sima_pengiriman/screens/universal_scannner/universal_scanner_screen.dart';
+import 'package:sqflite/sqflite.dart';
+
+import '../../components/coustom_bottom_nav_bar.dart';
+import '../../enums.dart';
+import 'package:location/location.dart';
+
+import 'controllers/turun_barang_online_controller.dart';
+
+class TurunBarangOnlineScreen extends StatefulWidget {
+  const TurunBarangOnlineScreen({Key? key}) : super(key: key);
+  static String routeName = "/turun-barang-online";
+
+  @override
+  State<TurunBarangOnlineScreen> createState() =>
+      _TurunBarangOnlineScreenState();
+}
+
+class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
+  Location location = Location();
+
+  late double latitude;
+
+  late double longitude;
+
+  TextEditingController textController = TextEditingController();
+
+// Set the initial value for the controller
+
+  @override
+  void initState() {
+    super.initState();
+    _getLocationData();
+    _getCountProduct();
+  }
+
+  _getLocationData() async {
+    try {
+      LocationData locationData = await location.getLocation();
+      if (mounted) {
+        setState(() {
+          latitude = locationData.latitude!;
+          longitude = locationData.longitude!;
+          textController.text = '${latitude}, ${longitude}';
+
+          final TurunBarangOnlineController ctl =
+              Get.put(TurunBarangOnlineController());
+          ctl.coordinate['lat'] = latitude.toString();
+          ctl.coordinate['long'] = longitude.toString();
+        });
+      }
+    } catch (e) {
+      // Handle errors, such as permissions or location services not enabled.
+      print("Error getting location: $e");
+    }
+  }
+
+  List<Map<String, dynamic>> output = [];
+  List<Map<String, dynamic>> listBarangTapped = [];
+
+  _getCountProduct() async {
+    final TurunBarangOnlineController ctl =
+        Get.put(TurunBarangOnlineController());
+
+    Map<String, int> productCount = {};
+    Map<String, int> totalQtyMap = {}; // Store total_qty_tap for each product
+
+    for (var item in ctl.listInv) {
+      String productName = item['product_name'];
+      int totalQty = await DatabaseHelper.instance
+          .countBarangTap(item['product_name'], item['no_order']);
+
+      if (listBarangTapped.length == 0) {
+        final barangTap = await DatabaseHelper.instance
+            .getAllBarangTap(item['product_name'], item['no_order']);
+        listBarangTapped.addAll(barangTap);
+
+        Map<String, List<String>> groupedProducts = {};
+
+        listBarangTapped.forEach((item) {
+          String productName = item['product_name'];
+          String sn = item['sn'];
+
+          if (!groupedProducts.containsKey(productName)) {
+            groupedProducts[productName] = [sn];
+          } else {
+            groupedProducts[productName]!.add(sn);
+          }
+        });
+
+        List<Map<String, dynamic>> resultGroup = [];
+
+        groupedProducts.forEach((productName, snList) {
+          resultGroup.add({
+            "product_name": productName,
+            "sn": snList,
+          });
+        });
+        if (mounted) {
+          setState(() {
+            listBarangTapped = resultGroup;
+          });
+        }
+      }
+      productCount[productName] = (productCount[productName] ?? 0) + 1;
+      totalQtyMap[productName] = totalQty;
+    }
+
+    productCount.forEach((productName, count) {
+      output.add({
+        "product_name": productName,
+        "qty": count,
+        "qty_tap": totalQtyMap[productName] ??
+            0, // Retrieve total_qty_tap for the product
+      });
+    });
+  }
+
+  Future<List<bool>> fetchCompletionStatuses() async {
+    final TurunBarangOnlineController ctl =
+        Get.put(TurunBarangOnlineController());
+    List<bool> completionStatuses = [];
+    for (var i = 0; i < ctl.listInv.length; i++) {
+      var e = await ctl.detectCompletionItem(
+          ctl.listInv[i]['no_order'], ctl.listInv[i]['inventory_id']);
+      completionStatuses.add(e);
+    }
+    return completionStatuses;
+  }
+
+  int matchingQuantities = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final TurunBarangOnlineController ctl =
+        Get.put(TurunBarangOnlineController());
+
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(50.0),
+        child: AppBar(
+            title: Text(
+          "Turun Barang (Online)",
+          style: TextStyle(
+            color: Colors
+                .black, // Change this color to match your AppBar's background color.
+          ),
+        )),
+      ),
+      body: WillPopScope(
+        onWillPop: () async {
+          ctl.listInv.clear();
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UniversalScannerSCreen(
+                    goBackRouteName: MenuScreen.routeName),
+              ));
+          return false;
+        },
+        child: DefaultTabController(
+          length: 2,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+            child: Column(
+              // spacing: 20,
+              // runSpacing: 20,
+              children: [
+                TextFormField(
+                  onChanged: (value) {
+                    ctl.tapper.value = value;
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Tapper',
+                    labelStyle: TextStyle(
+                      color: Colors.black87,
+                      fontSize: 17,
+                    ),
+                  ),
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 17,
+                  ),
+                ),
+                TabBar(
+                  labelColor: Colors.black,
+                  tabs: [
+                    Tab(text: 'List'),
+                    Tab(text: 'Hasil Tap'),
+                  ],
+                ),
+                SizedBox(height: 20),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      ListView.builder(
+                          itemCount: output.length,
+                          itemBuilder: ((context, index) {
+                            var currentItem = output[index];
+
+                            bool quantitiesMatch =
+                                currentItem['qty_tap'] == currentItem['qty'];
+
+                            if (quantitiesMatch) {
+                              matchingQuantities++;
+                            }
+
+                            if (matchingQuantities == output.length) {
+                              // const data = {'no_sj': 'a'};
+
+                              for (var element in ctl.listSJ) {
+                                // final item = jsonEncode(element['nomor_order']);
+                                // noSj += item + ',';
+                                final data = {
+                                  "nomor_order": element['nomor_order'],
+                                  "nama_toko": element['toko'],
+                                  "creator": "John Doe",
+                                  "date_added": "2023-11-21T08:30:00Z",
+                                  "date_modified": "2023-11-21T08:30:00Z",
+                                  "status": "unvalidasi",
+                                  "customer_nama": "Alice",
+                                  "customer_notelp": "1234567890",
+                                  "supir": "Mike",
+                                  "tapper": "Sam"
+                                };
+
+                                DatabaseHelper.instance
+                                    .insertHistorySuratJalan(data)
+                                    .then((value) => null);
+                              }
+                            }
+                            return ListTile(
+                              title: Text('${output[index]['product_name']}'),
+                              trailing: Text(
+                                  '${output[index]['qty_tap']}/${output[index]['qty']}'),
+                            );
+                          })),
+                      // Obx(
+                      //   () => FutureBuilder<List<bool>>(
+                      //     future: fetchCompletionStatuses(),
+                      //     builder: (BuildContext context,
+                      //         AsyncSnapshot<List<bool>> snapshot) {
+                      //       if (snapshot.connectionState ==
+                      //           ConnectionState.waiting) {
+                      //         return CircularProgressIndicator(); // Show a loading indicator while fetching data
+                      //       } else if (snapshot.hasError) {
+                      //         return Text(
+                      //             'Error: ${snapshot.error}'); // Handle error if fetching data fails
+                      //       } else {
+                      //         return ListView.builder(
+                      //           itemCount: ctl.listInv.length,
+                      //           itemBuilder: (BuildContext context, int index) {
+                      //             bool isCompleted = snapshot.data![index];
+                      //             return ListTile(
+                      //               subtitle: Column(
+                      //                 crossAxisAlignment:
+                      //                     CrossAxisAlignment.start,
+                      //                 children: [
+                      //                   Text(
+                      //                       '${ctl.listInv[index]['no_order']}'),
+                      //                   Text(
+                      //                       '${ctl.listInv[index]['inventory_id']}'),
+                      //                 ],
+                      //               ),
+                      //               trailing: Text(
+                      //                 isCompleted ? 'Completed' : 'Incompleted',
+                      //                 style: isCompleted
+                      //                     ? TextStyle(
+                      //                         color: Colors.green,
+                      //                         fontWeight: FontWeight.bold,
+                      //                       )
+                      //                     : TextStyle(
+                      //                         color: Colors.orange,
+                      //                         fontWeight: FontWeight.bold,
+                      //                       ),
+                      //               ),
+                      //               title: Text(
+                      //                   '${ctl.listInv[index]['product_name']}'),
+                      //             );
+                      //           },
+                      //         );
+                      //       }
+                      //     },
+                      //   ),
+                      // ),
+                      ListView.builder(
+                        itemCount: listBarangTapped.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return ListTile(
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                for (var item in listBarangTapped[index]['sn'])
+                                  Text(item),
+                              ],
+                            ),
+                            title:
+                                Text(listBarangTapped[index]['product_name']),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                // Obx(
+                //   () => Expanded(
+                //       child: FutureBuilder<List<bool>>(
+                //     future: fetchCompletionStatuses(),
+                //     builder: (BuildContext context,
+                //         AsyncSnapshot<List<bool>> snapshot) {
+                //       if (snapshot.connectionState == ConnectionState.waiting) {
+                //         return CircularProgressIndicator(); // Show a loading indicator while fetching data
+                //       } else if (snapshot.hasError) {
+                //         return Text(
+                //             'Error: ${snapshot.error}'); // Handle error if fetching data fails
+                //       } else {
+                //         return ListView.builder(
+                //           itemCount: ctl.listInv.length,
+                //           itemBuilder: (BuildContext context, int index) {
+                //             bool isCompleted = snapshot.data![index];
+                //             return ListTile(
+                //               subtitle: Column(
+                //                 crossAxisAlignment: CrossAxisAlignment.start,
+                //                 children: [
+                //                   Text('${ctl.listInv[index]['no_order']}'),
+                //                   Text('${ctl.listInv[index]['inventory_id']}'),
+                //                 ],
+                //               ),
+                //               trailing: Text(
+                //                 isCompleted ? 'Completed' : 'Incompleted',
+                //                 style: isCompleted
+                //                     ? TextStyle(
+                //                         color: Colors.green,
+                //                         fontWeight: FontWeight.bold,
+                //                       )
+                //                     : TextStyle(
+                //                         color: Colors.orange,
+                //                         fontWeight: FontWeight.bold,
+                //                       ),
+                //               ),
+                //               title:
+                //                   Text('${ctl.listInv[index]['product_name']}'),
+                //             );
+                //           },
+                //         );
+                //       }
+                //     },
+                //   )),
+                // ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 4.0, vertical: 2.0),
+                  child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: textController.text.isNotEmpty
+                                  ? Colors.blue
+                                  : Colors.blue[200]),
+                          onPressed: () {
+                            if (textController.text.isNotEmpty) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => UniversalScannerSCreen(
+                                      goBackRouteName:
+                                          TurunBarangOnlineScreen.routeName),
+                                ),
+                              );
+                            }
+                            // Navigator.pushNamed(
+                            //     context,
+                            //     UniversalScannerSCreen(
+                            //         goBackRouteName: TurunBarangOnlineScreen()));
+                          },
+                          child: textController.text.isNotEmpty
+                              ? Text('Scan SN dan Identifier')
+                              : Text('Getting current location..'))),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: CustomBottomNavBar(selectedMenu: MenuState.home),
+    );
+  }
+}
