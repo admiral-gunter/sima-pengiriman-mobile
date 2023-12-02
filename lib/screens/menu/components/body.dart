@@ -4,20 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
-import 'package:sima_pengiriman/screens/grosir_tap_out/grosir_tap_out.dart';
-import 'package:sima_pengiriman/screens/purchase_order/purchase_order_screen.dart';
-import 'package:sima_pengiriman/screens/retail_tap_out/retail_tap_out_screen.dart';
 import 'package:sima_pengiriman/screens/scan_pengiriman/scan_pengiriman_screen.dart';
-import 'package:sima_pengiriman/screens/service_offline/controller/service_offline_controller.dart';
-import 'package:sima_pengiriman/screens/service_offline/service_offline_screen.dart';
-import 'package:sima_pengiriman/screens/turun_barang_offline/turun_barang_offline_screen.dart';
 import 'package:sima_pengiriman/screens/turun_barang_online/controllers/turun_barang_online_controller.dart';
-
-import '../../../constants.dart';
-import '../../pindah_gudang_offline/pindah_gudang_offline_screen.dart';
-import '../../purchase_order_offline/purchase_order_offline_screen.dart';
+import 'package:http/http.dart' as http;
 import '../../turun_barang_online/turun_barang_online.dart';
-import '../../universal_scannner/controller/universal_scanner_data.dart';
 
 class ParentItem {
   final String title;
@@ -39,23 +29,6 @@ List<ParentItem> parentList = [
     "Dashboard",
     [],
   ),
-  // ParentItem(
-  //   "Pembelian",
-  //   [
-  //     ChildItem("Terima Barang (PO)", ListPoScreen.routeName),
-  //   ],
-  // ),
-  // ParentItem(
-  //   "Fitur Offline",
-  //   [
-  //     ChildItem("Terima Barang (PO)", PurchaseOrderOfflineScreen.routeName),
-  //     ChildItem("Out Grosir", GrosirTapOut.routeName),
-  //     ChildItem("Out Retail", RetailTapOutScreen.routeName),
-  //     ChildItem("Pindah Gudang (Terima)", '/pindah-gudang-offline-terima'),
-  //     ChildItem("Pindah Gudang (Keluar)", '/pindah-gudang-offline-keluar'),
-  //     ChildItem("Service", ServiceOfflineScreen.routeName),
-  //   ],
-  // )
 ];
 
 class Body extends StatefulWidget {
@@ -73,15 +46,12 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    syncDataTap();
     DatabaseHelper.instance.getRecordTugas().then((value) {
       setState(() {
-        // for (var element in recordTugas) {
-        //   element['selected'] = true;
-        // }
         for (var i = 0; i < recordTugas.length; i++) {
           recordTugas[i]['selected'] = false;
         }
-        // recordTugas.addAll(value);
         recordTugas = value.map((item) {
           return {
             ...item,
@@ -101,6 +71,34 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       });
     });
     _tabController = TabController(length: 2, vsync: this); // Number of tabs
+  }
+
+  Future syncDataTap() async {
+    final url = Uri.parse(
+        'http://192.168.103.131/simait/api/pengiriman/sync-data-pengiriman');
+
+    List dataList = await DatabaseHelper.instance.getDataTapForToday();
+
+    Map<String, dynamic> requestBody = {"data": dataList};
+
+    try {
+      // Make the POST request
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: {"data": jsonEncode(requestBody)},
+      );
+
+      if (response.statusCode == 200) {
+        print('Request successful');
+        print('Response body: ${response.body}');
+      } else {
+        print('Request failed with status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (error) {
+      print('Error: $error');
+    }
   }
 
   @override
@@ -126,13 +124,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                 onTap: () {
                   DatabaseHelper.instance.getRecordTugas().then((value) {
                     setState(() {
-                      // for (var element in recordTugas) {
-                      //   element['selected'] = true;
-                      // }
                       for (var i = 0; i < recordTugas.length; i++) {
                         recordTugas[i]['selected'] = false;
                       }
-                      // recordTugas.addAll(value);
                       recordTugas = value.map((item) {
                         return {
                           ...item,
@@ -177,36 +171,22 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
               Expanded(
                   child: recordTugas.length != 0
                       ? ListView.builder(
-                          itemCount:
-                              recordTugas.length, // Number of items in the list
+                          itemCount: recordTugas.length,
                           itemBuilder: (BuildContext context, int index) {
                             bool isRecordDone = recordTugasDone.any(
                                 (doneItem) =>
                                     doneItem["nomor_order"] ==
                                     recordTugas[index]["nomor_order"]);
 
-                            // If it exists, skip the iteration
                             if (isRecordDone) {
-                              return SizedBox
-                                  .shrink(); // This widget has zero size and is invisible
+                              return SizedBox.shrink();
                             }
                             return ListTile(
-                              leading: Checkbox(
-                                value: recordTugas[index]['selected'],
-                                onChanged: (value) {
-                                  setState(() {
-                                    recordTugas[index]['selected'] =
-                                        !recordTugas[index]['selected'];
-                                  });
-                                },
-                              ),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                      'Toko : ${recordTugas[index]['customer_nama'].split("-")[1]}'),
-                                  if (recordTugas[index]['items'] != null)
-                                    Text(''),
+                                      'Barang : ${recordTugas[index]['qty_sum']}')
                                 ],
                               ),
                               trailing: Text(
@@ -217,31 +197,10 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                               ),
                               title: Text(recordTugas[index]["nomor_order"]),
                               onTap: () async {
-                                var selectedTugas = recordTugas
-                                    .where((tugas) => tugas['selected'] == true)
-                                    .toList();
-
-                                if (selectedTugas.length > 0) {
-                                  // ctl.getListItems(selectedTugas);
-                                  await ctl.getItemsByNoSJ(selectedTugas);
-                                  Navigator.pushNamed(context,
-                                      TurunBarangOnlineScreen.routeName);
-                                  // You can add custom actions when a list item is tapped
-                                  print('Tapped on item $index');
-                                } else {
-                                  final snackBar = SnackBar(
-                                    content: Text('Pilih Minimal 1 Tugas'),
-                                    action: SnackBarAction(
-                                      label: 'Dismiss',
-                                      onPressed: () {
-                                        // Some action to perform
-                                      },
-                                    ),
-                                  );
-
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(snackBar);
-                                }
+                                var selectedTugas = recordTugas[index];
+                                await ctl.getItemsByNoSJ([selectedTugas]);
+                                Navigator.pushNamed(
+                                    context, TurunBarangOnlineScreen.routeName);
                               },
                             );
                           },
@@ -264,7 +223,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
               ),
             ],
           ),
-          // Content for Tab 2
           recordTugasDone.length == 0
               ? Center(
                   child: Text(
@@ -275,11 +233,11 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
                       title: Text('${recordTugasDone[index]['nomor_order']}'),
-                      subtitle: Text(
-                          'Toko : ${recordTugasDone[index]['nama_toko'].split("-")[1]}'),
-                      onTap: () {
-                        // Do something when the tile is tapped
-                        print('Tapped on item $index');
+                      onTap: () async {
+                        var selectedTugas = recordTugasDone[index];
+                        await ctl.getItemsByNoSJ([selectedTugas]);
+                        Navigator.pushNamed(
+                            context, TurunBarangOnlineScreen.routeName);
                       },
                     );
                   },

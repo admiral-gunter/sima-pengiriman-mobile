@@ -176,7 +176,7 @@ class DatabaseHelper {
 
     await db.execute('''CREATE TABLE record_tugas (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nomor_order TEXT,
+        nomor_order TEXT UNIQUE,
         identifier TEXT,
         sn TEXT,
         long TEXT,
@@ -190,7 +190,8 @@ class DatabaseHelper {
         customer_nama TEXT,
         customer_notelp TEXT,
         supir TEXT,
-        items TEXT
+        items TEXT,
+        qty_sum TEXT
     )
     ''');
 
@@ -229,6 +230,19 @@ class DatabaseHelper {
         tapper TEXT
     )
     ''');
+  }
+
+  Future<List<dynamic>> getDataTapForToday() async {
+    final Database db = await instance.database;
+    String today = DateTime.now().toLocal().toString().substring(0, 10);
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'barang_turun_tap',
+      where: 'date_added LIKE ?',
+      whereArgs: ['$today%'],
+    );
+
+    return maps;
   }
 
   Future<Map<String, dynamic>> insertHistorySuratJalan(

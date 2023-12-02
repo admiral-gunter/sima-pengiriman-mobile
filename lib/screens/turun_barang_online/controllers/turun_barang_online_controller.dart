@@ -5,6 +5,8 @@ import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../shared_preferences/shared_token.dart';
+
 class TurunBarangOnlineController extends GetxController {
   RxList<dynamic> listSJ = [].obs;
 
@@ -32,7 +34,9 @@ class TurunBarangOnlineController extends GetxController {
       var dataInsert = data;
       dataInsert['lat'] = coordinate['lat'];
       dataInsert['long'] = coordinate['long'];
-      dataInsert['tapper'] = tapper.value;
+      final tapper = await SharedToken.univGetterString('username');
+      dataInsert['tapper'] = tapper;
+
       await DatabaseHelper.instance.insertBarangTurun(data);
     } catch (e) {
       print('ERROR $e');
@@ -98,7 +102,7 @@ class TurunBarangOnlineController extends GetxController {
       if (response.statusCode == 200) {
         print('POST request successful $urli');
         var resp = jsonDecode(response.body);
-        // print(resp['content']);
+        print(resp['content']);
         listInv.addAll(resp['content']);
         // print('Response body: ${response.body}');
       } else {

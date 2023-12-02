@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
 import 'package:sima_pengiriman/screens/universal_scannner/universal_scanner_screen.dart';
+import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../components/coustom_bottom_nav_bar.dart';
@@ -29,6 +30,10 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
 
   TextEditingController textController = TextEditingController();
 
+  TextEditingController TapperTextController = TextEditingController();
+
+  String username = '';
+
 // Set the initial value for the controller
 
   @override
@@ -36,6 +41,14 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     super.initState();
     _getLocationData();
     _getCountProduct();
+    SharedToken.univGetterString('username').then((value) {
+      if (mounted) {
+        setState(() {
+          TapperTextController.text = value;
+          username = value;
+        });
+      }
+    });
   }
 
   _getLocationData() async {
@@ -114,8 +127,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       output.add({
         "product_name": productName,
         "qty": count,
-        "qty_tap": totalQtyMap[productName] ??
-            0, // Retrieve total_qty_tap for the product
+        "qty_tap": totalQtyMap[productName] ?? 0,
       });
     });
   }
@@ -123,7 +135,9 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   Future<List<bool>> fetchCompletionStatuses() async {
     final TurunBarangOnlineController ctl =
         Get.put(TurunBarangOnlineController());
+
     List<bool> completionStatuses = [];
+
     for (var i = 0; i < ctl.listInv.length; i++) {
       var e = await ctl.detectCompletionItem(
           ctl.listInv[i]['no_order'], ctl.listInv[i]['inventory_id']);
@@ -158,8 +172,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => UniversalScannerSCreen(
-                    goBackRouteName: MenuScreen.routeName),
+                builder: (context) => MenuScreen(),
               ));
           return false;
         },
@@ -172,6 +185,8 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
               // runSpacing: 20,
               children: [
                 TextFormField(
+                  controller: TapperTextController,
+                  enabled: false,
                   onChanged: (value) {
                     ctl.tapper.value = value;
                   },
@@ -211,17 +226,13 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                             }
 
                             if (matchingQuantities == output.length) {
-                              // const data = {'no_sj': 'a'};
-
                               for (var element in ctl.listSJ) {
                                 // final item = jsonEncode(element['nomor_order']);
                                 // noSj += item + ',';
                                 final data = {
                                   "nomor_order": element['nomor_order'],
                                   "nama_toko": element['toko'],
-                                  "creator": "John Doe",
-                                  "date_added": "2023-11-21T08:30:00Z",
-                                  "date_modified": "2023-11-21T08:30:00Z",
+                                  "creator": username,
                                   "status": "unvalidasi",
                                   "customer_nama": "Alice",
                                   "customer_notelp": "1234567890",
@@ -240,54 +251,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                   '${output[index]['qty_tap']}/${output[index]['qty']}'),
                             );
                           })),
-                      // Obx(
-                      //   () => FutureBuilder<List<bool>>(
-                      //     future: fetchCompletionStatuses(),
-                      //     builder: (BuildContext context,
-                      //         AsyncSnapshot<List<bool>> snapshot) {
-                      //       if (snapshot.connectionState ==
-                      //           ConnectionState.waiting) {
-                      //         return CircularProgressIndicator(); // Show a loading indicator while fetching data
-                      //       } else if (snapshot.hasError) {
-                      //         return Text(
-                      //             'Error: ${snapshot.error}'); // Handle error if fetching data fails
-                      //       } else {
-                      //         return ListView.builder(
-                      //           itemCount: ctl.listInv.length,
-                      //           itemBuilder: (BuildContext context, int index) {
-                      //             bool isCompleted = snapshot.data![index];
-                      //             return ListTile(
-                      //               subtitle: Column(
-                      //                 crossAxisAlignment:
-                      //                     CrossAxisAlignment.start,
-                      //                 children: [
-                      //                   Text(
-                      //                       '${ctl.listInv[index]['no_order']}'),
-                      //                   Text(
-                      //                       '${ctl.listInv[index]['inventory_id']}'),
-                      //                 ],
-                      //               ),
-                      //               trailing: Text(
-                      //                 isCompleted ? 'Completed' : 'Incompleted',
-                      //                 style: isCompleted
-                      //                     ? TextStyle(
-                      //                         color: Colors.green,
-                      //                         fontWeight: FontWeight.bold,
-                      //                       )
-                      //                     : TextStyle(
-                      //                         color: Colors.orange,
-                      //                         fontWeight: FontWeight.bold,
-                      //                       ),
-                      //               ),
-                      //               title: Text(
-                      //                   '${ctl.listInv[index]['product_name']}'),
-                      //             );
-                      //           },
-                      //         );
-                      //       }
-                      //     },
-                      //   ),
-                      // ),
                       ListView.builder(
                         itemCount: listBarangTapped.length,
                         itemBuilder: (BuildContext context, int index) {
@@ -307,51 +270,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                     ],
                   ),
                 ),
-                // Obx(
-                //   () => Expanded(
-                //       child: FutureBuilder<List<bool>>(
-                //     future: fetchCompletionStatuses(),
-                //     builder: (BuildContext context,
-                //         AsyncSnapshot<List<bool>> snapshot) {
-                //       if (snapshot.connectionState == ConnectionState.waiting) {
-                //         return CircularProgressIndicator(); // Show a loading indicator while fetching data
-                //       } else if (snapshot.hasError) {
-                //         return Text(
-                //             'Error: ${snapshot.error}'); // Handle error if fetching data fails
-                //       } else {
-                //         return ListView.builder(
-                //           itemCount: ctl.listInv.length,
-                //           itemBuilder: (BuildContext context, int index) {
-                //             bool isCompleted = snapshot.data![index];
-                //             return ListTile(
-                //               subtitle: Column(
-                //                 crossAxisAlignment: CrossAxisAlignment.start,
-                //                 children: [
-                //                   Text('${ctl.listInv[index]['no_order']}'),
-                //                   Text('${ctl.listInv[index]['inventory_id']}'),
-                //                 ],
-                //               ),
-                //               trailing: Text(
-                //                 isCompleted ? 'Completed' : 'Incompleted',
-                //                 style: isCompleted
-                //                     ? TextStyle(
-                //                         color: Colors.green,
-                //                         fontWeight: FontWeight.bold,
-                //                       )
-                //                     : TextStyle(
-                //                         color: Colors.orange,
-                //                         fontWeight: FontWeight.bold,
-                //                       ),
-                //               ),
-                //               title:
-                //                   Text('${ctl.listInv[index]['product_name']}'),
-                //             );
-                //           },
-                //         );
-                //       }
-                //     },
-                //   )),
-                // ),
                 Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 4.0, vertical: 2.0),
@@ -373,14 +291,18 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                 ),
                               );
                             }
-                            // Navigator.pushNamed(
-                            //     context,
-                            //     UniversalScannerSCreen(
-                            //         goBackRouteName: TurunBarangOnlineScreen()));
                           },
                           child: textController.text.isNotEmpty
-                              ? Text('Scan SN dan Identifier')
-                              : Text('Getting current location..'))),
+                              ? Text(
+                                  'Scan SN dan Identifier',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                                )
+                              : Text('Getting current location..',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold)))),
                 ),
               ],
             ),

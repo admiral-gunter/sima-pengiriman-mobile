@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
@@ -42,7 +43,6 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
                   List<String> stringList = noOrder.split(";");
                   List<String> noOrderNitem = stringList[1].split("|");
 
-                  print(stringList); // Prints: [apple, banana, cherry, date
                   // noOrder =
                   if (noOrder.isNotEmpty) {
                     Map<String, dynamic> data = {
@@ -60,8 +60,12 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
                       "customer_nama": stringList[0],
                       "customer_notelp": "CustomerPhoneNumber",
                       "supir": "DriverName",
-                      "items": "[]"
+                      "items": "[]",
                     };
+                    if (noOrderNitem.length > 2) {
+                      data["qty_sum"] = noOrderNitem[2];
+                    }
+
                     DatabaseHelper.instance.insertRecordTugas(data);
                   }
                 }
@@ -105,10 +109,12 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
           return false; // Set
         },
         child: MobileScanner(
+          controller: cameraController,
           // fit: BoxFit.contain,
           onDetect: (capture) {
             final List<Barcode> barcodes = capture.barcodes;
             for (final barcode in barcodes) {
+              AudioPlayer().play(AssetSource('audio/success.mp3'));
               noOrder = barcode.rawValue!;
               debugPrint('Barcode found! ${barcode.rawValue}');
             }
