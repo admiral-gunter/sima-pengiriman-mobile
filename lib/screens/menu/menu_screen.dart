@@ -64,7 +64,6 @@ class _MenuScreenState extends State<MenuScreen> {
           '${kURL_ORIGIN}sale-wholesale-customer/get/${companyId}/${token}?draw=1&columns[0][data]&columns[0][name]&columns[0][searchable]=true&columns[0][orderable]=false&columns[0][search][value]&columns[0][search][regex]=false&columns[1][data]&columns[1][name]&columns[1][searchable]=true&columns[1][orderable]=false&columns[1][search][value]&columns[1][search][regex]=false&columns[2][data]=email&columns[2][name]&columns[2][searchable]=true&columns[2][orderable]=false&columns[2][search][value]&columns[2][search][regex]=false&columns[3][data]=mobile&columns[3][name]&columns[3][searchable]=true&columns[3][orderable]=false&columns[3][search][value]&columns[3][search][regex]=false&columns[4][data]=status&columns[4][name]&columns[4][searchable]=true&columns[4][orderable]=false&columns[4][search][value]&columns[4][search][regex]=false&columns[5][data]=date_added&columns[5][name]&columns[5][searchable]=true&columns[5][orderable]=false&columns[5][search][value]&columns[5][search][regex]=false&columns[6][data]&columns[6][name]&columns[6][searchable]=true&columns[6][orderable]=false&columns[6][search][value]&columns[6][search][regex]=false&start=0&length=999999&search[value]&search[regex]=false');
       response = await http.post(url);
       res = jsonDecode(response.body);
-      // print(res);
       await DatabaseHelper.instance.insertDataCustomer(res['data']);
     } catch (e) {
       // await SharedToken.tokenRemover();
@@ -88,6 +87,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
   @override
   void initState() {
+
     super.initState();
     checkTokenAndNavigate();
     initData();

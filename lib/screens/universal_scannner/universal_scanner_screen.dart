@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
+import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
+import 'package:sqflite/sqflite.dart';
 
 import '../scanner_offline/controller/scanner_offline_controller.dart';
 import '../turun_barang_online/controllers/turun_barang_online_controller.dart';
@@ -128,8 +130,19 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
 
               var barcode = barcodes[0].rawValue;
 
+              final dataExists = await DatabaseHelper.instance.doesDataExistBarangTurun(barcode!);
+              if(dataExists){
+                cameraController.stop();
+                
+                AudioPlayer().play(AssetSource('audio/failed.mp3'));
+                _dialogBuilder(context, 'DATA DUPLIKAT').then((value) {});
+                return;
+              }
+
+              final username = await SharedToken.univGetterString('username');
               for (var element in ctr.listInv) {
                 if (element['inventory_id'] == barcode) {
+                  
                   setState(() {
                     dataSNIdentifier[curKey] = barcode;
                   });
@@ -144,12 +157,12 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
                     "lat": "dummy_value",
                     "location_id": 0,
                     "customer_id": 0,
-                    "creator": "dummy_value",
+                    "creator": username,
                     "status": "unvalidasi",
-                    "customer_nama": "dummy_value",
-                    "customer_notelp": "dummy_value",
-                    "supir": "dummy_value",
-                    "tapper": ""
+                    "customer_nama": "COLUMN_TIDAK_TERPAKAI",
+                    "customer_notelp": "COLUMN_TIDAK_TERPAKAI",
+                    "supir": username,
+                    "tapper": username
                   };
                   print(dataTurun);
 

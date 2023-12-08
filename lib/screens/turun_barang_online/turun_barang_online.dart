@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
@@ -33,8 +35,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   TextEditingController TapperTextController = TextEditingController();
 
   String username = '';
-
-// Set the initial value for the controller
+  int totalBarangHarusDiTap = 0;
 
   @override
   void initState() {
@@ -73,63 +74,93 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   }
 
   List<Map<String, dynamic>> output = [];
-  List<Map<String, dynamic>> listBarangTapped = [];
+  var listBarangTapped = [];
 
   _getCountProduct() async {
     final TurunBarangOnlineController ctl =
         Get.put(TurunBarangOnlineController());
 
     Map<String, int> productCount = {};
-    Map<String, int> totalQtyMap = {}; // Store total_qty_tap for each product
+    Map<String, int> totalQtyMap = {};
 
     for (var item in ctl.listInv) {
       String productName = item['product_name'];
       int totalQty = await DatabaseHelper.instance
           .countBarangTap(item['product_name'], item['no_order']);
 
-      if (listBarangTapped.length == 0) {
-        final barangTap = await DatabaseHelper.instance
-            .getAllBarangTap(item['product_name'], item['no_order']);
-        listBarangTapped.addAll(barangTap);
+      final barangTap = await DatabaseHelper.instance.getAllBarangTap(
+          item['product_name'], item['no_order'], item['inventory_id']);
 
-        Map<String, List<String>> groupedProducts = {};
+      listBarangTapped.addAll(barangTap);
 
-        listBarangTapped.forEach((item) {
-          String productName = item['product_name'];
-          String sn = item['sn'];
-
-          if (!groupedProducts.containsKey(productName)) {
-            groupedProducts[productName] = [sn];
-          } else {
-            groupedProducts[productName]!.add(sn);
-          }
-        });
-
-        List<Map<String, dynamic>> resultGroup = [];
-
-        groupedProducts.forEach((productName, snList) {
-          resultGroup.add({
-            "product_name": productName,
-            "sn": snList,
-          });
-        });
-        if (mounted) {
-          setState(() {
-            listBarangTapped = resultGroup;
-          });
-        }
-      }
       productCount[productName] = (productCount[productName] ?? 0) + 1;
       totalQtyMap[productName] = totalQty;
     }
+    List listBarangTappedTemp = [];
+
+    listBarangTapped.forEach((element) {
+      var productExists = listBarangTappedTemp
+          .where((el) => el['product_name'] == element['product_name'])
+          .toList();
+
+      if (productExists.isNotEmpty) {
+        // Product already exists in the temporary list, add 'sn' to the existing 'sn' list
+        productExists[0]['sn'].add(element['sn']);
+      } else {
+        // Product doesn't exist in the temporary list, add a new entry
+        listBarangTappedTemp.add({
+          'product_name': element['product_name'],
+          'sn': [element['sn']]
+        });
+      }
+    });
+
+    print(listBarangTappedTemp);
+    setState(() {
+      listBarangTapped = listBarangTappedTemp;
+    });
 
     productCount.forEach((productName, count) {
+      totalBarangHarusDiTap += count;
+
       output.add({
         "product_name": productName,
         "qty": count,
         "qty_tap": totalQtyMap[productName] ?? 0,
       });
+
     });
+    print('wahhh ${jsonEncode(output)}');
+
+    for (var currentItem in output) {
+       bool quantitiesMatch = currentItem['qty_tap'] == currentItem['qty'];
+
+    if (quantitiesMatch) {
+      matchingQuantities++;
+    }
+
+    if (matchingQuantities == totalBarangHarusDiTap) {
+      for (var element in ctl.listSJ) {
+        // final item = jsonEncode(element['nomor_order']);
+        // noSj += item + ',';
+        final data = {
+          "nomor_order": element['nomor_order'],
+          "nama_toko": element['toko'],
+          "creator": username,
+          "status": "unvalidasi",
+          "customer_nama": "Alice",
+          "customer_notelp": "1234567890",
+          "supir": "Mike",
+          "tapper": "Sam"
+        };
+
+        DatabaseHelper.instance
+            .insertHistorySuratJalan(data)
+            .then((value) => null);
+      }
+    }
+    }
+   
   }
 
   Future<List<bool>> fetchCompletionStatuses() async {
@@ -218,33 +249,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                           itemBuilder: ((context, index) {
                             var currentItem = output[index];
 
-                            bool quantitiesMatch =
-                                currentItem['qty_tap'] == currentItem['qty'];
-
-                            if (quantitiesMatch) {
-                              matchingQuantities++;
-                            }
-
-                            if (matchingQuantities == output.length) {
-                              for (var element in ctl.listSJ) {
-                                // final item = jsonEncode(element['nomor_order']);
-                                // noSj += item + ',';
-                                final data = {
-                                  "nomor_order": element['nomor_order'],
-                                  "nama_toko": element['toko'],
-                                  "creator": username,
-                                  "status": "unvalidasi",
-                                  "customer_nama": "Alice",
-                                  "customer_notelp": "1234567890",
-                                  "supir": "Mike",
-                                  "tapper": "Sam"
-                                };
-
-                                DatabaseHelper.instance
-                                    .insertHistorySuratJalan(data)
-                                    .then((value) => null);
-                              }
-                            }
+                           
                             return ListTile(
                               title: Text('${output[index]['product_name']}'),
                               trailing: Text(

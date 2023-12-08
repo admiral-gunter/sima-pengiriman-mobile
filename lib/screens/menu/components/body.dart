@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/screens/scan_pengiriman/scan_pengiriman_screen.dart';
 import 'package:sima_pengiriman/screens/turun_barang_online/controllers/turun_barang_online_controller.dart';
@@ -74,15 +75,13 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   }
 
   Future syncDataTap() async {
-    final url = Uri.parse(
-        'http://192.168.103.131/simait/api/pengiriman/sync-data-pengiriman');
+    final url = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-data-pengiriman');
 
     List dataList = await DatabaseHelper.instance.getDataTapForToday();
 
     Map<String, dynamic> requestBody = {"data": dataList};
 
     try {
-      // Make the POST request
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
@@ -178,9 +177,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                     doneItem["nomor_order"] ==
                                     recordTugas[index]["nomor_order"]);
 
-                            if (isRecordDone) {
-                              return SizedBox.shrink();
-                            }
+                          
                             return ListTile(
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,

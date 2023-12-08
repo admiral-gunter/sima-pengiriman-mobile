@@ -27,5 +27,5 @@ final Map<String, WidgetBuilder> routes = {
   ScannerOfflineScreen.routeName: (context) => ScannerOfflineScreen(),
   TurunBarangOfflineScreen.routeName: (context) => TurunBarangOfflineScreen(),
   TurunBarangOnlineScreen.routeName: (context) => TurunBarangOnlineScreen(),
-  ScanPengirimanScreen.routeName: (context) => ScanPengirimanScreen()
+  ScanPengirimanScreen.routeName: (context) => ScanPengirimanScreen(),
 };

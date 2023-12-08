@@ -69,9 +69,7 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
                     DatabaseHelper.instance.insertRecordTugas(data);
                   }
                 }
-
-                cameraController.start();
-                Navigator.of(context).pop();
+                Navigator.pushReplacementNamed(context, MenuScreen.routeName);
               },
             ),
           ],
@@ -118,8 +116,8 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
               noOrder = barcode.rawValue!;
               debugPrint('Barcode found! ${barcode.rawValue}');
             }
-            showCustomDialog(context);
             cameraController.stop();
+            showCustomDialog(context);
           },
         ),
       ),

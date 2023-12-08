@@ -263,7 +263,10 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getRecordTugas() async {
     final db = await instance.database;
-    return await db.query('record_tugas');
+    List<Map<String, dynamic>> result =
+        await db.rawQuery('SELECT * FROM record_tugas GROUP BY nomor_order');
+
+    return result;
   }
 
   Future<bool> doesDataExistPerItemTap(
@@ -295,13 +298,14 @@ class DatabaseHelper {
   }
 
   Future<List<Map<String, dynamic>>> getAllBarangTap(
-      String productName, String orderNumber) async {
+      String productName, String orderNumber, String inventoryId) async {
     final db = await instance.database;
 
     // Execute the query to get all rows
     List<Map<String, dynamic>> result = await db.query('barang_turun_tap',
-        where: 'product_name = ? AND nomor_order = ?',
-        whereArgs: [productName, orderNumber]);
+        distinct: true,
+        where: 'product_name = ? AND nomor_order = ? AND sn = ?',
+        whereArgs: [productName, orderNumber, inventoryId]);
 
     return result;
   }
@@ -323,6 +327,21 @@ class DatabaseHelper {
       return {'result': false, 'message': 'Failed to insert data: $e'};
     }
   }
+
+  Future<bool> doesDataExistBarangTurun(String sn) async {
+    final db = await instance.database;
+
+    String whereClause = 'sn = ?';
+    List<dynamic> whereArgs = [sn];
+
+    List<Map<String, dynamic>> result = await db.query(
+      'barang_turun_tap',
+      where: whereClause,
+      whereArgs: whereArgs,
+    );
+
+  return result.isNotEmpty;
+}
 
   Future<Map<String, dynamic>> insertRecordTugas(
       Map<String, dynamic> data) async {
