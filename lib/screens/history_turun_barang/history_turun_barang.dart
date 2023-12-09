@@ -2,29 +2,28 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
 import 'package:sima_pengiriman/screens/universal_scannner/universal_scanner_screen.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:http/http.dart' as http;
+
 import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
 import 'package:location/location.dart';
 
-import 'controllers/turun_barang_online_controller.dart';
+import 'controllers/history_turun_barang_controller.dart';
 
-class TurunBarangOnlineScreen extends StatefulWidget {
-  const TurunBarangOnlineScreen({Key? key}) : super(key: key);
-  static String routeName = "/turun-barang-online";
+class HistoryBarangScreen extends StatefulWidget {
+  const HistoryBarangScreen({Key? key}) : super(key: key);
+  static String routeName = "/history-turun-barang";
 
   @override
-  State<TurunBarangOnlineScreen> createState() =>
-      _TurunBarangOnlineScreenState();
+  State<HistoryBarangScreen> createState() =>
+      _HistoryBarangScreenState();
 }
 
-class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
+class _HistoryBarangScreenState extends State<HistoryBarangScreen> {
   Location location = Location();
 
   late double latitude;
@@ -62,8 +61,8 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           longitude = locationData.longitude!;
           textController.text = '${latitude}, ${longitude}';
 
-          final TurunBarangOnlineController ctl =
-              Get.put(TurunBarangOnlineController());
+          final HistoryTurunBarangController ctl =
+              Get.put(HistoryTurunBarangController());
           ctl.coordinate['lat'] = latitude.toString();
           ctl.coordinate['long'] = longitude.toString();
         });
@@ -77,43 +76,15 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   List<Map<String, dynamic>> output = [];
   var listBarangTapped = [];
 
-  Future<void> _postRequestSJDone(String nomorSJ) async {
-    nomorSJ = nomorSJ.replaceAll(' ', '');
-    final String apiUrl =
-        kURL_ORIGIN + 'sale-wholesale/save-sj-done?no_sj=${nomorSJ}';
-
-    Map<String, dynamic> data = {
-      'key1': 'value1',
-      'key2': 'value2',
-    };
-    String jsonData = jsonEncode(data);
-    try {
-      http.Response response = await http.post(
-        Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonData,
-      );
-
-      if (response.statusCode == 200) {
-        print("Response: ${response.body}");
-      } else {
-        print("Error: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Exception: $e");
-    }
-  }
-
   _getCountProduct() async {
-    final TurunBarangOnlineController ctl =
-        Get.put(TurunBarangOnlineController());
-
+    final HistoryTurunBarangController ctl =
+        Get.put(HistoryTurunBarangController());
+print(ctl.listInv);
     Map<String, int> productCount = {};
     Map<String, int> totalQtyMap = {};
 
     for (var item in ctl.listInv) {
+      print(' el item ${item}');
       String productName = item['product_name'];
       int totalQty = await DatabaseHelper.instance
           .countBarangTap(item['product_name'], item['no_order']);
@@ -144,7 +115,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
         });
       }
     });
-    int matchingQuantities = 0;
 
     print(listBarangTappedTemp);
     setState(() {
@@ -159,42 +129,44 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
         "qty": count,
         "qty_tap": totalQtyMap[productName] ?? 0,
       });
+
     });
     print('wahhh ${jsonEncode(output)}');
 
     for (var currentItem in output) {
-      bool quantitiesMatch = currentItem['qty_tap'] == currentItem['qty'];
+       bool quantitiesMatch = currentItem['qty_tap'] == currentItem['qty'];
 
-      if (quantitiesMatch) {
-        matchingQuantities += currentItem['qty_tap'] as int;
-      }
+    if (quantitiesMatch) {
+      matchingQuantities++;
+    }
 
-      if (matchingQuantities == totalBarangHarusDiTap) {
-        for (var element in ctl.listSJ) {
-          // final item = jsonEncode(element['nomor_order']);
-          // noSj += item + ',';
-          final data = {
-            "nomor_order": element['nomor_order'],
-            "nama_toko": element['toko'],
-            "creator": username,
-            "status": "unvalidasi",
-            "customer_nama": "Alice",
-            "customer_notelp": "1234567890",
-            "supir": "Mike",
-            "tapper": "Sam"
-          };
-          print('le wo ${element['nomor_order']}');
-          DatabaseHelper.instance
-              .insertHistorySuratJalan(data)
-              .then((value) => {_postRequestSJDone(element['nomor_order'])});
-        }
+    if (matchingQuantities == totalBarangHarusDiTap) {
+      for (var element in ctl.listSJ) {
+        // final item = jsonEncode(element['nomor_order']);
+        // noSj += item + ',';
+        final data = {
+          "nomor_order": element['nomor_order'],
+          "nama_toko": element['toko'],
+          "creator": username,
+          "status": "unvalidasi",
+          "customer_nama": "Alice",
+          "customer_notelp": "1234567890",
+          "supir": "Mike",
+          "tapper": "Sam"
+        };
+
+        DatabaseHelper.instance
+            .insertHistorySuratJalan(data)
+            .then((value) => null);
       }
     }
+    }
+   
   }
 
   Future<List<bool>> fetchCompletionStatuses() async {
-    final TurunBarangOnlineController ctl =
-        Get.put(TurunBarangOnlineController());
+    final HistoryTurunBarangController ctl =
+        Get.put(HistoryTurunBarangController());
 
     List<bool> completionStatuses = [];
 
@@ -206,25 +178,12 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     return completionStatuses;
   }
 
-  String stringCensor(String inputString) {
-    // var inputString = "asaaaaaaaaaaaaaa";
-
-    // Get the first 5 characters
-    var prefix = inputString.substring(0, 5);
-
-    // Get the last 4 characters
-    var suffix = inputString.substring(inputString.length - 4);
-
-    // Construct the modified string
-    var outputString = "$prefix*********$suffix";
-
-    return outputString;
-  }
+  int matchingQuantities = 0;
 
   @override
   Widget build(BuildContext context) {
-    final TurunBarangOnlineController ctl =
-        Get.put(TurunBarangOnlineController());
+    final HistoryTurunBarangController ctl =
+        Get.put(HistoryTurunBarangController());
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -232,7 +191,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
         preferredSize: Size.fromHeight(50.0),
         child: AppBar(
             title: Text(
-          "Turun Barang (Online)",
+          "History Turun Barang ",
           style: TextStyle(
             color: Colors
                 .black, // Change this color to match your AppBar's background color.
@@ -291,6 +250,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                           itemBuilder: ((context, index) {
                             var currentItem = output[index];
 
+                           
                             return ListTile(
                               title: Text('${output[index]['product_name']}'),
                               trailing: Text(
@@ -305,7 +265,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 for (var item in listBarangTapped[index]['sn'])
-                                  Text(stringCensor(item)),
+                                  Text(item),
                               ],
                             ),
                             title:
@@ -333,7 +293,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                 MaterialPageRoute(
                                   builder: (context) => UniversalScannerSCreen(
                                       goBackRouteName:
-                                          TurunBarangOnlineScreen.routeName),
+                                          HistoryBarangScreen.routeName),
                                 ),
                               );
                             }

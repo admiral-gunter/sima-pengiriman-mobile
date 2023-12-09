@@ -7,13 +7,13 @@ import 'package:http/http.dart' as http;
 
 import '../../../shared_preferences/shared_token.dart';
 
-class TurunBarangOnlineController extends GetxController {
+class HistoryTurunBarangController extends GetxController {
   RxList<dynamic> listSJ = [].obs;
 
   RxList<dynamic> listSelected = [].obs;
   RxList<dynamic> listInv = [].obs;
   RxString tapper = "".obs;
-  RxString nomorSJ = "".obs;
+
   RxMap<String, dynamic> coordinate = {'lat': '', 'long': ''}.obs;
 
   RxMap<String, dynamic> suratJalanCredential =
@@ -62,9 +62,6 @@ class TurunBarangOnlineController extends GetxController {
     String noSj = '';
 
     for (var element in listNoSJ) {
-      // final item = jsonEncode(element['nomor_order']);
-      // noSj += item + ',';
-      nomorSJ.value = element['nomor_order'];
       final item = {
         'nomor_order': element['nomor_order'],
         'toko': element['customer_nama']
@@ -105,7 +102,7 @@ class TurunBarangOnlineController extends GetxController {
         var resp = jsonDecode(response.body);
         print(resp['content']);
         listInv.addAll(resp['content']);
-        // print('Response body: ${response.body}');
+        print('Response body: ${jsonEncode(listInv)}');
       } else {
         print('POST request failed with status: ${response.statusCode}');
       }

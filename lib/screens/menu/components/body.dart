@@ -177,7 +177,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                     doneItem["nomor_order"] ==
                                     recordTugas[index]["nomor_order"]);
 
-                          
+                            if (isRecordDone) {
+                              return SizedBox.shrink();
+                            }
                             return ListTile(
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,6 +197,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                               title: Text(recordTugas[index]["nomor_order"]),
                               onTap: () async {
                                 var selectedTugas = recordTugas[index];
+                                // print(selectedTugas);
                                 await ctl.getItemsByNoSJ([selectedTugas]);
                                 Navigator.pushNamed(
                                     context, TurunBarangOnlineScreen.routeName);

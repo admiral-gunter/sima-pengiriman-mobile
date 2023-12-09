@@ -8,6 +8,7 @@ import 'package:sima_pengiriman/screens/sign_in/sign_in_screen.dart';
 import 'package:sima_pengiriman/screens/splash/splash_screen.dart';
 import 'package:sima_pengiriman/screens/turun_barang_offline/turun_barang_offline_screen.dart';
 
+import 'screens/history_turun_barang/history_turun_barang.dart';
 import 'screens/scan_pengiriman/scan_pengiriman_screen.dart';
 import 'screens/scanner_offline/scanner_offline_screen.dart';
 import 'screens/sign_up/sign_up_screen.dart';
@@ -28,4 +29,5 @@ final Map<String, WidgetBuilder> routes = {
   TurunBarangOfflineScreen.routeName: (context) => TurunBarangOfflineScreen(),
   TurunBarangOnlineScreen.routeName: (context) => TurunBarangOnlineScreen(),
   ScanPengirimanScreen.routeName: (context) => ScanPengirimanScreen(),
+  HistoryBarangScreen.routeName: (context)=>HistoryBarangScreen()
 };
