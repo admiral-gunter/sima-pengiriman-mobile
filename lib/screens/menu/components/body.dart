@@ -9,6 +9,7 @@ import 'package:sima_pengiriman/screens/scan_pengiriman/scan_pengiriman_screen.d
 import 'package:sima_pengiriman/screens/turun_barang_online/controllers/turun_barang_online_controller.dart';
 import 'package:http/http.dart' as http;
 import '../../turun_barang_online/turun_barang_online.dart';
+import '../../turun_barang_online/turun_barang_online_history.dart';
 
 class ParentItem {
   final String title;
@@ -237,7 +238,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                         var selectedTugas = recordTugasDone[index];
                         await ctl.getItemsByNoSJ([selectedTugas]);
                         Navigator.pushNamed(
-                            context, TurunBarangOnlineScreen.routeName);
+                            context, TurunBarangOnlineHistoryScreen.routeName);
+                        // Navigator.pushNamed(
+                        //     context, TurunBarangOnlineScreen.routeName);
                       },
                     );
                   },

@@ -13,6 +13,7 @@ import 'screens/scan_pengiriman/scan_pengiriman_screen.dart';
 import 'screens/scanner_offline/scanner_offline_screen.dart';
 import 'screens/sign_up/sign_up_screen.dart';
 import 'screens/turun_barang_online/turun_barang_online.dart';
+import 'screens/turun_barang_online/turun_barang_online_history.dart';
 
 // We use name route
 // All our routes will be available here
@@ -29,5 +30,7 @@ final Map<String, WidgetBuilder> routes = {
   TurunBarangOfflineScreen.routeName: (context) => TurunBarangOfflineScreen(),
   TurunBarangOnlineScreen.routeName: (context) => TurunBarangOnlineScreen(),
   ScanPengirimanScreen.routeName: (context) => ScanPengirimanScreen(),
-  HistoryBarangScreen.routeName: (context)=>HistoryBarangScreen()
+  HistoryBarangScreen.routeName: (context) => HistoryBarangScreen(),
+  TurunBarangOnlineHistoryScreen.routeName: (context) =>
+      TurunBarangOnlineHistoryScreen()
 };
