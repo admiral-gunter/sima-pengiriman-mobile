@@ -258,7 +258,8 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getHistorySuratJalan() async {
     final db = await instance.database;
-    return await db.query('history_tugas_surat_jalan');
+    return await db.query('history_tugas_surat_jalan',
+        orderBy: 'date_added DESC');
   }
 
   Future<List<Map<String, dynamic>>> getRecordTugas() async {
@@ -340,8 +341,8 @@ class DatabaseHelper {
       whereArgs: whereArgs,
     );
 
-  return result.isNotEmpty;
-}
+    return result.isNotEmpty;
+  }
 
   Future<Map<String, dynamic>> insertRecordTugas(
       Map<String, dynamic> data) async {
