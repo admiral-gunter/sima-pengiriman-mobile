@@ -316,41 +316,6 @@ class _TurunBarangOnlineHistoryScreenState
                     ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 4.0, vertical: 2.0),
-                  child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: textController.text.isNotEmpty
-                                  ? Colors.blue
-                                  : Colors.blue[200]),
-                          onPressed: () {
-                            if (textController.text.isNotEmpty) {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => UniversalScannerSCreen(
-                                      goBackRouteName:
-                                          TurunBarangOnlineHistoryScreen
-                                              .routeName),
-                                ),
-                              );
-                            }
-                          },
-                          child: textController.text.isNotEmpty
-                              ? Text(
-                                  'Scan SN dan Identifier',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold),
-                                )
-                              : Text('Getting current location..',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold)))),
-                ),
               ],
             ),
           ),

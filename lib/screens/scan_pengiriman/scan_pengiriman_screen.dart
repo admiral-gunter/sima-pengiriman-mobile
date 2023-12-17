@@ -1,10 +1,13 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
 import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 // import 'components/body.dart';
 
 class ScanPengirimanScreen extends StatefulWidget {
@@ -24,6 +27,30 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
     super.initState();
 
     cameraController.stop();
+  }
+
+  Future<bool> sendPostRequest() async {
+    List<String> stringList = noOrder.split(";");
+    List<String> noOrderNitem = stringList[1].split("|");
+    String apiUrl = kURL_ORIGIN + 'pengiriman/check-sj-duplicate?no_order';
+
+    var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
+    var request = http.Request('POST', Uri.parse(apiUrl));
+    var noOrderReq = noOrderNitem[0].replaceAll(' ', '');
+    request.bodyFields = {'no_order': noOrderReq};
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      String res = await response.stream.bytesToString();
+      Map resMap = jsonDecode(res);
+
+      return resMap['content'];
+    } else {
+      print(response.reasonPhrase);
+      return false;
+    }
   }
 
   // Function to show a custom dialog
@@ -78,6 +105,28 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
     );
   }
 
+  void showErrorDialog(BuildContext context) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Gagal'),
+          content: Text('No Surat Jalan Sudah dikerjakan!'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Close'),
+              onPressed: () {
+                cameraController.start();
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,15 +158,23 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
         child: MobileScanner(
           controller: cameraController,
           // fit: BoxFit.contain,
-          onDetect: (capture) {
+          onDetect: (capture) async {
             final List<Barcode> barcodes = capture.barcodes;
             for (final barcode in barcodes) {
-              AudioPlayer().play(AssetSource('audio/success.mp3'));
               noOrder = barcode.rawValue!;
               debugPrint('Barcode found! ${barcode.rawValue}');
+              cameraController.stop();
             }
-            cameraController.stop();
-            showCustomDialog(context);
+            final cekDuplicate = await sendPostRequest();
+            print(cekDuplicate);
+            if (cekDuplicate) {
+              showCustomDialog(context);
+              AudioPlayer().play(AssetSource('audio/success.mp3'));
+            } else {
+              showErrorDialog(context);
+
+              AudioPlayer().play(AssetSource('audio/failed.mp3'));
+            }
           },
         ),
       ),

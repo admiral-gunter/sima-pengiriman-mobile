@@ -198,7 +198,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                               title: Text(recordTugas[index]["nomor_order"]),
                               onTap: () async {
                                 var selectedTugas = recordTugas[index];
-                                // print(selectedTugas);
                                 await ctl.getItemsByNoSJ([selectedTugas]);
                                 Navigator.pushNamed(
                                     context, TurunBarangOnlineScreen.routeName);
