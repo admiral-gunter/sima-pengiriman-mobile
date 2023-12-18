@@ -154,10 +154,17 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     productCount.forEach((productName, count) {
       totalBarangHarusDiTap += count;
 
+      var tapped = totalQtyMap[productName] ?? 0;
+
+      listBarangTapped.forEach((item) {
+        if (item['product_name'] == productName) {
+          tapped = item['sn'].length;
+        }
+      });
       output.add({
         "product_name": productName,
         "qty": count,
-        "qty_tap": totalQtyMap[productName] ?? 0,
+        "qty_tap": tapped,
       });
     });
     print('wahhh ${jsonEncode(output)}');
