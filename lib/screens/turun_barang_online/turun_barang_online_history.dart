@@ -153,12 +153,21 @@ class _TurunBarangOnlineHistoryScreenState
 
     productCount.forEach((productName, count) {
       totalBarangHarusDiTap += count;
-
-      output.add({
-        "product_name": productName,
-        "qty": count,
-        "qty_tap": totalQtyMap[productName] ?? 0,
+      var tapped = totalQtyMap[productName] ?? 0;
+      listBarangTapped.forEach((item) {
+        if (item['product_name'] == productName) {
+          tapped = item['sn'].length;
+        }
       });
+
+      setState((){
+        output.add({
+          "product_name": productName,
+          "qty": count,
+          "qty_tap": tapped
+        });
+      });
+
     });
     print('wahhh ${jsonEncode(output)}');
 

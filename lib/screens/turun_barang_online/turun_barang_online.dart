@@ -161,10 +161,12 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           tapped = item['sn'].length;
         }
       });
-      output.add({
-        "product_name": productName,
-        "qty": count,
-        "qty_tap": tapped,
+      setState((){
+        output.add({
+          "product_name": productName,
+          "qty": count,
+          "qty_tap": tapped,
+        });
       });
     });
     print('wahhh ${jsonEncode(output)}');
@@ -185,10 +187,10 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
             "nama_toko": element['toko'],
             "creator": username,
             "status": "unvalidasi",
-            "customer_nama": "Alice",
-            "customer_notelp": "1234567890",
-            "supir": "Mike",
-            "tapper": "Sam"
+            "customer_nama": "DUMMY",
+            "customer_notelp": "DUMMY",
+            "supir": username,
+            "tapper": username
           };
           print('le wo ${element['nomor_order']}');
           DatabaseHelper.instance
@@ -242,7 +244,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           "Turun Barang (Online)",
           style: TextStyle(
             color: Colors
-                .black, // Change this color to match your AppBar's background color.
+                .black, 
           ),
         )),
       ),
