@@ -143,26 +143,18 @@ class _BodyV2State extends State<BodyV2> {
                             SnackBar(content: Text('${val['msg']}')),
                           );
 
-                          if (val['msg'] == 'anda berhasil login') {
+                          if (val['success']) {
                             final token = val['token'];
-                            // print(val['lokasi']);
-                            // print(val);
-                            // return;
-                            await SharedToken.univSetterString(
-                                'lokasi', val['lokasi']);
+                            // await SharedToken.univSetterString(
+                            //     'lokasi', val['lokasi']);
                             await SharedToken.univSetterString(
                                 'username', val['username']);
-                            await SharedToken.companySetter(val['company']);
                             await SharedToken.tokenSetter(token);
-                            _formKey.currentState!.save();
+                            // _formKey.currentState!.save();
                             KeyboardUtil.hideKeyboard(context);
                             Navigator.pushReplacementNamed(
                                 context, LoginSuccessScreen.routeName);
                           }
-                          // debugPrint('${val['msg']}');
-                          // debugPrint('${val['content']}');
-                          // debugPrint('${val['token']}');
-                          // final content = val['content'];
                         }
                       },
                     ),

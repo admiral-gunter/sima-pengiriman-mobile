@@ -1,9 +1,11 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
+import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
 import 'dart:convert';
@@ -22,11 +24,32 @@ class ScanPengirimanScreen extends StatefulWidget {
 class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
   MobileScannerController cameraController = MobileScannerController();
   String noOrder = '';
+  Location location = Location();
+
+  late double latitude;
+
+  late double longitude;
 
   void initState() {
-    super.initState();
-
     cameraController.stop();
+    super.initState();
+    _getLocationData();
+  }
+
+  _getLocationData() async {
+    try {
+      LocationData locationData = await location.getLocation();
+      if (mounted) {
+        setState(() {
+          latitude = locationData.latitude!;
+          longitude = locationData.longitude!;
+          cameraController.start();
+        });
+      }
+    } catch (e) {
+      // Handle errors, such as permissions or location services not enabled.
+      print("Error getting location: $e");
+    }
   }
 
   Future<bool> sendPostRequest() async {
@@ -53,6 +76,29 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
     }
   }
 
+  Future kirimData(dynamic data) async {
+    final url = Uri.parse(kURL_ORIGIN + 'pengiriman/insert-record-tugas');
+    Map<String, dynamic> requestBody = {"data": data};
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: {"data": jsonEncode(requestBody)},
+      );
+
+      if (response.statusCode == 200) {
+        print('POST request successful! Response:');
+        print(response.body);
+      } else {
+        print('POST request failed with status: ${response.statusCode}');
+        print(response.body);
+      }
+    } catch (error) {
+      print('Error making POST request: $error');
+    }
+  }
+
   // Function to show a custom dialog
   void showCustomDialog(BuildContext context) {
     showDialog(
@@ -65,22 +111,23 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
           actions: <Widget>[
             TextButton(
               child: Text('Close'),
-              onPressed: () {
+              onPressed: () async {
                 if (noOrder.contains(';')) {
                   List<String> stringList = noOrder.split(";");
                   List<String> noOrderNitem = stringList[1].split("|");
-
+                  final username =
+                      await SharedToken.univGetterString('username');
                   // noOrder =
                   if (noOrder.isNotEmpty) {
                     Map<String, dynamic> data = {
                       "nomor_order": noOrderNitem[0],
                       "identifier": "YourIdentifierValue",
                       "sn": "YourSNValue",
-                      "long": "YourLongitudeValue",
-                      "lat": "YourLatitudeValue",
+                      "long": longitude.toString(),
+                      "lat": latitude.toString(),
                       "location_id": 123,
                       "customer_id": 456,
-                      "creator": "YourCreatorValue",
+                      "creator": username,
                       "date_added": "2023-11-06T12:34:56",
                       "date_modified": "2023-11-06T12:34:56",
                       "status": "unvalidasi",
@@ -93,7 +140,9 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
                       data["qty_sum"] = noOrderNitem[2];
                     }
 
-                    DatabaseHelper.instance.insertRecordTugas(data);
+                    await kirimData(data);
+
+                    await DatabaseHelper.instance.insertRecordTugas(data);
                   }
                 }
                 Navigator.pushReplacementNamed(context, MenuScreen.routeName);

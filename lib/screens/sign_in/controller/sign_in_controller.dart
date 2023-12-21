@@ -11,7 +11,7 @@ class SignInController {
   Future<dynamic> loging() async {
     // debugPrint('${loginCredential}');
     try {
-      var url = Uri.parse(kURL_ORIGIN + 'login');
+      var url = Uri.parse(kURL_ORIGIN + 'pengiriman/master-supir-login');
 
       var response = await http.post(url, body: loginCredential);
 

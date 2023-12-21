@@ -7,8 +7,12 @@ class SharedToken {
   }
 
   static Future tokenSetter(String token) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('token', token);
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('token', token);
+    } catch (e) {
+      print('ERROR ' + e.toString());
+    }
   }
 
   static Future tokenRemover() async {
@@ -27,8 +31,12 @@ class SharedToken {
   }
 
   static Future univSetterString(String prop, String value) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString(prop, value);
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString(prop, value);
+    } catch (e) {
+      print('ERROR ' + e.toString());
+    }
   }
 
   static Future univGetterString(String prop) async {
