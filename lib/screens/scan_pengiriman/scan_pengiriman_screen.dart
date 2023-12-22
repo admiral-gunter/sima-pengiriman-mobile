@@ -118,6 +118,7 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
                   final username =
                       await SharedToken.univGetterString('username');
                   // noOrder =
+                   DateTime now = DateTime.now();
                   if (noOrder.isNotEmpty) {
                     Map<String, dynamic> data = {
                       "nomor_order": noOrderNitem[0],
@@ -128,8 +129,8 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
                       "location_id": 123,
                       "customer_id": 456,
                       "creator": username,
-                      "date_added": "2023-11-06T12:34:56",
-                      "date_modified": "2023-11-06T12:34:56",
+                      "date_added": now.toLocal().toString(),
+                      "date_modified": now.toLocal().toString(),
                       "status": "unvalidasi",
                       "customer_nama": stringList[0],
                       "customer_notelp": "CustomerPhoneNumber",
