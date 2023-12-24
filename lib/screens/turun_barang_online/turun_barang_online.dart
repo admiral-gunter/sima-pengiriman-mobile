@@ -146,7 +146,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     });
     int matchingQuantities = 0;
 
-    print(listBarangTappedTemp);
     setState(() {
       listBarangTapped = listBarangTappedTemp;
     });
@@ -161,7 +160,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           tapped = item['sn'].length;
         }
       });
-      setState((){
+      setState(() {
         output.add({
           "product_name": productName,
           "qty": count,
@@ -169,7 +168,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
         });
       });
     });
-    print('wahhh ${jsonEncode(output)}');
 
     for (var currentItem in output) {
       bool quantitiesMatch = currentItem['qty_tap'] == currentItem['qty'];
@@ -243,8 +241,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
             title: Text(
           "Turun Barang (Online)",
           style: TextStyle(
-            color: Colors
-                .black, 
+            color: Colors.black,
           ),
         )),
       ),

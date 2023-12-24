@@ -59,6 +59,7 @@ class TurunBarangOnlineController extends GetxController {
   }
 
   Future<void> getItemsByNoSJ(dynamic listNoSJ) async {
+    listSJ.clear();
     String noSj = '';
 
     for (var element in listNoSJ) {
@@ -71,6 +72,7 @@ class TurunBarangOnlineController extends GetxController {
       };
       listSJ.add(item);
     }
+    print('List SJ ${listSJ}');
 
     for (var element in listNoSJ) {
       final item = jsonEncode(element['nomor_order']);

@@ -59,6 +59,7 @@ class HistoryTurunBarangController extends GetxController {
   }
 
   Future<void> getItemsByNoSJ(dynamic listNoSJ) async {
+    listSJ.clear();
     String noSj = '';
 
     for (var element in listNoSJ) {
@@ -68,6 +69,8 @@ class HistoryTurunBarangController extends GetxController {
       };
       listSJ.add(item);
     }
+
+    print('List SJ ${listSJ}');
 
     for (var element in listNoSJ) {
       final item = jsonEncode(element['nomor_order']);

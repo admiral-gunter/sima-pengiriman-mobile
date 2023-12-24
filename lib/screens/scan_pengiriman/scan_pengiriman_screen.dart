@@ -240,11 +240,11 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
             List<String> parts = noOrder.split('-');
             print(parts);
             String username = await SharedToken.univGetterString('username');
-            if (parts[0] != username) {
+            if (parts[1] == username) {
               print('sama dong');
             }
 
-            print('${parts[0]} supir di akun n ${username}');
+            print('${parts[1]} supir di akun n ${username}');
             if (parts.length >= 2) {
               String supir = parts[1].split('--').first.trim();
               // if (supir != username) {
@@ -257,7 +257,7 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
               //   return;
               // }
 
-              if (supir != username && parts[0] != username) {
+              if (supir != username && parts[1] != username) {
                 AudioPlayer().play(AssetSource('audio/failed.mp3'));
                 showErrorSupirMismatchDialog(context);
                 return;

@@ -160,14 +160,10 @@ class _TurunBarangOnlineHistoryScreenState
         }
       });
 
-      setState((){
-        output.add({
-          "product_name": productName,
-          "qty": count,
-          "qty_tap": tapped
-        });
+      setState(() {
+        output.add(
+            {"product_name": productName, "qty": count, "qty_tap": tapped});
       });
-
     });
     print('wahhh ${jsonEncode(output)}');
 
@@ -193,9 +189,6 @@ class _TurunBarangOnlineHistoryScreenState
             "tapper": "Sam"
           };
           print('le wo ${element['nomor_order']}');
-          DatabaseHelper.instance
-              .insertHistorySuratJalan(data)
-              .then((value) => {_postRequestSJDone(element['nomor_order'])});
         }
       }
     }

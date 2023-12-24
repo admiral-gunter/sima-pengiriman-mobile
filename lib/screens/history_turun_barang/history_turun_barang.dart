@@ -19,8 +19,7 @@ class HistoryBarangScreen extends StatefulWidget {
   static String routeName = "/history-turun-barang";
 
   @override
-  State<HistoryBarangScreen> createState() =>
-      _HistoryBarangScreenState();
+  State<HistoryBarangScreen> createState() => _HistoryBarangScreenState();
 }
 
 class _HistoryBarangScreenState extends State<HistoryBarangScreen> {
@@ -79,7 +78,7 @@ class _HistoryBarangScreenState extends State<HistoryBarangScreen> {
   _getCountProduct() async {
     final HistoryTurunBarangController ctl =
         Get.put(HistoryTurunBarangController());
-print(ctl.listInv);
+    print(ctl.listInv);
     Map<String, int> productCount = {};
     Map<String, int> totalQtyMap = {};
 
@@ -125,54 +124,44 @@ print(ctl.listInv);
       totalBarangHarusDiTap += count;
 
       var tapped = totalQtyMap[productName] ?? 0;
-      
+
       listBarangTapped.forEach((item) {
         if (item['product_name'] == productName) {
           tapped = item['sn'].length;
         }
       });
 
-      setState((){
-        output.add({
-          "product_name": productName,
-          "qty": count,
-          "qty_tap": tapped
-        });
+      setState(() {
+        output.add(
+            {"product_name": productName, "qty": count, "qty_tap": tapped});
       });
-
-
     });
     print('wahhh ${jsonEncode(output)}');
 
     for (var currentItem in output) {
-       bool quantitiesMatch = currentItem['qty_tap'] == currentItem['qty'];
+      bool quantitiesMatch = currentItem['qty_tap'] == currentItem['qty'];
 
-    if (quantitiesMatch) {
-      matchingQuantities++;
-    }
+      if (quantitiesMatch) {
+        matchingQuantities++;
+      }
 
-    if (matchingQuantities == totalBarangHarusDiTap) {
-      for (var element in ctl.listSJ) {
-        // final item = jsonEncode(element['nomor_order']);
-        // noSj += item + ',';
-        final data = {
-          "nomor_order": element['nomor_order'],
-          "nama_toko": element['toko'],
-          "creator": username,
-          "status": "unvalidasi",
-          "customer_nama": "Alice",
-          "customer_notelp": "1234567890",
-          "supir": "Mike",
-          "tapper": "Sam"
-        };
-
-        DatabaseHelper.instance
-            .insertHistorySuratJalan(data)
-            .then((value) => null);
+      if (matchingQuantities == totalBarangHarusDiTap) {
+        for (var element in ctl.listSJ) {
+          // final item = jsonEncode(element['nomor_order']);
+          // noSj += item + ',';
+          final data = {
+            "nomor_order": element['nomor_order'],
+            "nama_toko": element['toko'],
+            "creator": username,
+            "status": "unvalidasi",
+            "customer_nama": "Alice",
+            "customer_notelp": "1234567890",
+            "supir": "Mike",
+            "tapper": "Sam"
+          };
+        }
       }
     }
-    }
-   
   }
 
   Future<List<bool>> fetchCompletionStatuses() async {
@@ -261,7 +250,6 @@ print(ctl.listInv);
                           itemBuilder: ((context, index) {
                             var currentItem = output[index];
 
-                           
                             return ListTile(
                               title: Text('${output[index]['product_name']}'),
                               trailing: Text(
