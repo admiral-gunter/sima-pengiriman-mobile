@@ -118,7 +118,7 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
                   final username =
                       await SharedToken.univGetterString('username');
                   // noOrder =
-                   DateTime now = DateTime.now();
+                  DateTime now = DateTime.now();
                   if (noOrder.isNotEmpty) {
                     Map<String, dynamic> data = {
                       "nomor_order": noOrderNitem[0],
@@ -177,6 +177,28 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
     );
   }
 
+  void showErrorSupirMismatchDialog(BuildContext context) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Gagal'),
+          content: Text('Supir Tidak sesuai dengan surat jalan!'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Close'),
+              onPressed: () {
+                cameraController.start();
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -215,6 +237,33 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
               debugPrint('Barcode found! ${barcode.rawValue}');
               cameraController.stop();
             }
+            List<String> parts = noOrder.split('-');
+            print(parts);
+            String username = await SharedToken.univGetterString('username');
+            if (parts[0] != username) {
+              print('sama dong');
+            }
+
+            print('${parts[0]} supir di akun n ${username}');
+            if (parts.length >= 2) {
+              String supir = parts[1].split('--').first.trim();
+              // if (supir != username) {
+              //   AudioPlayer().play(AssetSource('audio/failed.mp3'));
+              //   showErrorSupirMismatchDialog(context);
+              //   return;
+              // } else if (parts[0] != username) {
+              //   AudioPlayer().play(AssetSource('audio/failed.mp3'));
+              //   showErrorSupirMismatchDialog(context);
+              //   return;
+              // }
+
+              if (supir != username && parts[0] != username) {
+                AudioPlayer().play(AssetSource('audio/failed.mp3'));
+                showErrorSupirMismatchDialog(context);
+                return;
+              }
+            }
+
             final cekDuplicate = await sendPostRequest();
             print(cekDuplicate);
             if (cekDuplicate) {
