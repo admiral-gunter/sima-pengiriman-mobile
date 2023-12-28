@@ -124,6 +124,7 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
             fit: BoxFit.contain,
             controller: cameraController,
             onDetect: (capture) async {
+              cameraController.stop();
               List<dynamic> foundItem = [];
 
               final List<Barcode> barcodes = capture.barcodes;
@@ -132,7 +133,6 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
 
               final dataExists = await DatabaseHelper.instance.doesDataExistBarangTurun(barcode!);
               if(dataExists){
-                cameraController.stop();
                 
                 AudioPlayer().play(AssetSource('audio/failed.mp3'));
                 _dialogBuilder(context, 'DATA DUPLIKAT').then((value) {});
@@ -168,20 +168,22 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
 
                   // DatabaseHelper.instance.insertBarangTurun(dataTurun);
                   await ctr.insertDataTurun(dataTurun);
-                  cameraController.stop();
                   AudioPlayer().play(AssetSource('audio/success.mp3'));
 
                   _dialogBuilder(context, 'SN Tervalidasi').then((value) {});
                   return;
                 }
               }
-              cameraController.stop();
 
               if (foundItem.length == 0) {
                 AudioPlayer().play(AssetSource('audio/failed.mp3'));
                 _dialogBuilder(context, 'SN Tidak Valid').then((value) {});
                 return;
               }
+
+                 AudioPlayer().play(AssetSource('audio/failed.mp3'));
+                _dialogBuilder(context, 'SN Tidak Valid').then((value) {});
+                return;
             },
           ),
           Align(
