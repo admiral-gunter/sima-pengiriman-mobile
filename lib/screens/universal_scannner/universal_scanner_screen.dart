@@ -132,6 +132,11 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
               var barcode = barcodes[0].rawValue;
 
               final dataExists = await DatabaseHelper.instance.doesDataExistBarangTurun(barcode!);
+              
+              setState(() {
+                dataSNIdentifier[curKey] = barcode;
+              });
+
               if(dataExists){
                 
                 AudioPlayer().play(AssetSource('audio/failed.mp3'));
@@ -142,10 +147,6 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
               final username = await SharedToken.univGetterString('username');
               for (var element in ctr.listInv) {
                 if (element['inventory_id'] == barcode) {
-                  
-                  setState(() {
-                    dataSNIdentifier[curKey] = barcode;
-                  });
                   print('waw ${barcode}');
                   print('${element['no_order']}');
                   final dataTurun = {

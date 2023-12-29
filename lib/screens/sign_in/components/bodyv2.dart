@@ -8,7 +8,7 @@ import '../../../constants.dart';
 import '../../../helper/keyboard.dart';
 import '../../login_success/login_success_screen.dart';
 import '../controller/sign_in_controller.dart';
-
+import 'package:intl/intl.dart';
 class BodyV2 extends StatefulWidget {
   const BodyV2({Key? key}) : super(key: key);
 
@@ -150,6 +150,12 @@ class _BodyV2State extends State<BodyV2> {
                             await SharedToken.univSetterString(
                                 'username', val['username']);
                             await SharedToken.tokenSetter(token);
+                            DateTime now = DateTime.now();
+
+                            String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+
+                            await SharedToken.univSetterString(
+                                'last_login_dt', formattedDate);
                             // _formKey.currentState!.save();
                             KeyboardUtil.hideKeyboard(context);
                             Navigator.pushReplacementNamed(

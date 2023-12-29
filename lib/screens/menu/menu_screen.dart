@@ -13,6 +13,7 @@ import '../../helper/database_helper.dart';
 import '../../shared_preferences/shared_token.dart';
 import '../../size_config.dart';
 import 'components/body.dart';
+import 'package:intl/intl.dart';
 
 class MenuScreen extends StatefulWidget {
   static var routeName = '/menu';
@@ -91,6 +92,13 @@ class _MenuScreenState extends State<MenuScreen> {
     super.initState();
     checkTokenAndNavigate();
     // initData();
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+    SharedToken.univGetterString('last_login_dt').then((value) => {
+      if(value != formattedDate){
+        Navigator.pushReplacementNamed(context, SignInScreen.routeName)
+      }
+    });
   }
 
   @override
