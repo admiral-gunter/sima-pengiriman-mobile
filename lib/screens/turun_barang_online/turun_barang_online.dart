@@ -169,6 +169,25 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       });
     });
 
+    setState(() {
+      output.sort((a, b) {
+        var qtyA = a["qty"] as int;
+        var qtyTapA = a["qty_tap"] as int;
+        var qtyB = b["qty"] as int;
+        var qtyTapB = b["qty_tap"] as int;
+
+        if (qtyTapA < qtyA && qtyTapB < qtyB) {
+          return qtyTapA.compareTo(qtyTapB);
+        } else if (qtyTapA < qtyA) {
+          return -1; // "a" comes first
+        } else if (qtyTapB < qtyB) {
+          return 1; // "b" comes first
+        } else {
+          return qtyA.compareTo(qtyB);
+        }
+      });
+    });
+
     for (var currentItem in output) {
       bool quantitiesMatch = currentItem['qty_tap'] == currentItem['qty'];
 
@@ -214,15 +233,10 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   }
 
   String stringCensor(String inputString) {
-    // var inputString = "asaaaaaaaaaaaaaa";
-
-    // Get the first 5 characters
     var prefix = inputString.substring(0, 5);
 
-    // Get the last 4 characters
     var suffix = inputString.substring(inputString.length - 4);
 
-    // Construct the modified string
     var outputString = "$prefix*********$suffix";
 
     return outputString;
@@ -296,6 +310,20 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                           itemCount: output.length,
                           itemBuilder: ((context, index) {
                             var currentItem = output[index];
+
+                            if (output[index]['qty_tap'] ==
+                                output[index]['qty']) {
+                              return ListTile(
+                                title: Text(
+                                  '${output[index]['product_name']}',
+                                  style: TextStyle(color: Colors.green),
+                                ),
+                                trailing: Text(
+                                  '${output[index]['qty_tap']}/${output[index]['qty']}',
+                                  style: TextStyle(color: Colors.green),
+                                ),
+                              );
+                            }
 
                             return ListTile(
                               title: Text('${output[index]['product_name']}'),
