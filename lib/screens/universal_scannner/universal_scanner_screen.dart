@@ -131,14 +131,14 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
 
               var barcode = barcodes[0].rawValue;
 
-              final dataExists = await DatabaseHelper.instance.doesDataExistBarangTurun(barcode!);
-              
+              final dataExists = await DatabaseHelper.instance
+                  .doesDataExistBarangTurun(barcode!);
+
               setState(() {
                 dataSNIdentifier[curKey] = barcode;
               });
 
-              if(dataExists){
-                
+              if (dataExists) {
                 AudioPlayer().play(AssetSource('audio/failed.mp3'));
                 _dialogBuilder(context, 'DATA DUPLIKAT').then((value) {});
                 return;
@@ -182,9 +182,9 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
                 return;
               }
 
-                 AudioPlayer().play(AssetSource('audio/failed.mp3'));
-                _dialogBuilder(context, 'SN Tidak Valid').then((value) {});
-                return;
+              AudioPlayer().play(AssetSource('audio/failed.mp3'));
+              _dialogBuilder(context, 'SN Tidak Valid').then((value) {});
+              return;
             },
           ),
           Align(

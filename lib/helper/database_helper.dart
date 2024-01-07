@@ -1,3 +1,4 @@
+import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -260,6 +261,41 @@ class DatabaseHelper {
     final db = await instance.database;
     return await db.query('history_tugas_surat_jalan',
         orderBy: 'date_added DESC');
+  }
+
+  Future<List<Map<String, dynamic>>> getRecordTugasDT() async {
+    // final db = await instance.database;
+    // return await db.query('history_tugas_surat_jalan',
+    //     orderBy: 'date_added DESC');
+    final username = await SharedToken.univGetterString('username');
+    final db = await instance.database;
+    // return await db.query('record_tugas', orderBy: 'date_added DESC');
+    return await db.query(
+      'record_tugas',
+      columns: [
+        'nomor_order',
+      ], // Replace with the actual column names you want
+      orderBy: 'date_added DESC',
+      where: 'creator = ? ',
+      whereArgs: [username],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getBarangTurunDT() async {
+    final db = await instance.database;
+
+    // var result = await db.query('barang_turun_tap');
+    final username = await SharedToken.univGetterString('username');
+    return await db.query(
+      'barang_turun_tap',
+      distinct: true,
+      columns: [
+        'sn',
+      ],
+      orderBy: 'date_added DESC',
+      where: 'creator = ? ',
+      whereArgs: [username],
+    );
   }
 
   Future<List<Map<String, dynamic>>> getRecordTugas() async {
