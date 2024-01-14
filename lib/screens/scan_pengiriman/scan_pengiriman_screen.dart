@@ -101,7 +101,8 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
   Future SJDalamPengiriman(dynamic data) async {
     final url =
         Uri.parse(kURL_ORIGIN + 'pengiriman/update-pengiriman-from-mobile');
-    Map<String, dynamic> requestBody = {"sn": "'" + data + "'", "status": 12};
+    final sj = data.toString().replaceAll(' ', '');
+    Map<String, dynamic> requestBody = {"sn": "'" + sj + "'", "status": "12"};
 
     try {
       final response = await http.post(

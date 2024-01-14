@@ -50,7 +50,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    syncDataTap().then((value) => getsyncDataTapInsert().then((value) => null));
+    syncDataTap()
+        .then((value) => getsyncDataTapInsert().then((value) => null))
+        .then((value) => null);
     _tabController = TabController(length: 2, vsync: this); // Number of tabs
   }
 
@@ -181,9 +183,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       DatabaseHelper.instance.getHistorySuratJalan().then((value) {
         setState(() {
           recordTugasDone = value;
-
-          for (var element in recordTugasDone) {}
         });
+
+        SJDalamPengiriman(value);
       });
     } catch (error) {
       print('Error: $error');
@@ -232,6 +234,36 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future SJDalamPengiriman(List data) async {
+    String strSJ = "";
+    for (var element in data) {
+      var noOd = element['nomor_order'].toString().replaceAll(' ', '');
+      strSJ += "'" + noOd + "',";
+    }
+    strSJ += "'" + "" + "'";
+    final url =
+        Uri.parse(kURL_ORIGIN + 'pengiriman/update-pengiriman-from-mobile');
+    Map<String, dynamic> requestBody = {"sj": strSJ, "status": "2"};
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: requestBody,
+      );
+
+      if (response.statusCode == 200) {
+        print('POST request successful! Response:');
+        print(response.body);
+      } else {
+        print('POST request failed with status: ${response.statusCode}');
+        print(response.body);
+      }
+    } catch (error) {
+      print('Error making POST request SJ Peng: $error');
+    }
   }
 
   @override
