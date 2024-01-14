@@ -306,6 +306,21 @@ class DatabaseHelper {
     return result;
   }
 
+  Future<void> deleteRecordTugasByNomorOrder(String noOrder) async {
+    try {
+      final db = await instance.database;
+
+      await db.delete(
+        'record_tugas',
+        where: 'nomor_order != ?',
+        whereArgs: [noOrder],
+      );
+    } catch (e) {
+      print('Error deleting records: $e');
+      throw Exception('Error deleting records: $e');
+    }
+  }
+
   Future<bool> doesDataExistPerItemTap(
       dynamic nomorOrder, dynamic inventoryId) async {
     final db = await instance.database;
@@ -519,5 +534,13 @@ class DatabaseHelper {
     );
 
     return result;
+  }
+
+  void dropDatabase() async {
+    // Specify the path to your database file
+    String databasePath = join(await getDatabasesPath(), 'my_database.db');
+
+    // Delete the entire database
+    await deleteDatabase(databasePath);
   }
 }

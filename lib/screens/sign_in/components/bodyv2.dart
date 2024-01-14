@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 
 import '../../../components/default_button.dart';
@@ -9,6 +10,7 @@ import '../../../helper/keyboard.dart';
 import '../../login_success/login_success_screen.dart';
 import '../controller/sign_in_controller.dart';
 import 'package:intl/intl.dart';
+
 class BodyV2 extends StatefulWidget {
   const BodyV2({Key? key}) : super(key: key);
 
@@ -21,6 +23,11 @@ class _BodyV2State extends State<BodyV2> {
   final _formKey = GlobalKey<FormState>();
 
   bool _passwordVisible = false;
+  @override
+  void initState() {
+    DatabaseHelper.instance.dropDatabase();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +159,8 @@ class _BodyV2State extends State<BodyV2> {
                             await SharedToken.tokenSetter(token);
                             DateTime now = DateTime.now();
 
-                            String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+                            String formattedDate =
+                                DateFormat('yyyy-MM-dd').format(now);
 
                             await SharedToken.univSetterString(
                                 'last_login_dt', formattedDate);

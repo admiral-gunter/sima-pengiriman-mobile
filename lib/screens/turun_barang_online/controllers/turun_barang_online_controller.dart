@@ -58,6 +58,7 @@ class TurunBarangOnlineController extends GetxController {
     }
   }
 
+  RxString noSuratJalanSelected = "".obs;
   Future<void> getItemsByNoSJ(dynamic listNoSJ) async {
     listSJ.clear();
     String noSj = '';
@@ -73,6 +74,7 @@ class TurunBarangOnlineController extends GetxController {
       listSJ.add(item);
     }
     print('List SJ ${listSJ}');
+    noSuratJalanSelected.value = listSJ[0]['nomor_order'];
 
     for (var element in listNoSJ) {
       final item = jsonEncode(element['nomor_order']);
@@ -113,6 +115,33 @@ class TurunBarangOnlineController extends GetxController {
       }
     } catch (e) {
       print('Error: $e');
+    }
+  }
+
+  Future SJDalamPengiriman() async {
+    final url =
+        Uri.parse(kURL_ORIGIN + 'pengiriman/update-pengiriman-from-mobile');
+    Map<String, dynamic> requestBody = {
+      "sn": "'" + noSuratJalanSelected.value + "'",
+      "status": 17
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: requestBody,
+      );
+
+      if (response.statusCode == 200) {
+        print('POST request successful! Response:');
+        print(response.body);
+      } else {
+        print('POST request failed with status: ${response.statusCode}');
+        print(response.body);
+      }
+    } catch (error) {
+      print('Error making POST request: $error');
     }
   }
 }

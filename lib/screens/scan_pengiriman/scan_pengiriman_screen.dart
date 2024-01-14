@@ -47,7 +47,6 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
         });
       }
     } catch (e) {
-      // Handle errors, such as permissions or location services not enabled.
       print("Error getting location: $e");
     }
   }
@@ -99,7 +98,30 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
     }
   }
 
-  // Function to show a custom dialog
+  Future SJDalamPengiriman(dynamic data) async {
+    final url =
+        Uri.parse(kURL_ORIGIN + 'pengiriman/update-pengiriman-from-mobile');
+    Map<String, dynamic> requestBody = {"sn": "'" + data + "'", "status": 12};
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: requestBody,
+      );
+
+      if (response.statusCode == 200) {
+        print('POST request successful! Response:');
+        print(response.body);
+      } else {
+        print('POST request failed with status: ${response.statusCode}');
+        print(response.body);
+      }
+    } catch (error) {
+      print('Error making POST request: $error');
+    }
+  }
+
   void showCustomDialog(BuildContext context) {
     showDialog(
       barrierDismissible: false,
@@ -142,7 +164,7 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
                     }
 
                     await kirimData(data);
-
+                    await SJDalamPengiriman(noOrderNitem[0]);
                     await DatabaseHelper.instance.insertRecordTugas(data);
                   }
                 }

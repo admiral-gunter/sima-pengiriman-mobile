@@ -5,7 +5,9 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:http/http.dart' as http;
 
+import '../../constants.dart';
 import '../scanner_offline/controller/scanner_offline_controller.dart';
 import '../turun_barang_online/controllers/turun_barang_online_controller.dart';
 import 'controller/universal_scanner_data.dart';

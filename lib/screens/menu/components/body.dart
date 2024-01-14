@@ -50,31 +50,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    syncDataTap();
-    getsyncDataTapInsert();
-    // DatabaseHelper.instance.getRecordTugas().then((value) {
-    //   setState(() {
-    //     for (var i = 0; i < recordTugas.length; i++) {
-    //       recordTugas[i]['selected'] = false;
-    //     }
-    //     recordTugas = value.map((item) {
-    //       return {
-    //         ...item,
-    //         'selected': false,
-    //       };
-    //     }).toList();
-    //   });
-    // });
-
-    // DatabaseHelper.instance.getHistorySuratJalan().then((value) {
-    //   setState(() {
-    //     recordTugasDone = value;
-
-    //     for (var element in recordTugasDone) {
-    //       print(element);
-    //     }
-    //   });
-    // });
+    syncDataTap().then((value) => getsyncDataTapInsert().then((value) => null));
     _tabController = TabController(length: 2, vsync: this); // Number of tabs
   }
 
@@ -113,6 +89,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     }
   }
 
+  String kumpulanNoOrderStr = '';
+  String kumpulanNoSJStr = "";
+
   Future getsyncDataTapInsert() async {
     final url = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-pengiriman-by-user');
 
@@ -122,7 +101,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
 
     try {
       final e = await DatabaseHelper.instance.getRecordTugasDT();
-      String kumpulanNoSJStr = "";
       final username = await SharedToken.univGetterString('username');
 
       for (var i in e) {
@@ -132,7 +110,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       kumpulanNoSJStr += "''";
 
       final turunBarang = await DatabaseHelper.instance.getBarangTurunDT();
-      String kumpulanNoOrderStr = '';
       for (var i in turunBarang) {
         kumpulanNoOrderStr += "'" + i['sn'] + "',";
       }
@@ -170,39 +147,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
             'tapper': item['creator'],
           };
           if (item['status'] == 'COMPLETED') {
-//             print('le work ${item}');
-//  {
-//             "id": "20",
-//             "nomor_order": " SJ-2023-12-24-120",
-//             "identifier": "YourIdentifierValue",
-//             "sn": "YourSNValue",
-//             "long": "107.7308754",
-//             "lat": "-6.9492631",
-//             "location_id": "123",
-//             "customer_id": "456",
-//             "creator": "sima",
-//             "date_added": "2023-12-27 21:10:09",
-//             "date_modified": "2023-12-27 21:10:09",
-//             "status": "COMPLETED",
-//             "customer_nama": "JUJU 1-sima-- ",
-//             "customer_notelp": "CustomerPhoneNumber",
-//             "supir": "DriverName",
-//             "items": "[]",
-//             "qty_sum": "2"
-//         },
-
-//             id INTEGER PRIMARY KEY AUTOINCREMENT,
-//         nomor_order TEXT UNIQUE,
-//         nama_toko TEXT,
-//         creator TEXT,
-//         date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//         date_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//         status TEXT CHECK(status IN ('unvalidasi', 'validasi')) DEFAULT 'unvalidasi' NOT NULL,
-//         customer_nama TEXT,
-//         customer_notelp TEXT,
-//         supir TEXT,
-//         tapper TEXT
-
             final e = await DatabaseHelper.instance
                 .insertHistorySuratJalan((newITem));
             print('le e ${e}');
@@ -219,7 +163,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         print('Request failed with status: ${response.statusCode}');
         print('Response body: ${response.body}');
       }
-
+      await taskNoLongerAssigned();
       DatabaseHelper.instance.getRecordTugas().then((value) {
         setState(() {
           for (var i = 0; i < recordTugas.length; i++) {
@@ -243,6 +187,44 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       });
     } catch (error) {
       print('Error: $error');
+    }
+  }
+
+  Future<void> taskNoLongerAssigned() async {
+    try {
+      final username = await SharedToken.univGetterString('username');
+
+      // var apiUrl = Uri.parse('https://example.com/api/endpoint');
+      final apiUrl = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-supir-beda');
+
+      var data = {'sj': kumpulanNoSJStr, 'supir': username};
+
+      var response = await http.post(
+        apiUrl,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: data,
+      );
+
+      if (response.statusCode == 200) {
+        final res = jsonDecode(response.body);
+        List content = res['content'];
+        if (content.isNotEmpty) {
+          List strlist = [];
+
+          for (var i = 0; i < content.length; i++) {
+            strlist.add(content[i]["no_surat_jalan"]);
+            await DatabaseHelper.instance
+                .deleteRecordTugasByNomorOrder(content[i]["no_surat_jalan"]);
+          }
+
+          // await DatabaseHelper.instance.deleteRecordTugasByNomorOrder(strlist);
+          print('el based ${strlist}');
+        }
+      } else {
+        print('Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
     }
   }
 
