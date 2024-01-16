@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -34,6 +36,83 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
     ctl.clearSnIdentifier();
     cameraController.stop();
     super.initState();
+  }
+
+  Future getsyncDataTapInsert() async {
+    String kumpulanNoOrderStr = '';
+    String kumpulanNoSJStr = "";
+    final url = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-pengiriman-by-user');
+
+    List dataList = await DatabaseHelper.instance.getDataTapForToday();
+
+    Map<String, dynamic> requestBody = {"data": dataList};
+
+    try {
+      final e = await DatabaseHelper.instance.getRecordTugasDT();
+      final username = await SharedToken.univGetterString('username');
+
+      for (var i in e) {
+        kumpulanNoSJStr +=
+            "'" + i['nomor_order'].toString().replaceAll(' ', '') + "',";
+      }
+      kumpulanNoSJStr += "''";
+
+      final turunBarang = await DatabaseHelper.instance.getBarangTurunDT();
+      for (var i in turunBarang) {
+        kumpulanNoOrderStr += "'" + i['sn'] + "',";
+      }
+      kumpulanNoOrderStr += "''";
+
+      final dataSend = {
+        "supir": username,
+        "kumpulan_sj_str": kumpulanNoSJStr,
+        "kumpulan_no_sn_str": kumpulanNoOrderStr,
+        "supir_actual": username,
+      };
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: dataSend,
+      );
+      if (response.statusCode == 200) {
+        final result = jsonDecode(response.body);
+        for (var item in result['content2']) {
+          DatabaseHelper.instance.insertBarangTurun(item);
+        }
+
+        for (var item in result['tapped_sj']) {
+          final newITem = {
+            'nomor_order': item['nomor_order'],
+            'nama_toko': 'NONE',
+            'creator': item['creator'],
+            'date_added': item['date_added'],
+            'date_modified': item['date_modified'],
+            'customer_nama': item['customer_nama'],
+            'customer_notelp': item['customer_notelp'],
+            'supir': item['creator'],
+            'tapper': item['creator'],
+          };
+          if (item['status'] == 'COMPLETED') {
+            final e = await DatabaseHelper.instance
+                .insertHistorySuratJalan((newITem));
+            print('le e ${e}');
+          } else {
+            item.remove('id');
+            item.remove('status');
+
+            final e = await DatabaseHelper.instance.insertRecordTugas(item);
+            print('le e ${e}');
+          }
+        }
+        print('Request successful');
+      } else {
+        print('Request failed with status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (error) {
+      print('Error: $error');
+    }
   }
 
   Future<void> _dialogBuilder(BuildContext context, String msg) {
@@ -171,6 +250,7 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
 
                   // DatabaseHelper.instance.insertBarangTurun(dataTurun);
                   await ctr.insertDataTurun(dataTurun);
+                  await getsyncDataTapInsert();
                   AudioPlayer().play(AssetSource('audio/success.mp3'));
 
                   _dialogBuilder(context, 'SN Tervalidasi').then((value) {});

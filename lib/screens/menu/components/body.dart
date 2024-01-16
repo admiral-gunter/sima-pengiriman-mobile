@@ -50,9 +50,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    syncDataTap()
-        .then((value) => getsyncDataTapInsert().then((value) => null))
-        .then((value) => null);
+    syncDataTap().then((value) => getsyncDataTapInsert().then((value) => null));
     _tabController = TabController(length: 2, vsync: this); // Number of tabs
   }
 
@@ -136,7 +134,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         }
 
         for (var item in result['tapped_sj']) {
-          print('le work');
           final newITem = {
             'nomor_order': item['nomor_order'],
             'nama_toko': 'NONE',
