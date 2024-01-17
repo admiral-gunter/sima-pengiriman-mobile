@@ -69,7 +69,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       );
 
       final e = await DatabaseHelper.instance.getRecordTugasDT();
-      String kumpulanNoOrderStr = "";
 
       for (var i in e) {
         kumpulanNoOrderStr += "'" + i['nomor_order'] + "',";
