@@ -373,6 +373,7 @@ class DatabaseHelper {
       Map<String, dynamic> data) async {
     final db = await instance.database;
     try {
+      data.remove('no_plat');
       await db.insert('barang_turun_tap', data);
       return {'result': true, 'message': 'Data inserted successfully.'};
     } catch (e) {
