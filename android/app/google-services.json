@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "62306167229",
+    "firebase_url": "https://sima-pengiriman-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "sima-pengiriman",
+    "storage_bucket": "sima-pengiriman.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:62306167229:android:235a5163b90ce619af8ad4",
+        "android_client_info": {
+          "package_name": "com.example.sima_pengiriman"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4mmUzG8zAQ7Xgks83Q-T_NmoZyMMi4yI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:62306167229:android:a8124cf525cbc5dcaf8ad4",
+        "android_client_info": {
+          "package_name": "com.sinarmaju.sima"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4mmUzG8zAQ7Xgks83Q-T_NmoZyMMi4yI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

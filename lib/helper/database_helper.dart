@@ -250,7 +250,7 @@ class DatabaseHelper {
       Map<String, dynamic> data) async {
     final db = await instance.database;
     try {
-      await db.insert('history_tugas_surat_jalan', data);
+      await db.insert('history_tugas_surat_jalan', data,  conflictAlgorithm: ConflictAlgorithm.ignore);
       return {'result': true, 'message': 'Data inserted successfully.'};
     } catch (e) {
       return {'result': false, 'message': 'Failed to insert data: $e'};

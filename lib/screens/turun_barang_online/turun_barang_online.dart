@@ -12,7 +12,7 @@ import 'package:http/http.dart' as http;
 import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
 import 'package:location/location.dart';
-
+import 'package:flutter_background/flutter_background.dart';
 import 'controllers/turun_barang_online_controller.dart';
 
 class TurunBarangOnlineScreen extends StatefulWidget {

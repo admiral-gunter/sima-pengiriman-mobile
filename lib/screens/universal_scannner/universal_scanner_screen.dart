@@ -32,7 +32,6 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
   final UniversalScannerData ctl = Get.put(UniversalScannerData());
 
   void initState() {
-    // To fix on start error
     ctl.clearSnIdentifier();
     cameraController.stop();
     super.initState();

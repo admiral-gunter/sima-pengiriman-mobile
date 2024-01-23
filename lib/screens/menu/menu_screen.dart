@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background/flutter_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sima_pengiriman/screens/sign_in/sign_in_screen.dart';
 import 'package:http/http.dart' as http;
@@ -14,6 +16,7 @@ import '../../shared_preferences/shared_token.dart';
 import '../../size_config.dart';
 import 'components/body.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MenuScreen extends StatefulWidget {
   static var routeName = '/menu';
@@ -41,37 +44,6 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
-  Future<void> initData() async {
-    try {
-      final token = await SharedToken.tokenGetter();
-      final companyId = await SharedToken.companyGetter();
-
-      var param = '?field=select2_gudang&tipe=1';
-      var url = Uri.parse(
-          '${kURL_ORIGIN}select2/get-raw/${companyId}/${token!}${param}');
-
-      // var response = await http.post(url);
-
-      // var res = jsonDecode(response.body);
-      // await DatabaseHelper.instance.insertDatainventoryLocation(res);
-
-      url = Uri.parse(
-          '${kURL_ORIGIN}sale-wholesale-customer/get/${companyId}/${token}?draw=1&columns[0][data]&columns[0][name]&columns[0][searchable]=true&columns[0][orderable]=false&columns[0][search][value]&columns[0][search][regex]=false&columns[1][data]&columns[1][name]&columns[1][searchable]=true&columns[1][orderable]=false&columns[1][search][value]&columns[1][search][regex]=false&columns[2][data]=email&columns[2][name]&columns[2][searchable]=true&columns[2][orderable]=false&columns[2][search][value]&columns[2][search][regex]=false&columns[3][data]=mobile&columns[3][name]&columns[3][searchable]=true&columns[3][orderable]=false&columns[3][search][value]&columns[3][search][regex]=false&columns[4][data]=status&columns[4][name]&columns[4][searchable]=true&columns[4][orderable]=false&columns[4][search][value]&columns[4][search][regex]=false&columns[5][data]=date_added&columns[5][name]&columns[5][searchable]=true&columns[5][orderable]=false&columns[5][search][value]&columns[5][search][regex]=false&columns[6][data]&columns[6][name]&columns[6][searchable]=true&columns[6][orderable]=false&columns[6][search][value]&columns[6][search][regex]=false&start=0&length=999999&search[value]&search[regex]=false');
-      var response = await http.post(url);
-      var res = jsonDecode(response.body);
-      await DatabaseHelper.instance.insertDataCustomer(res['data']);
-    } catch (e) {
-      print('ERROR following: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red[800],
-          content: Text(
-              'Token Expired. To continue, please log out and log back in'),
-        ),
-      );
-    }
-  }
-
   @override
   void dispose() {
     client.close();
@@ -81,14 +53,51 @@ class _MenuScreenState extends State<MenuScreen> {
   @override
   void initState() {
     super.initState();
+    _backgroundServices();
+    _addLokasiFirebaseFromLok('aa', 'aa');
     checkTokenAndNavigate();
-    // initData();
+
     DateTime now = DateTime.now();
     String formattedDate = DateFormat('yyyy-MM-dd').format(now);
     SharedToken.univGetterString('last_login_dt').then((value) => {
           if (value != formattedDate)
             {Navigator.pushReplacementNamed(context, SignInScreen.routeName)}
         });
+  }
+
+
+  Future<void> _addLokasiFirebaseFromLok(String name, String email) async {
+    final username = await SharedToken.univGetterString('username');
+    final DatabaseReference dblokRef =
+        FirebaseDatabase.instance.ref('sima-pengiriman/${username}');
+    try {
+      await dblokRef.push().set({
+        'name': name,
+        'email': email,
+      });
+      print('User added successfully!');
+    } catch (e) {
+      print('Error adding user: $e');
+    }
+  }
+
+  _backgroundServices() async {
+    try {
+      final androidConfig = FlutterBackgroundAndroidConfig(
+        notificationTitle: "flutter_background example app",
+        notificationText:
+            "Background notification for keeping the example app running in the background",
+        notificationImportance: AndroidNotificationImportance.Default,
+        notificationIcon: AndroidResource(
+            name: 'background_icon',
+            defType: 'drawable'), // Default is ic_launcher from folder mipmap
+      );
+      await FlutterBackground.initialize(androidConfig: androidConfig);
+      final eto = await FlutterBackground.enableBackgroundExecution();
+      print('aaa jalan lo ${eto}');
+    } catch (e) {
+      print('error background: ${e}');
+    }
   }
 
   @override
