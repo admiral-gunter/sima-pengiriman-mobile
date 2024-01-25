@@ -50,7 +50,23 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    // DatabaseHelper.instance.getRecordTugas().then((value) {
+    //   setState(() {
+    //     for (var i = 0; i < recordTugas.length; i++) {
+    //       recordTugas[i]['selected'] = false;
+    //     }
+    //     recordTugas = value.map((item) {
+    //       return {
+    //         ...item,
+    //         'selected': false,
+    //       };
+    //     }).toList();
+    //   });
     syncDataTap().then((value) => getsyncDataTapInsert().then((value) => null));
+    // });
+    // getsyncDataTapInsert().then((value) => syncDataTap().then((value) => null));
+    // getsyncDataTapInsert().then((value) => syncDataTap()
+    //     .then((value) => getsyncDataTapInsert().then((value) => null)));
     _tabController = TabController(length: 2, vsync: this); // Number of tabs
   }
 
@@ -75,7 +91,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       }
       kumpulanNoOrderStr += "''";
 
-      print('LE : ${e}');
       if (response.statusCode == 200) {
         print('Request successful');
         print('Response body: ${response.body}');
@@ -90,6 +105,8 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
 
   String kumpulanNoOrderStr = '';
   String kumpulanNoSJStr = "";
+  //LOADING; DONE; ERROR
+  String statusSyncData = "LOADING";
 
   Future getsyncDataTapInsert() async {
     final url = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-pengiriman-by-user');
@@ -147,15 +164,14 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
           if (item['status'] == 'COMPLETED') {
             final e = await DatabaseHelper.instance
                 .insertHistorySuratJalan((newITem));
-            print('le e ${e}');
           } else {
             item.remove('id');
             item.remove('status');
 
             final e = await DatabaseHelper.instance.insertRecordTugas(item);
-            print('le e ${e}');
           }
         }
+        statusSyncData = "DONE";
         print('Request successful');
       } else {
         print('Request failed with status: ${response.statusCode}');
@@ -174,14 +190,13 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
             };
           }).toList();
         });
-      });
+        DatabaseHelper.instance.getHistorySuratJalan().then((value) {
+          setState(() {
+            recordTugasDone = value;
+          });
 
-      DatabaseHelper.instance.getHistorySuratJalan().then((value) {
-        setState(() {
-          recordTugasDone = value;
+          SJDalamPengiriman(value);
         });
-
-        SJDalamPengiriman(value);
       });
     } catch (error) {
       print('Error: $error');
@@ -192,7 +207,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     try {
       final username = await SharedToken.univGetterString('username');
 
-      // var apiUrl = Uri.parse('https://example.com/api/endpoint');
       final apiUrl = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-supir-beda');
 
       var data = {'sj': kumpulanNoSJStr, 'supir': username};
@@ -214,9 +228,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
             await DatabaseHelper.instance
                 .deleteRecordTugasByNomorOrder(content[i]["no_surat_jalan"]);
           }
-
-          // await DatabaseHelper.instance.deleteRecordTugasByNomorOrder(strlist);
-          print('el based ${strlist}');
         }
       } else {
         print('Error: ${response.statusCode}');
@@ -318,89 +329,100 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          Column(
-            children: [
-              Expanded(
-                  child: recordTugas.length != 0
-                      ? ListView.builder(
-                          itemCount: recordTugas.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            bool isRecordDone = recordTugasDone.any(
-                                (doneItem) =>
-                                    doneItem["nomor_order"] ==
-                                    recordTugas[index]["nomor_order"]);
-
-                            if (isRecordDone) {
-                              return SizedBox.shrink();
-                            }
-                            return ListTile(
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                      'Barang : ${recordTugas[index]['qty_sum']}')
-                                ],
-                              ),
-                              trailing: Text(
-                                'Incompleted',
-                                style: TextStyle(
-                                    color: Colors.orange,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              title: Text(recordTugas[index]["nomor_order"]),
-                              onTap: () async {
-                                var selectedTugas = recordTugas[index];
-                                await ctl.getItemsByNoSJ([selectedTugas]);
-                                Navigator.pushNamed(
-                                    context, TurunBarangOnlineScreen.routeName);
-                              },
-                            );
-                          },
-                        )
-                      : Center(
-                          child: Text(
-                              'Anda belum memiliki tugas silahkan klik tombol Scan Pengiriman untuk tugas anda hari ini'),
-                        )),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
-                child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushNamed(
-                              context, ScanPengirimanScreen.routeName);
-                        },
-                        child: Text('Scan Pengiriman'))),
+      body: statusSyncData == "LOADING"
+          ? Center(
+              child: CircularProgressIndicator(
+                // Customize the appearance of the CircularProgressIndicator
+                backgroundColor: Colors.grey,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
               ),
-            ],
-          ),
-          recordTugasDone.length == 0
-              ? Center(
-                  child: Text(
-                      'Anda belum memiliki tugas silahkan klik tombol Scan Pengiriman untuk tugas anda hari ini'),
-                )
-              : ListView.builder(
-                  itemCount: recordTugasDone.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return ListTile(
-                      title: Text('${recordTugasDone[index]['nomor_order']}'),
-                      onTap: () async {
-                        var selectedTugas = recordTugasDone[index];
-                        await ctl.getItemsByNoSJ([selectedTugas]);
-                        Navigator.pushNamed(
-                            context, TurunBarangOnlineHistoryScreen.routeName);
-                        // Navigator.pushNamed(
-                        //     context, TurunBarangOnlineScreen.routeName);
-                      },
-                    );
-                  },
-                )
-        ],
-      ),
+            )
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                Column(
+                  children: [
+                    Expanded(
+                        child: recordTugas.length != 0
+                            ? ListView.builder(
+                                itemCount: recordTugas.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  bool isRecordDone = recordTugasDone.any(
+                                      (doneItem) =>
+                                          doneItem["nomor_order"] ==
+                                          recordTugas[index]["nomor_order"]);
+
+                                  if (isRecordDone) {
+                                    return SizedBox.shrink();
+                                  }
+                                  return ListTile(
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                            'Barang : ${recordTugas[index]['qty_sum']}')
+                                      ],
+                                    ),
+                                    trailing: Text(
+                                      'Incompleted',
+                                      style: TextStyle(
+                                          color: Colors.orange,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    title:
+                                        Text(recordTugas[index]["nomor_order"]),
+                                    onTap: () async {
+                                      var selectedTugas = recordTugas[index];
+                                      await ctl.getItemsByNoSJ([selectedTugas]);
+                                      Navigator.pushNamed(context,
+                                          TurunBarangOnlineScreen.routeName);
+                                    },
+                                  );
+                                },
+                              )
+                            : Center(
+                                child: Text(
+                                    'Anda belum memiliki tugas silahkan klik tombol Scan Pengiriman untuk tugas anda hari ini'),
+                              )),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4.0, vertical: 2.0),
+                      child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(
+                                    context, ScanPengirimanScreen.routeName);
+                              },
+                              child: Text('Scan Pengiriman'))),
+                    ),
+                  ],
+                ),
+                recordTugasDone.length == 0
+                    ? Center(
+                        child: Text(
+                            'Anda belum memiliki tugas silahkan klik tombol Scan Pengiriman untuk tugas anda hari ini'),
+                      )
+                    : ListView.builder(
+                        itemCount: recordTugasDone.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return ListTile(
+                            title: Text(
+                                '${recordTugasDone[index]['nomor_order']}'),
+                            onTap: () async {
+                              var selectedTugas = recordTugasDone[index];
+                              await ctl.getItemsByNoSJ([selectedTugas]);
+                              Navigator.pushNamed(context,
+                                  TurunBarangOnlineHistoryScreen.routeName);
+                              // Navigator.pushNamed(
+                              //     context, TurunBarangOnlineScreen.routeName);
+                            },
+                          );
+                        },
+                      )
+              ],
+            ),
     );
   }
 }

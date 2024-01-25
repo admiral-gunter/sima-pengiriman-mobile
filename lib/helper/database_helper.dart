@@ -250,7 +250,8 @@ class DatabaseHelper {
       Map<String, dynamic> data) async {
     final db = await instance.database;
     try {
-      await db.insert('history_tugas_surat_jalan', data,  conflictAlgorithm: ConflictAlgorithm.ignore);
+      await db.insert('history_tugas_surat_jalan', data,
+          conflictAlgorithm: ConflictAlgorithm.ignore);
       return {'result': true, 'message': 'Data inserted successfully.'};
     } catch (e) {
       return {'result': false, 'message': 'Failed to insert data: $e'};
@@ -374,7 +375,8 @@ class DatabaseHelper {
     final db = await instance.database;
     try {
       data.remove('no_plat');
-      await db.insert('barang_turun_tap', data);
+      await db.insert('barang_turun_tap', data,
+          conflictAlgorithm: ConflictAlgorithm.ignore);
       return {'result': true, 'message': 'Data inserted successfully.'};
     } catch (e) {
       return {'result': false, 'message': 'Failed to insert data: $e'};
