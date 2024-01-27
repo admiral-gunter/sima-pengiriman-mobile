@@ -46,68 +46,61 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List recordTugas = [];
   List recordTugasDone = [];
+  String kumpulanNoOrderStr = '';
+  String kumpulanNoSJStr = "";
 
   @override
   void initState() {
     super.initState();
-    // DatabaseHelper.instance.getRecordTugas().then((value) {
-    //   setState(() {
-    //     for (var i = 0; i < recordTugas.length; i++) {
-    //       recordTugas[i]['selected'] = false;
-    //     }
-    //     recordTugas = value.map((item) {
-    //       return {
-    //         ...item,
-    //         'selected': false,
-    //       };
-    //     }).toList();
-    //   });
+
     syncDataTap().then((value) => getsyncDataTapInsert().then((value) => null));
-    // });
-    // getsyncDataTapInsert().then((value) => syncDataTap().then((value) => null));
-    // getsyncDataTapInsert().then((value) => syncDataTap()
-    //     .then((value) => getsyncDataTapInsert().then((value) => null)));
+
     _tabController = TabController(length: 2, vsync: this); // Number of tabs
   }
 
   Future syncDataTap() async {
-    final url = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-data-pengiriman');
+    // final url = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-data-pengiriman');
 
-    List dataList = await DatabaseHelper.instance.getDataTapForToday();
+    // List dataList = await DatabaseHelper.instance.getDataTapForToday();
 
-    Map<String, dynamic> requestBody = {"data": dataList};
+    // Map<String, dynamic> requestBody = {"data": dataList};
 
     try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/x-www-form-urlencoded"},
-        body: {"data": jsonEncode(requestBody)},
-      );
+      // final response = await http.post(
+      //   url,
+      //   headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      //   body: {"data": jsonEncode(requestBody)},
+      // );
 
+      // final e = await DatabaseHelper.instance.getRecordTugasDT();
+
+      // for (var i in e) {
+      //   kumpulanNoOrderStr += "'" + i['nomor_order'] + "',";
+      // }
+      // kumpulanNoOrderStr += "''";
       final e = await DatabaseHelper.instance.getRecordTugasDT();
-
+      print('common no ORder list W ${e}');
       for (var i in e) {
-        kumpulanNoOrderStr += "'" + i['nomor_order'] + "',";
+        kumpulanNoSJStr +=
+            "'" + i['nomor_order'].toString().replaceAll(' ', '') + "',";
       }
-      kumpulanNoOrderStr += "''";
+      kumpulanNoSJStr += "''";
 
-      if (response.statusCode == 200) {
-        print('Request successful');
-        print('Response body: ${response.body}');
-      } else {
-        print('Request failed with status: ${response.statusCode}');
-        print('Response body: ${response.body}');
-      }
+      // if (response.statusCode == 200) {
+      //   print('Request successful');
+      //   print('Response body: ${response.body}');
+      // } else {
+      //   print('Request failed with status: ${response.statusCode}');
+      //   print('Response body: ${response.body}');
+      // }
     } catch (error) {
       print('Error: $error');
     }
   }
 
-  String kumpulanNoOrderStr = '';
-  String kumpulanNoSJStr = "";
   //LOADING; DONE; ERROR
   String statusSyncData = "LOADING";
-
+  String kumpulanNoSnStr = "";
   Future getsyncDataTapInsert() async {
     final url = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-pengiriman-by-user');
 
@@ -116,25 +109,24 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     Map<String, dynamic> requestBody = {"data": dataList};
 
     try {
-      final e = await DatabaseHelper.instance.getRecordTugasDT();
+      // final e = await DatabaseHelper.instance.getRecordTugasDT();
       final username = await SharedToken.univGetterString('username');
 
-      for (var i in e) {
-        kumpulanNoSJStr +=
-            "'" + i['nomor_order'].toString().replaceAll(' ', '') + "',";
-      }
-      kumpulanNoSJStr += "''";
+      // for (var i in e) {
+      //   kumpulanNoSJStr +=
+      //       "'" + i['nomor_order'].toString().replaceAll(' ', '') + "',";
+      // }
+      // kumpulanNoSJStr += "''";
 
       final turunBarang = await DatabaseHelper.instance.getBarangTurunDT();
       for (var i in turunBarang) {
-        kumpulanNoOrderStr += "'" + i['sn'] + "',";
+        kumpulanNoSnStr += "'" + i['sn'] + "',";
       }
-      kumpulanNoOrderStr += "''";
-
+      kumpulanNoSnStr += "''";
       final dataSend = {
         "supir": username,
         "kumpulan_sj_str": kumpulanNoSJStr,
-        "kumpulan_no_sn_str": kumpulanNoOrderStr,
+        "kumpulan_no_sn_str": kumpulanNoSnStr,
         "supir_actual": username,
       };
 
@@ -178,7 +170,8 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         print('Response body: ${response.body}');
       }
       await taskNoLongerAssigned();
-      DatabaseHelper.instance.getRecordTugas().then((value) {
+      DatabaseHelper.instance.getRecordTugasDT2().then((value) {
+        print('TASK DATA TODAY ${value}');
         setState(() {
           for (var i = 0; i < recordTugas.length; i++) {
             recordTugas[i]['selected'] = false;

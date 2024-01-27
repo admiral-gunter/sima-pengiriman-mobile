@@ -53,8 +53,8 @@ class _MenuScreenState extends State<MenuScreen> {
   @override
   void initState() {
     super.initState();
-    _backgroundServices();
-    _addLokasiFirebaseFromLok('aa', 'aa');
+    // _backgroundServices();
+    // _addLokasiFirebaseFromLok('aa', 'aa');
     checkTokenAndNavigate();
 
     DateTime now = DateTime.now();
@@ -64,7 +64,6 @@ class _MenuScreenState extends State<MenuScreen> {
             {Navigator.pushReplacementNamed(context, SignInScreen.routeName)}
         });
   }
-
 
   Future<void> _addLokasiFirebaseFromLok(String name, String email) async {
     final username = await SharedToken.univGetterString('username');

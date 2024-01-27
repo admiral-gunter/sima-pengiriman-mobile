@@ -147,9 +147,11 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     });
     int matchingQuantities = 0;
 
-    setState(() {
-      listBarangTapped = listBarangTappedTemp;
-    });
+    if (mounted) {
+      setState(() {
+        listBarangTapped = listBarangTappedTemp;
+      });
+    }
 
     productCount.forEach((productName, count) {
       totalBarangHarusDiTap += count;
@@ -161,33 +163,37 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           tapped = item['sn'].length;
         }
       });
+      if (mounted) {
+        setState(() {
+          output.add({
+            "product_name": productName,
+            "qty": count,
+            "qty_tap": tapped,
+          });
+        });
+      }
+    });
+
+    if (mounted) {
       setState(() {
-        output.add({
-          "product_name": productName,
-          "qty": count,
-          "qty_tap": tapped,
+        output.sort((a, b) {
+          var qtyA = a["qty"] as int;
+          var qtyTapA = a["qty_tap"] as int;
+          var qtyB = b["qty"] as int;
+          var qtyTapB = b["qty_tap"] as int;
+
+          if (qtyTapA < qtyA && qtyTapB < qtyB) {
+            return qtyTapA.compareTo(qtyTapB);
+          } else if (qtyTapA < qtyA) {
+            return -1; // "a" comes first
+          } else if (qtyTapB < qtyB) {
+            return 1; // "b" comes first
+          } else {
+            return qtyA.compareTo(qtyB);
+          }
         });
       });
-    });
-
-    setState(() {
-      output.sort((a, b) {
-        var qtyA = a["qty"] as int;
-        var qtyTapA = a["qty_tap"] as int;
-        var qtyB = b["qty"] as int;
-        var qtyTapB = b["qty_tap"] as int;
-
-        if (qtyTapA < qtyA && qtyTapB < qtyB) {
-          return qtyTapA.compareTo(qtyTapB);
-        } else if (qtyTapA < qtyA) {
-          return -1; // "a" comes first
-        } else if (qtyTapB < qtyB) {
-          return 1; // "b" comes first
-        } else {
-          return qtyA.compareTo(qtyB);
-        }
-      });
-    });
+    }
 
     for (var currentItem in output) {
       bool quantitiesMatch = currentItem['qty_tap'] == currentItem['qty'];

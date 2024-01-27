@@ -250,8 +250,7 @@ class DatabaseHelper {
       Map<String, dynamic> data) async {
     final db = await instance.database;
     try {
-      await db.insert('history_tugas_surat_jalan', data,
-          conflictAlgorithm: ConflictAlgorithm.ignore);
+      await db.insert('history_tugas_surat_jalan', data);
       return {'result': true, 'message': 'Data inserted successfully.'};
     } catch (e) {
       return {'result': false, 'message': 'Failed to insert data: $e'};
@@ -265,20 +264,21 @@ class DatabaseHelper {
   }
 
   Future<List<Map<String, dynamic>>> getRecordTugasDT() async {
-    // final db = await instance.database;
-    // return await db.query('history_tugas_surat_jalan',
-    //     orderBy: 'date_added DESC');
-    final username = await SharedToken.univGetterString('username');
     final db = await instance.database;
-    // return await db.query('record_tugas', orderBy: 'date_added DESC');
     return await db.query(
       'record_tugas',
       columns: [
         'nomor_order',
       ], // Replace with the actual column names you want
       orderBy: 'date_added DESC',
-      where: 'creator = ? ',
-      whereArgs: [username],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getRecordTugasDT2() async {
+    final db = await instance.database;
+    return await db.query(
+      'record_tugas',
+      orderBy: 'date_added DESC',
     );
   }
 
@@ -313,12 +313,12 @@ class DatabaseHelper {
 
       await db.delete(
         'record_tugas',
-        where: 'nomor_order != ?',
+        where: 'nomor_order = ?',
         whereArgs: [noOrder],
       );
     } catch (e) {
-      print('Error deleting records: $e');
-      throw Exception('Error deleting records: $e');
+      print('deleteRecordTugas ERROR: $e');
+      // throw Exception('Error deleting records: $e');
     }
   }
 
