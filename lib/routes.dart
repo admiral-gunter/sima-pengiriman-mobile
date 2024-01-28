@@ -9,6 +9,7 @@ import 'package:sima_pengiriman/screens/splash/splash_screen.dart';
 import 'package:sima_pengiriman/screens/turun_barang_offline/turun_barang_offline_screen.dart';
 
 import 'screens/history_turun_barang/history_turun_barang.dart';
+import 'screens/maps_view/maps_view.dart';
 import 'screens/scan_pengiriman/scan_pengiriman_screen.dart';
 import 'screens/scanner_offline/scanner_offline_screen.dart';
 import 'screens/sign_up/sign_up_screen.dart';
@@ -32,5 +33,6 @@ final Map<String, WidgetBuilder> routes = {
   ScanPengirimanScreen.routeName: (context) => ScanPengirimanScreen(),
   HistoryBarangScreen.routeName: (context) => HistoryBarangScreen(),
   TurunBarangOnlineHistoryScreen.routeName: (context) =>
-      TurunBarangOnlineHistoryScreen()
+      TurunBarangOnlineHistoryScreen(),
+  MapsView.routeName: (context) => MapsView()
 };
