@@ -45,13 +45,31 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     _getCountProduct();
     SharedToken.univGetterString('username').then((value) {
       if (mounted) {
-        setState(() {
-          TapperTextController.text = value;
-          username = value;
+        // setState(() {
+        //   TapperTextController.text = value;
+        //   username = value;
+        // });
+
+        SharedToken.univGetterString('no_plat').then((no_plat) {
+          if (mounted) {
+            setState(() {
+              TapperTextController.text = '${value} (${no_plat}) ';
+             
+            });
+          }
         });
         SJDalamPengiriman();
       }
     });
+
+    // SharedToken.univGetterString('no_plat').then((value) {
+    //   if (mounted) {
+    //     setState(() {
+    //       TapperTextController.text = value;
+         
+    //     });
+    //   }
+    // });
   }
 
   _getLocationData() async {

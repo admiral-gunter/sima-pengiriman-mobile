@@ -546,4 +546,14 @@ class DatabaseHelper {
     // Delete the entire database
     await deleteDatabase(databasePath);
   }
+
+   Future<void> emptyAllTables() async {
+    final db = await database;
+    final tables = ['barang_turun_tap', 'record_tugas', 'history_tugas_surat_jalan'];
+    
+    for (final table in tables) {
+      final tableName = table as String;
+      await db.rawDelete('DELETE FROM $tableName');
+    }
+  }
 }

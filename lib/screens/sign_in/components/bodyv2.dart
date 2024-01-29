@@ -25,7 +25,7 @@ class _BodyV2State extends State<BodyV2> {
   bool _passwordVisible = false;
   @override
   void initState() {
-    DatabaseHelper.instance.dropDatabase();
+    // DatabaseHelper.instance.dropDatabase();
     super.initState();
   }
 
@@ -154,6 +154,9 @@ class _BodyV2State extends State<BodyV2> {
                             final token = val['token'];
                             // await SharedToken.univSetterString(
                             //     'lokasi', val['lokasi']);
+                            final noPlat = val['no_plat'] ?? '';
+                            await SharedToken.univSetterString(
+                                'no_plat', noPlat);
                             await SharedToken.univSetterString(
                                 'username', val['username']);
                             await SharedToken.tokenSetter(token);

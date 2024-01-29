@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sima_pengiriman/screens/sign_in/sign_in_screen.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
+import 'package:sima_pengiriman/helper/database_helper.dart';
 
 import 'profile_menu.dart';
 import 'profile_pic.dart';
@@ -38,6 +39,7 @@ class Body extends StatelessWidget {
             text: "Log Out",
             icon: "assets/icons/Log out.svg",
             press: () async {
+              DatabaseHelper.instance.emptyAllTables();
               await SharedToken.tokenRemover();
               Navigator.pushReplacementNamed(context, SignInScreen.routeName);
             },

@@ -59,25 +59,10 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   }
 
   Future syncDataTap() async {
-    // final url = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-data-pengiriman');
-
-    // List dataList = await DatabaseHelper.instance.getDataTapForToday();
-
-    // Map<String, dynamic> requestBody = {"data": dataList};
+   
 
     try {
-      // final response = await http.post(
-      //   url,
-      //   headers: {"Content-Type": "application/x-www-form-urlencoded"},
-      //   body: {"data": jsonEncode(requestBody)},
-      // );
 
-      // final e = await DatabaseHelper.instance.getRecordTugasDT();
-
-      // for (var i in e) {
-      //   kumpulanNoOrderStr += "'" + i['nomor_order'] + "',";
-      // }
-      // kumpulanNoOrderStr += "''";
       final e = await DatabaseHelper.instance.getRecordTugasDT();
       print('common no ORder list W ${e}');
       for (var i in e) {
@@ -86,13 +71,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       }
       kumpulanNoSJStr += "''";
 
-      // if (response.statusCode == 200) {
-      //   print('Request successful');
-      //   print('Response body: ${response.body}');
-      // } else {
-      //   print('Request failed with status: ${response.statusCode}');
-      //   print('Response body: ${response.body}');
-      // }
     } catch (error) {
       print('Error: $error');
     }
