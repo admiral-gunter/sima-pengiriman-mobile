@@ -42,12 +42,13 @@ class _HistoryBarangScreenState extends State<HistoryBarangScreen> {
     _getLocationData();
     _getCountProduct();
     SharedToken.univGetterString('username').then((value) {
-      if (mounted) {
-        setState(() {
-          TapperTextController.text = value;
-          username = value;
-        });
-      }
+      SharedToken.univGetterString('no_plat').then((no_plat) {
+        if (mounted) {
+          setState(() {
+            TapperTextController.text = '${value} (${no_plat}) ';
+          });
+        }
+      });
     });
   }
 
@@ -116,9 +117,12 @@ class _HistoryBarangScreenState extends State<HistoryBarangScreen> {
     });
 
     print(listBarangTappedTemp);
-    setState(() {
-      listBarangTapped = listBarangTappedTemp;
-    });
+
+    if (mounted) {
+      setState(() {
+        listBarangTapped = listBarangTappedTemp;
+      });
+    }
 
     productCount.forEach((productName, count) {
       totalBarangHarusDiTap += count;
@@ -131,10 +135,12 @@ class _HistoryBarangScreenState extends State<HistoryBarangScreen> {
         }
       });
 
-      setState(() {
-        output.add(
-            {"product_name": productName, "qty": count, "qty_tap": tapped});
-      });
+      if (mounted) {
+        setState(() {
+          output.add(
+              {"product_name": productName, "qty": count, "qty_tap": tapped});
+        });
+      }
     });
     print('wahhh ${jsonEncode(output)}');
 

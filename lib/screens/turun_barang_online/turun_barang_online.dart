@@ -54,7 +54,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           if (mounted) {
             setState(() {
               TapperTextController.text = '${value} (${no_plat}) ';
-             
             });
           }
         });
@@ -66,7 +65,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     //   if (mounted) {
     //     setState(() {
     //       TapperTextController.text = value;
-         
+
     //     });
     //   }
     // });
