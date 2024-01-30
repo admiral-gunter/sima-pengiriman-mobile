@@ -276,10 +276,17 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getRecordTugasDT2() async {
     final db = await instance.database;
-    return await db.query(
-      'record_tugas',
-      orderBy: 'date_added DESC',
-    );
+    // return await db.query(
+    //   'record_tugas',
+    //   orderBy: 'date_added DESC',
+    // );
+    return await db.rawQuery('''
+    SELECT record_tugas.* FROM record_tugas
+    LEFT JOIN history_tugas_surat_jalan
+    ON record_tugas.nomor_order = history_tugas_surat_jalan.nomor_order
+    WHERE history_tugas_surat_jalan.nomor_order IS NULL
+    ORDER BY record_tugas.date_added DESC
+  ''');
   }
 
   Future<List<Map<String, dynamic>>> getBarangTurunDT() async {
@@ -547,10 +554,14 @@ class DatabaseHelper {
     await deleteDatabase(databasePath);
   }
 
-   Future<void> emptyAllTables() async {
+  Future<void> emptyAllTables() async {
     final db = await database;
-    final tables = ['barang_turun_tap', 'record_tugas', 'history_tugas_surat_jalan'];
-    
+    final tables = [
+      'barang_turun_tap',
+      'record_tugas',
+      'history_tugas_surat_jalan'
+    ];
+
     for (final table in tables) {
       final tableName = table as String;
       await db.rawDelete('DELETE FROM $tableName');

@@ -14,6 +14,7 @@ import '../../enums.dart';
 import 'package:location/location.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'controllers/turun_barang_online_controller.dart';
+import 'package:auto_size_text_field/auto_size_text_field.dart';
 
 class TurunBarangOnlineScreen extends StatefulWidget {
   const TurunBarangOnlineScreen({Key? key}) : super(key: key);
@@ -60,15 +61,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
         SJDalamPengiriman();
       }
     });
-
-    // SharedToken.univGetterString('no_plat').then((value) {
-    //   if (mounted) {
-    //     setState(() {
-    //       TapperTextController.text = value;
-
-    //     });
-    //   }
-    // });
   }
 
   _getLocationData() async {
@@ -298,7 +290,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   Widget build(BuildContext context) {
     final TurunBarangOnlineController ctl =
         Get.put(TurunBarangOnlineController());
-
+    TextEditingController _textController = TextEditingController();
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: PreferredSize(
@@ -405,36 +397,72 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 4.0, vertical: 2.0),
-                  child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: textController.text.isNotEmpty
-                                  ? Colors.blue
-                                  : Colors.blue[200]),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      textController.text.isNotEmpty
+                                          ? Colors.blue
+                                          : Colors.blue[200]),
+                              onPressed: () {
+                                if (textController.text.isNotEmpty) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          UniversalScannerSCreen(
+                                              goBackRouteName:
+                                                  TurunBarangOnlineScreen
+                                                      .routeName),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: textController.text.isNotEmpty
+                                  ? Text(
+                                      'Scan SN dan Identifier',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    )
+                                  : Text('Getting current location..',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold)))),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
                           onPressed: () {
-                            if (textController.text.isNotEmpty) {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => UniversalScannerSCreen(
-                                      goBackRouteName:
-                                          TurunBarangOnlineScreen.routeName),
-                                ),
-                              );
-                            }
+                            // Show dialog when the button is pressed
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text('SJ Batal Kirim'),
+                                  content: Text(
+                                      'Sebutkan Alasan Kenapa SJ ini Batal untuk Dikirim'),
+                                  actions: <Widget>[
+                                    TextFormField(
+                                      maxLines: 10,
+                                    ),
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text('Ok'))
+                                  ],
+                                );
+                              },
+                            );
                           },
-                          child: textController.text.isNotEmpty
-                              ? Text(
-                                  'Scan SN dan Identifier',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold),
-                                )
-                              : Text('Getting current location..',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold)))),
+                          child: Text('Show Dialog'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

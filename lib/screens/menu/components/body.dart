@@ -13,28 +13,6 @@ import 'package:sqflite/sqflite.dart';
 import '../../turun_barang_online/turun_barang_online.dart';
 import '../../turun_barang_online/turun_barang_online_history.dart';
 
-class ParentItem {
-  final String title;
-  final List<ChildItem> childList;
-  final String route;
-
-  ParentItem(this.title, this.childList, [this.route = '']);
-}
-
-class ChildItem {
-  final String title;
-  final String route;
-
-  ChildItem(this.title, [this.route = '']);
-}
-
-List<ParentItem> parentList = [
-  ParentItem(
-    "Dashboard",
-    [],
-  ),
-];
-
 class Body extends StatefulWidget {
   Body({Key? key}) : super(key: key);
 
@@ -52,17 +30,18 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
+    // THESE FUNCTION ARE HEAVY AND UNSTABLE
+    // REFACTOR WITH SCROLLING ALGORITHM SOON
+    // GET DATA SJ LIMIT 20
+    // GET ITEM SN ONLY WHEN CLICKED AT SJ
+    // THEN INSERT
     syncDataTap().then((value) => getsyncDataTapInsert().then((value) => null));
 
     _tabController = TabController(length: 2, vsync: this); // Number of tabs
   }
 
   Future syncDataTap() async {
-   
-
     try {
-
       final e = await DatabaseHelper.instance.getRecordTugasDT();
       print('common no ORder list W ${e}');
       for (var i in e) {
@@ -70,7 +49,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
             "'" + i['nomor_order'].toString().replaceAll(' ', '') + "',";
       }
       kumpulanNoSJStr += "''";
-
     } catch (error) {
       print('Error: $error');
     }
@@ -149,25 +127,29 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       }
       await taskNoLongerAssigned();
       DatabaseHelper.instance.getRecordTugasDT2().then((value) {
-        print('TASK DATA TODAY ${value}');
-        setState(() {
-          for (var i = 0; i < recordTugas.length; i++) {
-            recordTugas[i]['selected'] = false;
-          }
-          recordTugas = value.map((item) {
-            return {
-              ...item,
-              'selected': false,
-            };
-          }).toList();
-        });
-        DatabaseHelper.instance.getHistorySuratJalan().then((value) {
+        if (mounted) {
           setState(() {
-            recordTugasDone = value;
+            for (var i = 0; i < recordTugas.length; i++) {
+              print('${recordTugas[i]} LE RECORD');
+              recordTugas[i]['selected'] = false;
+            }
+            recordTugas = value.map((item) {
+              return {
+                ...item,
+                'selected': false,
+              };
+            }).toList();
           });
+          DatabaseHelper.instance.getHistorySuratJalan().then((value) {
+            if (mounted) {
+              setState(() {
+                recordTugasDone = value;
+              });
 
-          SJDalamPengiriman(value);
-        });
+              SJDalamPengiriman(value);
+            }
+          });
+        }
       });
     } catch (error) {
       print('Error: $error');
@@ -260,17 +242,19 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
               InkWell(
                 onTap: () {
                   DatabaseHelper.instance.getRecordTugas().then((value) {
-                    setState(() {
-                      for (var i = 0; i < recordTugas.length; i++) {
-                        recordTugas[i]['selected'] = false;
-                      }
-                      recordTugas = value.map((item) {
-                        return {
-                          ...item,
-                          'selected': false,
-                        };
-                      }).toList();
-                    });
+                    if (mounted) {
+                      setState(() {
+                        for (var i = 0; i < recordTugas.length; i++) {
+                          recordTugas[i]['selected'] = false;
+                        }
+                        recordTugas = value.map((item) {
+                          return {
+                            ...item,
+                            'selected': false,
+                          };
+                        }).toList();
+                      });
+                    }
                   });
                 },
                 child: Text(
@@ -326,6 +310,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                   if (isRecordDone) {
                                     return SizedBox.shrink();
                                   }
+
                                   return ListTile(
                                     subtitle: Column(
                                       crossAxisAlignment:
@@ -363,6 +348,15 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                           width: double.infinity,
                           child: ElevatedButton(
                               onPressed: () {
+                                if (recordTugas.length > 0) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'Masih Ada Surat Jalan Belum Selesai'),
+                                    ),
+                                  );
+                                  return;
+                                }
                                 Navigator.pushNamed(
                                     context, ScanPengirimanScreen.routeName);
                               },
