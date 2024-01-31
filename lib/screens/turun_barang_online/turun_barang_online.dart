@@ -58,7 +58,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
             });
           }
         });
-        SJDalamPengiriman();
+        SJDalamPengiriman("17");
       }
     });
   }
@@ -226,22 +226,27 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
             "tapper": username
           };
           print('le wo ${element['nomor_order']}');
-          DatabaseHelper.instance
-              .insertHistorySuratJalan(data)
-              .then((value) => {_postRequestSJDone(element['nomor_order'])});
+          DatabaseHelper.instance.insertHistorySuratJalan(data).then((value) =>
+              {
+                _postRequestSJDone(element['nomor_order']),
+                SJDalamPengiriman("2")
+              });
         }
       }
     }
   }
 
-  Future SJDalamPengiriman() async {
+  Future SJDalamPengiriman(String statusval) async {
     final TurunBarangOnlineController ctl =
         Get.put(TurunBarangOnlineController());
 
     final url =
         Uri.parse(kURL_ORIGIN + 'pengiriman/update-pengiriman-from-mobile');
     final sj = ctl.noSuratJalanSelected.value.toString().replaceAll(' ', '');
-    Map<String, dynamic> requestBody = {"sj": "'" + sj + "'", "status": "17"};
+    Map<String, dynamic> requestBody = {
+      "sj": "'" + sj + "'",
+      "status": statusval
+    };
 
     try {
       final response = await http.post(

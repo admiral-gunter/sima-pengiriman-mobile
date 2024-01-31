@@ -193,9 +193,7 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
                     "tapper": username
                   };
 
-                  // DatabaseHelper.instance.insertBarangTurun(dataTurun);
                   await ctr.insertDataTurun(dataTurun);
-                  // await getsyncDataTapInsert();
                   await syncDataTap();
 
                   AudioPlayer().play(AssetSource('audio/success.mp3'));

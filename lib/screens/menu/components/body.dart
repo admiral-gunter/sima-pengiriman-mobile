@@ -65,14 +65,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     Map<String, dynamic> requestBody = {"data": dataList};
 
     try {
-      // final e = await DatabaseHelper.instance.getRecordTugasDT();
       final username = await SharedToken.univGetterString('username');
-
-      // for (var i in e) {
-      //   kumpulanNoSJStr +=
-      //       "'" + i['nomor_order'].toString().replaceAll(' ', '') + "',";
-      // }
-      // kumpulanNoSJStr += "''";
 
       final turunBarang = await DatabaseHelper.instance.getBarangTurunDT();
       for (var i in turunBarang) {
