@@ -80,7 +80,7 @@ class _DirectionState extends State<Direction> {
 
   void setPolylines() async {
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-        "AIzaSyCYVM7Kbcfl1-06m6DGq2P9M-wRuCcl0kQ",
+        "AIzaSyAuTc1cEdpSMnqduAMMAdtNAzp2jiE5Kdw",
         PointLatLng(currentLocation.latitude, currentLocation.longitude),
         PointLatLng(
             destinationLocation.latitude, destinationLocation.longitude));
