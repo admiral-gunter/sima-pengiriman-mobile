@@ -67,6 +67,8 @@ dependencies:
   url_launcher: ^6.2.4
   flutter_polyline_points: ^1.0.0
   auto_size_text_field: ^2.2.2
+  geolocator: ^10.1.0
+  google_maps_utils: ^2.0.0+1
 dev_dependencies:
   flutter_test:
     sdk: flutter

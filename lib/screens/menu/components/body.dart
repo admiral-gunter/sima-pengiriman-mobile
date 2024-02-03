@@ -102,7 +102,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
             'supir': item['creator'],
             'tapper': item['creator'],
           };
-          if (item['status'] == 'COMPLETED') {
+          if (item['status'] == 'COMPLETED' || item['status'] == 'CANCELLED') {
             final e = await DatabaseHelper.instance
                 .insertHistorySuratJalan((newITem));
           } else {
@@ -367,7 +367,15 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                         itemBuilder: (BuildContext context, int index) {
                           return ListTile(
                             title: Text(
-                                '${recordTugasDone[index]['nomor_order']}'),
+                                '${recordTugasDone[index]['nomor_order']} '),
+                            trailing: Text(
+                              recordTugasDone[index]['status'] == 'batal_kirim'
+                                  ? '${recordTugasDone[index]['status']}'
+                                  : '', // Empty text if the condition is false
+                              style: TextStyle(color: Colors.red
+                                  // Your text style here
+                                  ),
+                            ),
                             onTap: () async {
                               var selectedTugas = recordTugasDone[index];
                               await ctl.getItemsByNoSJ([selectedTugas]);

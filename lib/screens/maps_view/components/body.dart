@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
+import 'package:geolocator/geolocator.dart';
 
 const LatLng SOURCE_LOCATION = LatLng(13.652720, 100.493635);
 const LatLng DEST_LOCATION = LatLng(13.6640896, 100.4357021);
@@ -22,11 +23,40 @@ class _DirectionState extends State<Direction> {
   List<LatLng> polylineCoordinates = [];
   late PolylinePoints polylinePoints;
 
+  final LocationSettings locationSettings = LocationSettings(
+    accuracy: LocationAccuracy.high,
+    distanceFilter: 100,
+  );
   @override
   void initState() {
     super.initState();
     polylinePoints = PolylinePoints();
     this.setInitialLocation();
+    StreamSubscription<Position> positionStream =
+        Geolocator.getPositionStream(locationSettings: locationSettings)
+            .listen((Position? position) {
+      // do what you want to do with the position here
+      setState(() {
+        currentLocation = LatLng(position!.latitude, position!.longitude);
+
+        if (SOURCE_LOCATION.latitude != currentLocation.latitude &&
+            SOURCE_LOCATION.longitude != currentLocation.longitude) {
+          _markers
+              .removeWhere((marker) => marker.markerId.value == 'sourcePin');
+          _markers.add(Marker(
+            markerId: MarkerId('sourcePin'),
+            position: currentLocation!,
+            icon: BitmapDescriptor.defaultMarker,
+          ));
+        }
+        // _markers.removeWhere((marker) => marker.markerId.value == 'sourcePin');
+        // _markers.add(Marker(
+        //   markerId: MarkerId('sourcePin'),
+        //   position: currentLocation!,
+        //   icon: BitmapDescriptor.defaultMarker,
+        // ));
+      });
+    });
   }
 
   void setInitialLocation() {
@@ -94,7 +124,7 @@ class _DirectionState extends State<Direction> {
         _polylines.add(Polyline(
             width: 10,
             polylineId: PolylineId('polyLine'),
-            color: Color(0xFF08A5CB),
+            color: Color.fromARGB(255, 0, 43, 11),
             points: polylineCoordinates));
       });
     }

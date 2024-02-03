@@ -25,7 +25,7 @@ class _BodyV2State extends State<BodyV2> {
   bool _passwordVisible = false;
   @override
   void initState() {
-    // DatabaseHelper.instance.dropDatabase();
+    DatabaseHelper.instance.emptyAllTables();
     super.initState();
   }
 

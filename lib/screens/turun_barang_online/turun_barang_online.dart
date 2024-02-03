@@ -27,7 +27,7 @@ class TurunBarangOnlineScreen extends StatefulWidget {
 
 class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   Location location = Location();
-
+  bool sjDibatalkan = false;
   late double latitude;
 
   late double longitude;
@@ -409,11 +409,13 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                           child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                   backgroundColor:
-                                      textController.text.isNotEmpty
+                                      textController.text.isNotEmpty &&
+                                              !sjDibatalkan
                                           ? Colors.blue
                                           : Colors.blue[200]),
                               onPressed: () {
-                                if (textController.text.isNotEmpty) {
+                                if (textController.text.isNotEmpty &&
+                                    !sjDibatalkan) {
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
@@ -440,6 +442,15 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.red, // Background color
+                            onPrimary: Colors.white, // Text color
+                            elevation: 5, // Elevation (shadow)
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  25), // Button border radius
+                            ),
+                          ),
                           onPressed: () {
                             // Show dialog when the button is pressed
                             showDialog(
@@ -448,13 +459,18 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                 return AlertDialog(
                                   title: Text('SJ Batal Kirim'),
                                   content: Text(
-                                      'Sebutkan Alasan Kenapa SJ ini Batal untuk Dikirim'),
+                                      'Sebutkan Alasan untuk SJ ${ctl.nomorSJ} Dibatalkan'),
                                   actions: <Widget>[
                                     TextFormField(
+                                      controller: ctl.alasanBataltextController,
                                       maxLines: 10,
                                     ),
                                     TextButton(
-                                        onPressed: () {
+                                        onPressed: () async {
+                                          await ctl.SJBatalKirim();
+                                          setState(() {
+                                            sjDibatalkan = true;
+                                          });
                                           Navigator.pop(context);
                                         },
                                         child: Text('Ok'))
@@ -463,7 +479,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                               },
                             );
                           },
-                          child: Text('Show Dialog'),
+                          child: Text('Batal/Gagal Kirim'),
                         ),
                       ),
                     ],

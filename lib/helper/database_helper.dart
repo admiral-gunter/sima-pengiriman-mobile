@@ -224,7 +224,7 @@ class DatabaseHelper {
         creator TEXT,
         date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         date_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        status TEXT CHECK(status IN ('unvalidasi', 'validasi')) DEFAULT 'unvalidasi' NOT NULL,
+        status TEXT CHECK(status IN ('unvalidasi', 'validasi', 'batal_kirim')) DEFAULT 'unvalidasi' NOT NULL,
         customer_nama TEXT,
         customer_notelp TEXT,
         supir TEXT,
@@ -253,6 +253,27 @@ class DatabaseHelper {
       await db.insert('history_tugas_surat_jalan', data);
       return {'result': true, 'message': 'Data inserted successfully.'};
     } catch (e) {
+      return {'result': false, 'message': 'Failed to insert data: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> insertHistorySuratJalanBatal(
+      Map<String, dynamic> data) async {
+    final db = await instance.database;
+    try {
+      final dataInsert = {
+        "nomor_order": data['no_surat_jalan'],
+        "nama_toko": "NONE",
+        "creator": data['creator'],
+        "status": 'batal_kirim',
+        "supir": data['creator'],
+        "tapper": data['creator']
+      };
+
+      await db.insert('history_tugas_surat_jalan', dataInsert);
+      return {'result': true, 'message': 'Data inserted successfully.'};
+    } catch (e) {
+      print('Failed to insert data: $e');
       return {'result': false, 'message': 'Failed to insert data: $e'};
     }
   }
@@ -547,10 +568,8 @@ class DatabaseHelper {
   }
 
   void dropDatabase() async {
-    // Specify the path to your database file
     String databasePath = join(await getDatabasesPath(), 'my_database.db');
 
-    // Delete the entire database
     await deleteDatabase(databasePath);
   }
 

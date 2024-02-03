@@ -1,23 +1,26 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:http/http.dart' as http;
+import 'package:sqflite/sqflite.dart';
 
 import '../../../shared_preferences/shared_token.dart';
 
 class TurunBarangOnlineController extends GetxController {
   RxList<dynamic> listSJ = [].obs;
-
   RxList<dynamic> listSelected = [].obs;
   RxList<dynamic> listInv = [].obs;
   RxString tapper = "".obs;
   RxString nomorSJ = "".obs;
   RxMap<String, dynamic> coordinate = {'lat': '', 'long': ''}.obs;
-
   RxMap<String, dynamic> suratJalanCredential =
       {'nama_toko': '', 'no_surat_jalan': ''}.obs;
+  final TextEditingController alasanBataltextController =
+      TextEditingController();
+
   void getListItems(List<dynamic> items) {
     // List mergedItems = items.map((item) => item['items']).toList();
     for (var i = 0; i < items.length; i++) {
@@ -140,6 +143,38 @@ class TurunBarangOnlineController extends GetxController {
         print('POST request failed with status: ${response.statusCode}');
         print(response.body);
       }
+    } catch (error) {
+      print('Error making POST request: $error');
+    }
+  }
+
+  Future SJBatalKirim() async {
+    final url = Uri.parse(kURL_ORIGIN + 'pengiriman/mobile-batal-kirim');
+    final username = await SharedToken.univGetterString('username');
+    Map<String, dynamic> requestBody = {
+      "no_surat_jalan": nomorSJ.value,
+      "alasan": alasanBataltextController.text,
+      "creator": username
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: requestBody,
+      );
+
+      if (response.statusCode == 200) {
+        print('POST request successful! Response:');
+        print(response.body);
+        await DatabaseHelper.instance.insertHistorySuratJalanBatal(requestBody);
+        // await DatabaseHelper.instance
+        //     .deleteRecordTugasByNomorOrder(nomorSJ.value);
+      } else {
+        print('POST request failed with status: ${response.statusCode}');
+        print(response.body);
+      }
+      alasanBataltextController.text = '';
     } catch (error) {
       print('Error making POST request: $error');
     }

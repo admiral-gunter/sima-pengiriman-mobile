@@ -102,7 +102,7 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
     final url =
         Uri.parse(kURL_ORIGIN + 'pengiriman/update-pengiriman-from-mobile');
     final sj = data.toString().replaceAll(' ', '');
-    Map<String, dynamic> requestBody = {"sn": "'" + sj + "'", "status": "12"};
+    Map<String, dynamic> requestBody = {"sj": "'" + sj + "'", "status": "12"};
 
     try {
       final response = await http.post(
