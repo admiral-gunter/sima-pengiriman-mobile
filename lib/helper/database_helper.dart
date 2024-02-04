@@ -81,7 +81,7 @@ class DatabaseHelper {
         creator TEXT,
         date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         date_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        status TEXT CHECK(status IN ('unvalidasi', 'validasi')) DEFAULT 'unvalidasi' NOT NULL,
+        status TEXT,
         lso TEXT
     )
     ''');
@@ -96,7 +96,7 @@ class DatabaseHelper {
         creator TEXT,
         date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         date_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        status TEXT CHECK(status IN ('unvalidasi', 'validasi')) DEFAULT 'unvalidasi' NOT NULL,
+        status TEXT ,
         customer_nama TEXT,
         customer_notelp TEXT,
         tipe TEXT,
@@ -187,12 +187,23 @@ class DatabaseHelper {
         creator TEXT,
         date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         date_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        status TEXT CHECK(status IN ('unvalidasi', 'validasi')) DEFAULT 'unvalidasi' NOT NULL,
+        status TEXT ,
         customer_nama TEXT,
         customer_notelp TEXT,
         supir TEXT,
         items TEXT,
         qty_sum TEXT
+    )
+    ''');
+
+    await db.execute('''CREATE TABLE record_tugas_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nomor_order_surat_jalan TEXT,
+        status_id TEXT,
+        status_nama TEXT,
+        keterangan TEXT,
+        date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        date_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''');
 
@@ -209,7 +220,7 @@ class DatabaseHelper {
         creator TEXT,
         date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         date_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        status TEXT CHECK(status IN ('unvalidasi', 'validasi')) DEFAULT 'unvalidasi' NOT NULL,
+        status TEXT ,
         customer_nama TEXT,
         customer_notelp TEXT,
         supir TEXT,
@@ -224,7 +235,7 @@ class DatabaseHelper {
         creator TEXT,
         date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         date_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        status TEXT CHECK(status IN ('unvalidasi', 'validasi', 'batal_kirim')) DEFAULT 'unvalidasi' NOT NULL,
+        status TEXT,
         customer_nama TEXT,
         customer_notelp TEXT,
         supir TEXT,
@@ -253,6 +264,7 @@ class DatabaseHelper {
       await db.insert('history_tugas_surat_jalan', data);
       return {'result': true, 'message': 'Data inserted successfully.'};
     } catch (e) {
+      print('Failed to insert data: $e');
       return {'result': false, 'message': 'Failed to insert data: $e'};
     }
   }
@@ -265,7 +277,7 @@ class DatabaseHelper {
         "nomor_order": data['no_surat_jalan'],
         "nama_toko": "NONE",
         "creator": data['creator'],
-        "status": 'batal_kirim',
+        "status": 'pending_batal_kirim',
         "supir": data['creator'],
         "tapper": data['creator']
       };
@@ -302,11 +314,19 @@ class DatabaseHelper {
     //   orderBy: 'date_added DESC',
     // );
     return await db.rawQuery('''
-    SELECT record_tugas.* FROM record_tugas
+    SELECT record_tugas.*, record_tugas_history.*
+    FROM record_tugas
     LEFT JOIN history_tugas_surat_jalan
-    ON record_tugas.nomor_order = history_tugas_surat_jalan.nomor_order
+        ON record_tugas.nomor_order = history_tugas_surat_jalan.nomor_order
+    LEFT JOIN (
+        SELECT *
+        FROM record_tugas_history
+        ORDER BY date_added DESC
+        LIMIT 1
+    ) AS record_tugas_history
+        ON record_tugas_history.nomor_order_surat_jalan = record_tugas.nomor_order
     WHERE history_tugas_surat_jalan.nomor_order IS NULL
-    ORDER BY record_tugas.date_added DESC
+    ORDER BY record_tugas.date_added DESC;
   ''');
   }
 
@@ -407,6 +427,7 @@ class DatabaseHelper {
           conflictAlgorithm: ConflictAlgorithm.ignore);
       return {'result': true, 'message': 'Data inserted successfully.'};
     } catch (e) {
+      print('Failed to insert data: $e');
       return {'result': false, 'message': 'Failed to insert data: $e'};
     }
   }
@@ -431,6 +452,18 @@ class DatabaseHelper {
     final db = await instance.database;
     try {
       await db.insert('record_tugas', data);
+      return {'result': true, 'message': 'Data inserted successfully.'};
+    } catch (e) {
+      return {'result': false, 'message': 'Failed to insert data: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> insertRecordTugasHistory(
+      Map<String, dynamic> data) async {
+    final db = await instance.database;
+
+    try {
+      await db.insert('record_tugas_history', data);
       return {'result': true, 'message': 'Data inserted successfully.'};
     } catch (e) {
       return {'result': false, 'message': 'Failed to insert data: $e'};

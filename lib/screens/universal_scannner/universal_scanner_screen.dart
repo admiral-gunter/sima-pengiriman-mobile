@@ -63,6 +63,50 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
     }
   }
 
+  Future syncDataTapCompletion() async {
+    final TurunBarangOnlineController ctr =
+        Get.put(TurunBarangOnlineController());
+    final url = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-data-pengiriman');
+    final username = await SharedToken.univGetterString('username');
+    List dataList = await DatabaseHelper.instance.getDataTapForToday();
+
+    Map<String, dynamic> requestBody = {"data": ctr.nomorSJ.value};
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: {"no_sj": ctr.nomorSJ.value},
+      );
+
+      if (response.statusCode == 200) {
+        for (var element in ctr.listSJ) {
+          // final item = jsonEncode(element['nomor_order']);
+          // noSj += item + ',';
+          final data = {
+            "nomor_order": element['nomor_order'],
+            "nama_toko": element['toko'],
+            "creator": username,
+            "status": "unvalidasi",
+            "customer_nama": "DUMMY",
+            "customer_notelp": "DUMMY",
+            "supir": username,
+            "tapper": username
+          };
+          print('le wo ${element['nomor_order']}');
+          await DatabaseHelper.instance.insertHistorySuratJalan(data);
+        }
+        print('Request successful');
+        print('Response body: ${response.body}');
+      } else {
+        print('Request failed with status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (error) {
+      print('Error: $error');
+    }
+  }
+
   Future<void> _dialogBuilder(BuildContext context, String msg) {
     return showDialog<void>(
       barrierDismissible: false,
@@ -96,6 +140,37 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
         );
       },
     );
+  }
+
+  Future SJDalamPengiriman(String statusval) async {
+    final TurunBarangOnlineController ctl =
+        Get.put(TurunBarangOnlineController());
+
+    final url =
+        Uri.parse(kURL_ORIGIN + 'pengiriman/update-pengiriman-from-mobile');
+    final sj = ctl.noSuratJalanSelected.value.toString().replaceAll(' ', '');
+    Map<String, dynamic> requestBody = {
+      "sj": "'" + sj + "'",
+      "status": statusval
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: requestBody,
+      );
+
+      if (response.statusCode == 200) {
+        print('POST request successful! Response:');
+        print(response.body);
+      } else {
+        print('POST request failed with status: ${response.statusCode}');
+        print(response.body);
+      }
+    } catch (error) {
+      print('Error making POST request: $error');
+    }
   }
 
   @override
@@ -195,6 +270,11 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
 
                   await ctr.insertDataTurun(dataTurun);
                   await syncDataTap();
+
+                  if (ctr.barangTap.value == ctr.barangHarusTap.value) {
+                    await syncDataTapCompletion();
+                    await SJDalamPengiriman("2");
+                  }
 
                   AudioPlayer().play(AssetSource('audio/success.mp3'));
 

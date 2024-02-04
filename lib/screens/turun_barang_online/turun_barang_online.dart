@@ -28,12 +28,11 @@ class TurunBarangOnlineScreen extends StatefulWidget {
 class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   Location location = Location();
   bool sjDibatalkan = false;
-  late double latitude;
 
+  late double latitude;
   late double longitude;
 
   TextEditingController textController = TextEditingController();
-
   TextEditingController TapperTextController = TextEditingController();
 
   String username = '';
@@ -46,11 +45,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     _getCountProduct();
     SharedToken.univGetterString('username').then((value) {
       if (mounted) {
-        // setState(() {
-        //   TapperTextController.text = value;
-        //   username = value;
-        // });
-
         SharedToken.univGetterString('no_plat').then((no_plat) {
           if (mounted) {
             setState(() {
@@ -144,10 +138,8 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           .toList();
 
       if (productExists.isNotEmpty) {
-        // Product already exists in the temporary list, add 'sn' to the existing 'sn' list
         productExists[0]['sn'].add(element['sn']);
       } else {
-        // Product doesn't exist in the temporary list, add a new entry
         listBarangTappedTemp.add({
           'product_name': element['product_name'],
           'sn': [element['sn']]
@@ -213,8 +205,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
 
       if (matchingQuantities == totalBarangHarusDiTap) {
         for (var element in ctl.listSJ) {
-          // final item = jsonEncode(element['nomor_order']);
-          // noSj += item + ',';
           final data = {
             "nomor_order": element['nomor_order'],
             "nama_toko": element['toko'],
@@ -323,8 +313,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
             child: Column(
-              // spacing: 20,
-              // runSpacing: 20,
               children: [
                 TextFormField(
                   controller: TapperTextController,
@@ -457,9 +445,9 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: Text('SJ Batal Kirim'),
+                                  title: Text('SJ Pending Kirim'),
                                   content: Text(
-                                      'Sebutkan Alasan untuk SJ ${ctl.nomorSJ} Dibatalkan'),
+                                      'Sebutkan Alasan untuk SJ ${ctl.nomorSJ} Pending'),
                                   actions: <Widget>[
                                     TextFormField(
                                       controller: ctl.alasanBataltextController,

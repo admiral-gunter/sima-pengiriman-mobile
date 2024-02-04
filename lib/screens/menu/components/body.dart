@@ -43,7 +43,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   Future syncDataTap() async {
     try {
       final e = await DatabaseHelper.instance.getRecordTugasDT();
-      print('common no ORder list W ${e}');
+      // print('common no ORder list W ${e}');
       for (var i in e) {
         kumpulanNoSJStr +=
             "'" + i['nomor_order'].toString().replaceAll(' ', '') + "',";
@@ -67,14 +67,14 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     try {
       final username = await SharedToken.univGetterString('username');
 
-      final turunBarang = await DatabaseHelper.instance.getBarangTurunDT();
-      for (var i in turunBarang) {
-        kumpulanNoSnStr += "'" + i['sn'] + "',";
-      }
+      // final turunBarang = await DatabaseHelper.instance.getBarangTurunDT();
+      // for (var i in turunBarang) {
+      //   kumpulanNoSnStr += "'" + i['sn'] + "',";
+      // }
       kumpulanNoSnStr += "''";
       final dataSend = {
         "supir": username,
-        "kumpulan_sj_str": kumpulanNoSJStr,
+        "kumpulan_sj_str": "''",
         "kumpulan_no_sn_str": kumpulanNoSnStr,
         "supir_actual": username,
       };
@@ -86,9 +86,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       );
       if (response.statusCode == 200) {
         final result = jsonDecode(response.body);
-        for (var item in result['content2']) {
-          DatabaseHelper.instance.insertBarangTurun(item);
-        }
 
         for (var item in result['tapped_sj']) {
           final newITem = {
@@ -102,12 +99,24 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
             'supir': item['creator'],
             'tapper': item['creator'],
           };
-          if (item['status'] == 'COMPLETED' || item['status'] == 'CANCELLED') {
+          if (item['status'] == 'COMPLETED') {
+            print('TAPPED SJ :  ${item}');
             final e = await DatabaseHelper.instance
                 .insertHistorySuratJalan((newITem));
           } else {
+            final Map<String, dynamic> tugasItem = {
+              'nomor_order_surat_jalan': item['nomor_order'],
+              'status_id': item['status_id'],
+              'status_nama': item['status_nama'],
+              'keterangan': item['keterangan']
+            };
+            await DatabaseHelper.instance.insertRecordTugasHistory(tugasItem);
+
             item.remove('id');
             item.remove('status');
+            item.remove('status_id');
+            item.remove('status_nama');
+            item.remove('keterangan');
 
             final e = await DatabaseHelper.instance.insertRecordTugas(item);
           }
@@ -120,19 +129,22 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       }
       await taskNoLongerAssigned();
       DatabaseHelper.instance.getRecordTugasDT2().then((value) {
+        print('recordn tugas gan ${value}');
         if (mounted) {
-          setState(() {
-            for (var i = 0; i < recordTugas.length; i++) {
-              print('${recordTugas[i]} LE RECORD');
-              recordTugas[i]['selected'] = false;
-            }
-            recordTugas = value.map((item) {
-              return {
-                ...item,
-                'selected': false,
-              };
-            }).toList();
-          });
+          if (value.length > 0) {
+            setState(() {
+              for (var i = 0; i < recordTugas.length; i++) {
+                print('${recordTugas[i]} LE RECORD');
+                recordTugas[i]['selected'] = false;
+              }
+              recordTugas = value.map((item) {
+                return {
+                  ...item,
+                  'selected': false,
+                };
+              }).toList();
+            });
+          }
           DatabaseHelper.instance.getHistorySuratJalan().then((value) {
             if (mounted) {
               setState(() {
@@ -145,7 +157,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         }
       });
     } catch (error) {
-      print('Error: $error');
+      print('Err: $error');
     }
   }
 
@@ -235,19 +247,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
               InkWell(
                 onTap: () {
                   DatabaseHelper.instance.getRecordTugas().then((value) {
-                    if (mounted) {
-                      setState(() {
-                        for (var i = 0; i < recordTugas.length; i++) {
-                          recordTugas[i]['selected'] = false;
-                        }
-                        recordTugas = value.map((item) {
-                          return {
-                            ...item,
-                            'selected': false,
-                          };
-                        }).toList();
-                      });
-                    }
+                    if (mounted) {}
                   });
                 },
                 child: Text(
@@ -314,14 +314,53 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                       ],
                                     ),
                                     trailing: Text(
-                                      'Incompleted',
-                                      style: TextStyle(
-                                          color: Colors.orange,
-                                          fontWeight: FontWeight.bold),
+                                      recordTugas[index]['status_id'] == '21' ||
+                                              recordTugas[index]['status_id'] ==
+                                                  '23'
+                                          ? '${recordTugas[index]['status_nama']}'
+                                          : 'Incompleted ',
+                                      style: recordTugas[index]['status_id'] ==
+                                                  '21' ||
+                                              recordTugas[index]['status_id'] ==
+                                                  '23'
+                                          ? TextStyle(
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.bold,
+                                            )
+                                          : TextStyle(
+                                              color: Colors.orange,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                     ),
+                                    // trailing: Text(
+                                    //   'Incompleted',
+                                    //   style: TextStyle(
+                                    //       color: Colors.orange,
+                                    //       fontWeight: FontWeight.bold),
+                                    // ),
                                     title:
                                         Text(recordTugas[index]["nomor_order"]),
                                     onTap: () async {
+                                      if (recordTugas[index]['status_id'] ==
+                                              '21' ||
+                                          recordTugas[index]['status_id'] ==
+                                              '23') {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                                'Hubungi Admin untuk pembukaan Surat Jalan'),
+                                            duration: Duration(seconds: 2),
+                                            action: SnackBarAction(
+                                              label: 'Close',
+                                              onPressed: () {
+                                                // Code to execute when 'Close' is pressed
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
                                       var selectedTugas = recordTugas[index];
                                       await ctl.getItemsByNoSJ([selectedTugas]);
                                       Navigator.pushNamed(context,
@@ -368,14 +407,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                           return ListTile(
                             title: Text(
                                 '${recordTugasDone[index]['nomor_order']} '),
-                            trailing: Text(
-                              recordTugasDone[index]['status'] == 'batal_kirim'
-                                  ? '${recordTugasDone[index]['status']}'
-                                  : '', // Empty text if the condition is false
-                              style: TextStyle(color: Colors.red
-                                  // Your text style here
-                                  ),
-                            ),
                             onTap: () async {
                               var selectedTugas = recordTugasDone[index];
                               await ctl.getItemsByNoSJ([selectedTugas]);

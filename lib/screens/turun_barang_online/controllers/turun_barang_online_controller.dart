@@ -18,6 +18,10 @@ class TurunBarangOnlineController extends GetxController {
   RxMap<String, dynamic> coordinate = {'lat': '', 'long': ''}.obs;
   RxMap<String, dynamic> suratJalanCredential =
       {'nama_toko': '', 'no_surat_jalan': ''}.obs;
+
+  RxInt barangTap = 0.obs;
+  RxInt barangHarusTap = 0.obs;
+
   final TextEditingController alasanBataltextController =
       TextEditingController();
 
@@ -32,8 +36,6 @@ class TurunBarangOnlineController extends GetxController {
 
   Future<dynamic> insertDataTurun(Map<String, dynamic> data) async {
     try {
-      // data['lat'] = coordinate['lat'];
-      // data['long'] = coordinate['long'];
       var dataInsert = data;
       dataInsert['lat'] = coordinate['lat'];
       dataInsert['long'] = coordinate['long'];
@@ -41,6 +43,7 @@ class TurunBarangOnlineController extends GetxController {
       dataInsert['tapper'] = tapper;
 
       await DatabaseHelper.instance.insertBarangTurun(data);
+      barangTap.value = barangTap.value + 1;
     } catch (e) {
       print('ERROR $e');
       return e;
@@ -67,8 +70,6 @@ class TurunBarangOnlineController extends GetxController {
     String noSj = '';
 
     for (var element in listNoSJ) {
-      // final item = jsonEncode(element['nomor_order']);
-      // noSj += item + ',';
       nomorSJ.value = element['nomor_order'];
       final item = {
         'nomor_order': element['nomor_order'],
@@ -108,11 +109,20 @@ class TurunBarangOnlineController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        print('POST request successful $urli');
         var resp = jsonDecode(response.body);
-        print(resp['content']);
         listInv.addAll(resp['content']);
-        // print('Response body: ${response.body}');
+
+        final cntmusTap = resp['content'] as List;
+        final cntTapped = resp['content2'] as List;
+
+        barangHarusTap.value = cntmusTap.length;
+        barangTap.value = cntTapped.length;
+
+        for (var element in resp['content2']) {
+          await DatabaseHelper.instance.insertBarangTurun(element);
+        }
+        print(
+            'barang Tap = ${barangHarusTap.value} \n tapped ${barangTap.value}');
       } else {
         print('POST request failed with status: ${response.statusCode}');
       }
@@ -149,7 +159,8 @@ class TurunBarangOnlineController extends GetxController {
   }
 
   Future SJBatalKirim() async {
-    final url = Uri.parse(kURL_ORIGIN + 'pengiriman/mobile-batal-kirim');
+    final url =
+        Uri.parse(kURL_ORIGIN + 'pengiriman/mobile-pending-batal-kirim');
     final username = await SharedToken.univGetterString('username');
     Map<String, dynamic> requestBody = {
       "no_surat_jalan": nomorSJ.value,
@@ -167,7 +178,7 @@ class TurunBarangOnlineController extends GetxController {
       if (response.statusCode == 200) {
         print('POST request successful! Response:');
         print(response.body);
-        await DatabaseHelper.instance.insertHistorySuratJalanBatal(requestBody);
+        // await DatabaseHelper.instance.insertHistorySuratJalanBatal(requestBody);
         // await DatabaseHelper.instance
         //     .deleteRecordTugasByNomorOrder(nomorSJ.value);
       } else {

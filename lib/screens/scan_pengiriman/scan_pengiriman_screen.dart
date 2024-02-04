@@ -140,7 +140,6 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
                   List<String> noOrderNitem = stringList[1].split("|");
                   final username =
                       await SharedToken.univGetterString('username');
-                  // noOrder =
                   DateTime now = DateTime.now();
                   if (noOrder.isNotEmpty) {
                     Map<String, dynamic> data = {
