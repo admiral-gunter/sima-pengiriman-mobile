@@ -199,7 +199,7 @@ class DatabaseHelper {
     await db.execute('''CREATE TABLE record_tugas_history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nomor_order_surat_jalan TEXT,
-        status_id TEXT,
+        status_id INTEGER,
         status_nama TEXT,
         keterangan TEXT,
         date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -261,7 +261,8 @@ class DatabaseHelper {
       Map<String, dynamic> data) async {
     final db = await instance.database;
     try {
-      await db.insert('history_tugas_surat_jalan', data);
+      await db.insert('history_tugas_surat_jalan', data,
+          conflictAlgorithm: ConflictAlgorithm.ignore);
       return {'result': true, 'message': 'Data inserted successfully.'};
     } catch (e) {
       print('Failed to insert data: $e');
@@ -314,18 +315,29 @@ class DatabaseHelper {
     //   orderBy: 'date_added DESC',
     // );
     return await db.rawQuery('''
-    SELECT record_tugas.*, record_tugas_history.*
-    FROM record_tugas
-    LEFT JOIN history_tugas_surat_jalan
-        ON record_tugas.nomor_order = history_tugas_surat_jalan.nomor_order
-    LEFT JOIN (
-        SELECT *
+    SELECT 
+    record_tugas.*,
+    record_tugas_history.status_id,
+    record_tugas_history.status_nama,
+    record_tugas_history.keterangan
+FROM 
+    record_tugas
+LEFT JOIN 
+    history_tugas_surat_jalan
+    ON record_tugas.nomor_order = history_tugas_surat_jalan.nomor_order
+LEFT JOIN 
+    record_tugas_history
+    ON record_tugas_history.nomor_order_surat_jalan = record_tugas.nomor_order
+    AND record_tugas_history.date_added = (
+        SELECT MAX(date_added)
         FROM record_tugas_history
-        ORDER BY date_added DESC
-        LIMIT 1
-    ) AS record_tugas_history
-        ON record_tugas_history.nomor_order_surat_jalan = record_tugas.nomor_order
-    ORDER BY record_tugas.date_added DESC;
+        WHERE nomor_order_surat_jalan = record_tugas.nomor_order
+    )
+WHERE 
+    history_tugas_surat_jalan.nomor_order IS NULL
+ORDER BY 
+    record_tugas.date_added DESC;
+
   ''');
   }
 
@@ -466,6 +478,17 @@ class DatabaseHelper {
       return {'result': true, 'message': 'Data inserted successfully.'};
     } catch (e) {
       return {'result': false, 'message': 'Failed to insert data: $e'};
+    }
+  }
+
+  Future<dynamic> getRecordTugasHistory() async {
+    final db = await instance.database;
+
+    try {
+      return await db.query('record_tugas_history');
+      // return {'result': true, 'message': 'Data inserted successfully.'};
+    } catch (e) {
+      print(e);
     }
   }
 

@@ -431,7 +431,9 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                         width: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            primary: Colors.red, // Background color
+                            primary: ctl.barangTap.value == 0
+                                ? Colors.red
+                                : Colors.red[200], // Background color
                             onPrimary: Colors.white, // Text color
                             elevation: 5, // Elevation (shadow)
                             shape: RoundedRectangleBorder(
@@ -441,31 +443,34 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                           ),
                           onPressed: () {
                             // Show dialog when the button is pressed
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: Text('SJ Pending Kirim'),
-                                  content: Text(
-                                      'Sebutkan Alasan untuk SJ ${ctl.nomorSJ} Pending'),
-                                  actions: <Widget>[
-                                    TextFormField(
-                                      controller: ctl.alasanBataltextController,
-                                      maxLines: 10,
-                                    ),
-                                    TextButton(
-                                        onPressed: () async {
-                                          await ctl.SJBatalKirim();
-                                          setState(() {
-                                            sjDibatalkan = true;
-                                          });
-                                          Navigator.pop(context);
-                                        },
-                                        child: Text('Ok'))
-                                  ],
-                                );
-                              },
-                            );
+                            if (ctl.barangTap.value == 0) {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text('SJ Pending Kirim'),
+                                    content: Text(
+                                        'Sebutkan Alasan untuk SJ ${ctl.nomorSJ} Pending'),
+                                    actions: <Widget>[
+                                      TextFormField(
+                                        controller:
+                                            ctl.alasanBataltextController,
+                                        maxLines: 10,
+                                      ),
+                                      TextButton(
+                                          onPressed: () async {
+                                            await ctl.SJBatalKirim();
+                                            setState(() {
+                                              sjDibatalkan = true;
+                                            });
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text('Ok'))
+                                    ],
+                                  );
+                                },
+                              );
+                            }
                           },
                           child: Text('Batal/Gagal Kirim'),
                         ),

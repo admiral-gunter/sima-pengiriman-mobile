@@ -141,53 +141,70 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         print('Response body: ${response.body}');
       }
       await taskNoLongerAssigned();
-      List<dynamic> tugasValue =
+      final getRecordTugasDT2 =
           await DatabaseHelper.instance.getRecordTugasDT2();
 
       if (mounted) {
-        if (tugasValue.length > 0) {
-          setState(() {
-            recordTugas.clear();
+        setState(() {
+          recordTugas.clear();
+          recordTugas = getRecordTugasDT2;
+          for (var i = 0; i < recordTugas.length; i++) {
+            recordTugas[i]['selected'] = false;
+          }
+          // recordTugas = getRecordTugasDT2.map((item) {
+          //   return {
+          //     ...item,
+          //     'selected': false,
+          //   };
+          // }).toList();
+        });
+      }
+      // DatabaseHelper.instance.getRecordTugasDT2().then((value) {
+      //   if (mounted) {
+      //     if (value.length > 0) {
+      //       setState(() {
+      //         recordTugas.clear();
+      //         for (var i = 0; i < recordTugas.length; i++) {
+      //           recordTugas[i]['selected'] = false;
+      //         }
+      //         recordTugas = value.map((item) {
+      //           return {
+      //             ...item,
+      //             'selected': false,
+      //           };
+      //         }).toList();
+      //       });
+      //     }
+      //     // DatabaseHelper.instance.getHistorySuratJalan().then((value) {
+      //     //   if (mounted) {
+      //     //     setState(() {
+      //     //       recordTugasDone = value;
+      //     //     });
 
-            var newTugas = tugasValue
-                .map((item) {
-                  return {
-                    ...item,
-                    'selected': false,
-                  };
-                })
-                .toSet()
-                .toList();
+      //     //     SJDalamPengiriman(value);
+      //     //   }
+      //     // });
 
-            outerLoop:
-            for (var element in newTugas) {
-              var match = false;
-              for (var el in recordTugas) {
-                if (el['nomor_order'] == element['nomor_order']) {
-                  match = true;
-                  // Skip the current iteration of the outer loop
-                  continue outerLoop;
-                } else {
-                  match = false;
-                }
-              }
-              if (!match) {
-                recordTugas.add(element);
-              }
-            }
-          });
-        }
+      //     // DatabaseHelper.instance.getHistorySuratJalan().then((value) {
+      //     //   if (mounted) {
+      //     //     setState(() {
+      //     //       recordTugasDone = value;
+      //     //     });
 
-        List<dynamic> historyValue =
-            await DatabaseHelper.instance.getHistorySuratJalan();
+      //     //     SJDalamPengiriman(value);
+      //     //   }
+      //     // });
+      //   }
+      // });
+      final getHistorySuratJalan =
+          await DatabaseHelper.instance.getHistorySuratJalan();
 
-        if (mounted) {
-          setState(() {
-            recordTugasDone = historyValue;
-          });
+      if (mounted) {
+        setState(() {
+          recordTugasDone = getHistorySuratJalan;
+        });
 
-          SJDalamPengiriman(historyValue);
-        }
+        SJDalamPengiriman(getHistorySuratJalan);
       }
     } catch (error) {
       print('Err: $error');
@@ -350,7 +367,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                                       .toString() ==
                                                   '23'
                                           ? '${recordTugas[index]['status_nama']}'
-                                          : 'Incompleted ',
+                                          : 'Incompleted (${recordTugas[index]['status_nama']})',
                                       style: recordTugas[index]['status_id']
                                                       .toString() ==
                                                   '21' ||
