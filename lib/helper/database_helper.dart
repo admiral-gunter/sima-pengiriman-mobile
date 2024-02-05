@@ -325,7 +325,6 @@ class DatabaseHelper {
         LIMIT 1
     ) AS record_tugas_history
         ON record_tugas_history.nomor_order_surat_jalan = record_tugas.nomor_order
-    WHERE history_tugas_surat_jalan.nomor_order IS NULL
     ORDER BY record_tugas.date_added DESC;
   ''');
   }

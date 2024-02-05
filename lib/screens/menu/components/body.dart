@@ -67,10 +67,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     try {
       final username = await SharedToken.univGetterString('username');
 
-      // final turunBarang = await DatabaseHelper.instance.getBarangTurunDT();
-      // for (var i in turunBarang) {
-      //   kumpulanNoSnStr += "'" + i['sn'] + "',";
-      // }
       kumpulanNoSnStr += "''";
       final dataSend = {
         "supir": username,
@@ -290,6 +286,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
               children: [
                 Column(
                   children: [
+                  Text('${recordTugas[0]}'),
                     Expanded(
                         child: recordTugas.length != 0
                             ? ListView.builder(
@@ -300,9 +297,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                           doneItem["nomor_order"] ==
                                           recordTugas[index]["nomor_order"]);
 
-                                  if (isRecordDone) {
-                                    return SizedBox.shrink();
-                                  }
+                                  // if (isRecordDone) {
+                                  //   return SizedBox.shrink();
+                                  // }
 
                                   return ListTile(
                                     subtitle: Column(
@@ -318,7 +315,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                               recordTugas[index]['status_id'] ==
                                                   '23'
                                           ? '${recordTugas[index]['status_nama']}'
-                                          : 'Incompleted ',
+                                          : 'Incompleted ${recordTugas[index]['status']}',
                                       style: recordTugas[index]['status_id'] ==
                                                   '21' ||
                                               recordTugas[index]['status_id'] ==
@@ -341,6 +338,8 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                     title:
                                         Text(recordTugas[index]["nomor_order"]),
                                     onTap: () async {
+                                      var selectedTugas = recordTugas[index];
+                                      await ctl.getItemsByNoSJ([selectedTugas]);
                                       if (recordTugas[index]['status_id'] ==
                                               '21' ||
                                           recordTugas[index]['status_id'] ==
@@ -349,11 +348,15 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                             .showSnackBar(
                                           SnackBar(
                                             content: Text(
-                                                'Hubungi Admin untuk pembukaan Surat Jalan'),
+                                                'Lanjutkan Proses Surat Jalan?'),
                                             duration: Duration(seconds: 2),
                                             action: SnackBarAction(
-                                              label: 'Close',
+                                              label: 'Oke',
                                               onPressed: () {
+                                                Navigator.pushNamed(
+                                                    context,
+                                                    TurunBarangOnlineScreen
+                                                        .routeName);
                                                 // Code to execute when 'Close' is pressed
                                               },
                                             ),
@@ -361,8 +364,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                         );
                                         return;
                                       }
-                                      var selectedTugas = recordTugas[index];
-                                      await ctl.getItemsByNoSJ([selectedTugas]);
+
                                       Navigator.pushNamed(context,
                                           TurunBarangOnlineScreen.routeName);
                                     },
@@ -380,6 +382,11 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                           width: double.infinity,
                           child: ElevatedButton(
                               onPressed: () {
+                               for (final data in recordTugas) {
+                                  if(data['status_id'] == '21'){
+                                    Navigator.pushNamed(context, ScanPengirimanScreen.routeName);
+                                  }
+                                }
                                 if (recordTugas.length > 0) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
