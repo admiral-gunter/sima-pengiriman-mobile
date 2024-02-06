@@ -52,7 +52,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
             });
           }
         });
-        SJDalamPengiriman("17");
+        // SJDalamPengiriman("17");
       }
     });
   }
@@ -401,9 +401,10 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                               !sjDibatalkan
                                           ? Colors.blue
                                           : Colors.blue[200]),
-                              onPressed: () {
+                              onPressed: () async {
                                 if (textController.text.isNotEmpty &&
                                     !sjDibatalkan) {
+                                  SJDalamPengiriman("17");
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
