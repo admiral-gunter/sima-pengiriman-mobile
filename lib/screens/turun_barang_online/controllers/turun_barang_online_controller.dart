@@ -18,6 +18,9 @@ class TurunBarangOnlineController extends GetxController {
   RxMap<String, dynamic> coordinate = {'lat': '', 'long': ''}.obs;
   RxMap<String, dynamic> suratJalanCredential =
       {'nama_toko': '', 'no_surat_jalan': ''}.obs;
+  RxList<Map<String, dynamic>> listLoc = [
+    {'': ''}
+  ].obs;
 
   RxInt barangTap = 0.obs;
   RxInt barangHarusTap = 0.obs;
@@ -77,7 +80,6 @@ class TurunBarangOnlineController extends GetxController {
       };
       listSJ.add(item);
     }
-    print('List SJ ${listSJ}');
     noSuratJalanSelected.value = listSJ[0]['nomor_order'];
 
     for (var element in listNoSJ) {

@@ -1,11 +1,16 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
-const LatLng SOURCE_LOCATION = LatLng(13.652720, 100.493635);
-const LatLng DEST_LOCATION = LatLng(13.6640896, 100.4357021);
+import '../../../shared_preferences/shared_token.dart';
+
+LatLng SOURCE_LOCATION = LatLng(-6.9466, 107.7299);
+LatLng DEST_LOCATION = LatLng(-6.9098, 107.6084);
 
 class Direction extends StatefulWidget {
   @override
@@ -33,29 +38,17 @@ class _DirectionState extends State<Direction> {
     polylinePoints = PolylinePoints();
     this.setInitialLocation();
     StreamSubscription<Position> positionStream =
-        Geolocator.getPositionStream(locationSettings: locationSettings)
-            .listen((Position? position) {
+        Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+            (Position? position) {
       // do what you want to do with the position here
-      setState(() {
-        currentLocation = LatLng(position!.latitude, position!.longitude);
-
-        if (SOURCE_LOCATION.latitude != currentLocation.latitude &&
-            SOURCE_LOCATION.longitude != currentLocation.longitude) {
-          _markers
-              .removeWhere((marker) => marker.markerId.value == 'sourcePin');
-          _markers.add(Marker(
-            markerId: MarkerId('sourcePin'),
-            position: currentLocation!,
-            icon: BitmapDescriptor.defaultMarker,
-          ));
-        }
-        // _markers.removeWhere((marker) => marker.markerId.value == 'sourcePin');
-        // _markers.add(Marker(
-        //   markerId: MarkerId('sourcePin'),
-        //   position: currentLocation!,
-        //   icon: BitmapDescriptor.defaultMarker,
-        // ));
+      setState(() async {
+        print('waa');
+        // currentLocation = LatLng(position!.latitude, position!.longitude);
+        await _addLokasiFirebaseFromLok();
       });
+    }, onError: (error) {
+      print("Error getting location: $error");
+      // Handle error appropriately
     });
   }
 
@@ -66,30 +59,51 @@ class _DirectionState extends State<Direction> {
         LatLng(DEST_LOCATION.latitude, DEST_LOCATION.longitude);
   }
 
+  Future<void> _addLokasiFirebaseFromLok() async {
+    DateTime timestamp = DateTime.now();
+
+    String curTimeStamp = DateFormat('dd/MM/yyyy HH:mm:ss').format(timestamp);
+
+    var uuid = Uuid();
+    final username = await SharedToken.univGetterString('username');
+    // final String userId = username.toString() + '_' + uuid.v4().toString();
+    final DatabaseReference dblokRef =
+        FirebaseDatabase.instance.ref('sima_pengiriman_supir');
+    try {
+      await dblokRef.push().set({
+        'created_at': curTimeStamp,
+        'supir': username,
+        'cur_long': currentLocation.longitude,
+        'cur_lat': currentLocation.latitude,
+        'id': uuid.v4()
+      });
+      print('User added successfully!');
+    } catch (e) {
+      print('Error adding user: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Direction"),
-      ),
-      body: GoogleMap(
-        myLocationEnabled: true,
-        compassEnabled: false,
-        tiltGesturesEnabled: false,
-        polylines: _polylines,
-        markers: _markers,
-        onMapCreated: (GoogleMapController controller) {
-          mapController.complete(controller);
+    return Container(
+        child: GoogleMap(
+      myLocationEnabled: true,
+      compassEnabled: false,
+      tiltGesturesEnabled: false,
+      polylines: _polylines,
+      markers: _markers,
+      trafficEnabled: bool.fromEnvironment("true"),
+      onMapCreated: (GoogleMapController controller) {
+        mapController.complete(controller);
 
-          showMarker();
-          setPolylines();
-        },
-        initialCameraPosition: CameraPosition(
-          target: SOURCE_LOCATION,
-          zoom: 13,
-        ),
+        showMarker();
+        setPolylines();
+      },
+      initialCameraPosition: CameraPosition(
+        target: currentLocation,
+        zoom: 13,
       ),
-    );
+    ));
   }
 
   void showMarker() {
@@ -124,7 +138,7 @@ class _DirectionState extends State<Direction> {
         _polylines.add(Polyline(
             width: 10,
             polylineId: PolylineId('polyLine'),
-            color: Color.fromARGB(255, 0, 43, 11),
+            color: Color.fromARGB(255, 255, 166, 0),
             points: polylineCoordinates));
       });
     }

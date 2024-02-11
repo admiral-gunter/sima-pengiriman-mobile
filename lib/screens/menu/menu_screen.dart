@@ -66,6 +66,7 @@ class _MenuScreenState extends State<MenuScreen> {
         });
   }
 
+  // TEST CODE
   Future<void> _addLokasiFirebaseFromLok(String name, String email) async {
     final username = await SharedToken.univGetterString('username');
     final DatabaseReference dblokRef =
@@ -81,6 +82,7 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
+// TEST CODE
   _backgroundServices() async {
     try {
       final androidConfig = FlutterBackgroundAndroidConfig(

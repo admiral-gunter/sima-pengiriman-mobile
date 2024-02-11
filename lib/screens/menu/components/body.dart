@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
@@ -9,7 +8,6 @@ import 'package:sima_pengiriman/screens/scan_pengiriman/scan_pengiriman_screen.d
 import 'package:sima_pengiriman/screens/turun_barang_online/controllers/turun_barang_online_controller.dart';
 import 'package:http/http.dart' as http;
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
-import 'package:sqflite/sqflite.dart';
 import '../../turun_barang_online/turun_barang_online.dart';
 import '../../turun_barang_online/turun_barang_online_history.dart';
 
@@ -386,18 +384,18 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
                                           SnackBar(
-                                            content:
-                                                Text('Silahkan Hubungi Admin'),
+                                            content: Text(
+                                                'Lanjutkan Pengiriman SJ?'),
                                             duration: Duration(seconds: 2),
                                             action: SnackBarAction(
                                               label: 'Oke',
                                               onPressed: () {
                                                 // Code to execute when 'Close' is pressed
 
-                                                // Navigator.pushNamed(
-                                                //     context,
-                                                //     TurunBarangOnlineScreen
-                                                //         .routeName);
+                                                Navigator.pushNamed(
+                                                    context,
+                                                    TurunBarangOnlineScreen
+                                                        .routeName);
                                               },
                                             ),
                                           ),

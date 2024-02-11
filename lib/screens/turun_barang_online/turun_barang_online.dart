@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
+import 'package:sima_pengiriman/screens/maps_view/maps_view.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
 import 'package:sima_pengiriman/screens/universal_scannner/universal_scanner_screen.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
@@ -52,7 +53,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
             });
           }
         });
-        // SJDalamPengiriman("17");
       }
     });
   }
@@ -476,6 +476,24 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                           child: Text('Batal/Gagal Kirim'),
                         ),
                       ),
+                      SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MapsView(
+                                      goBackRouteName:
+                                          TurunBarangOnlineScreen.routeName),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green),
+                            child: Text('Buka Maps',
+                                style: TextStyle(color: Colors.white)),
+                          ))
                     ],
                   ),
                 ),
