@@ -118,7 +118,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     Map<String, int> totalQtyMap = {};
 
     for (var item in ctl.listInv) {
-      String productName = item['product_name'];
+      String productName = item['product_name'] ?? 'Unknown??';
       int totalQty = await DatabaseHelper.instance
           .countBarangTap(item['product_name'], item['no_order']);
 
@@ -215,7 +215,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
             "supir": username,
             "tapper": username
           };
-          print('le wo ${element['nomor_order']}');
           DatabaseHelper.instance.insertHistorySuratJalan(data).then((value) =>
               {
                 _postRequestSJDone(element['nomor_order']),
@@ -480,6 +479,33 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
+                              // showDialog(
+                              //   context: context,
+                              //   builder: (BuildContext context) {
+                              //     return AlertDialog(
+                              //       title: Text('Pilih Tujuan'),
+                              //       content: Text(
+                              //           'Sebutkan Alasan untuk SJ ${ctl.nomorSJ} Pending'),
+                              //       actions: <Widget>[
+                              //         TextFormField(
+                              //           controller:
+                              //               ctl.alasanBataltextController,
+                              //           maxLines: 10,
+                              //         ),
+                              //         TextButton(
+                              //             onPressed: () async {
+                              //               await ctl.SJBatalKirim();
+                              //               setState(() {
+                              //                 sjDibatalkan = true;
+                              //               });
+                              //               Navigator.pop(context);
+                              //             },
+                              //             child: Text('Ok'))
+                              //       ],
+                              //     );
+                              //   },
+                              // );
+
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(

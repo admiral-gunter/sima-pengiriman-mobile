@@ -18,7 +18,7 @@ class TurunBarangOnlineController extends GetxController {
   RxMap<String, dynamic> coordinate = {'lat': '', 'long': ''}.obs;
   RxMap<String, dynamic> suratJalanCredential =
       {'nama_toko': '', 'no_surat_jalan': ''}.obs;
-  RxList<Map<String, dynamic>> listLoc = [
+  RxList<dynamic> listLoc = [
     {'': ''}
   ].obs;
 
@@ -123,6 +123,49 @@ class TurunBarangOnlineController extends GetxController {
         for (var element in resp['content2']) {
           await DatabaseHelper.instance.insertBarangTurun(element);
         }
+        Set<Map<String, dynamic>> uniqueLocations = Set<Map<String, dynamic>>();
+
+        for (var item in resp['content']) {
+          Map<String, dynamic> locationMap = {
+            "loc_name": item['loc_name'],
+            "loc_latitude": item['loc_latitude'],
+            "loc_longitude": item['loc_longitude'],
+          };
+
+          uniqueLocations.add(locationMap);
+        }
+
+        // Convert uniqueLocations set back to a list if needed
+        List<Map<String, dynamic>> uniqueLocationsList =
+            uniqueLocations.toList();
+        listLoc.clear();
+        // Print the unique combinations
+        uniqueLocationsList.forEach((location) {
+          bool push = true;
+          for (var it in listLoc) {
+            if (location['loc_name'] == it['loc_name']) {
+              push = false;
+              // skip this iteraton
+              break;
+            } else {
+              push = true;
+            }
+          }
+          if (push) {
+            if (location['loc_name'] != null ||
+                location['loc_latitude'] != null ||
+                location['loc_longitude'] != null) {
+              Map<String, String> locationMap = {
+                "loc_name": location['loc_name'].toString(),
+                "loc_latitude": location['loc_latitude'].toString(),
+                "loc_longitude": location['loc_longitude'].toString(),
+              };
+              listLoc.add(locationMap);
+            }
+          }
+        });
+        print('list loc ${listLoc}');
+
         print(
             'barang Tap = ${barangHarusTap.value} \n tapped ${barangTap.value}');
       } else {

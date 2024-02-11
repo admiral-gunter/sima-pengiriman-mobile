@@ -326,10 +326,10 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                             ? ListView.builder(
                                 itemCount: recordTugas.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  bool isRecordDone = recordTugasDone.any(
-                                      (doneItem) =>
-                                          doneItem["nomor_order"] ==
-                                          recordTugas[index]["nomor_order"]);
+                                  // bool isRecordDone = recordTugasDone.any(
+                                  //     (doneItem) =>
+                                  //         doneItem["nomor_order"] ==
+                                  //         recordTugas[index]["nomor_order"]);
 
                                   return ListTile(
                                     subtitle: Column(
@@ -390,8 +390,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                             action: SnackBarAction(
                                               label: 'Oke',
                                               onPressed: () {
-                                                // Code to execute when 'Close' is pressed
-
                                                 Navigator.pushNamed(
                                                     context,
                                                     TurunBarangOnlineScreen

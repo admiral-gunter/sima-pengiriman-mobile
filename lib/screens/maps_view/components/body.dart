@@ -42,9 +42,8 @@ class _DirectionState extends State<Direction> {
             (Position? position) {
       // do what you want to do with the position here
       setState(() async {
-        print('waa');
         // currentLocation = LatLng(position!.latitude, position!.longitude);
-        await _addLokasiFirebaseFromLok();
+        await _addLokasiFirebaseFromLok(position!);
       });
     }, onError: (error) {
       print("Error getting location: $error");
@@ -59,24 +58,53 @@ class _DirectionState extends State<Direction> {
         LatLng(DEST_LOCATION.latitude, DEST_LOCATION.longitude);
   }
 
-  Future<void> _addLokasiFirebaseFromLok() async {
+  Future<void> _addLokasiFirebaseFromLok(Position currentPosition) async {
     DateTime timestamp = DateTime.now();
 
     String curTimeStamp = DateFormat('dd/MM/yyyy HH:mm:ss').format(timestamp);
 
     var uuid = Uuid();
     final username = await SharedToken.univGetterString('username');
+    String timestampLink = DateFormat('dd-MM-yyyy').format(timestamp);
+
     // final String userId = username.toString() + '_' + uuid.v4().toString();
     final DatabaseReference dblokRef =
         FirebaseDatabase.instance.ref('sima_pengiriman_supir');
+
+    final DatabaseReference livelokRef =
+        FirebaseDatabase.instance.ref('perjalanan_supir_sima_${timestampLink}');
+
     try {
       await dblokRef.push().set({
         'created_at': curTimeStamp,
         'supir': username,
-        'cur_long': currentLocation.longitude,
-        'cur_lat': currentLocation.latitude,
+        'cur_long': currentPosition.longitude,
+        'cur_lat': currentPosition.latitude,
         'id': uuid.v4()
       });
+
+      await livelokRef.set(
+        {
+          "lat_cur": currentPosition.latitude,
+          "lat_dest": -6.9299906,
+          "lat_source": -6.9353,
+          "long_cur": currentPosition.longitude,
+          "long_dest": 107.5689666,
+          "long_source": 107.7169,
+          "updated_at": curTimeStamp
+        },
+      );
+
+      // BODY PERJALANAN SUPIR FORMAT : perjalanan_supir_nama_HARI-TANGGAL-BULAN-TAHUN
+      // "perjalanan_supir_sima": {
+      //   "lat_cur": -6.9466,
+      //   "lat_dest": "",
+      //   "lat_source": -6.9465,
+      //   "long_cur": 107.7299,
+      //   "long_dest": "",
+      //   "long_source": ""
+      // },
+
       print('User added successfully!');
     } catch (e) {
       print('Error adding user: $e');
