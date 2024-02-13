@@ -479,32 +479,32 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                              // showDialog(
-                              //   context: context,
-                              //   builder: (BuildContext context) {
-                              //     return AlertDialog(
-                              //       title: Text('Pilih Tujuan'),
-                              //       content: Text(
-                              //           'Sebutkan Alasan untuk SJ ${ctl.nomorSJ} Pending'),
-                              //       actions: <Widget>[
-                              //         TextFormField(
-                              //           controller:
-                              //               ctl.alasanBataltextController,
-                              //           maxLines: 10,
-                              //         ),
-                              //         TextButton(
-                              //             onPressed: () async {
-                              //               await ctl.SJBatalKirim();
-                              //               setState(() {
-                              //                 sjDibatalkan = true;
-                              //               });
-                              //               Navigator.pop(context);
-                              //             },
-                              //             child: Text('Ok'))
-                              //       ],
-                              //     );
-                              //   },
-                              // );
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text('Pilih Tujuan'),
+                                    content: Text(
+                                        'Sebutkan Alasan untuk SJ ${ctl.nomorSJ} Pending'),
+                                    actions: <Widget>[
+                                      TextFormField(
+                                        controller:
+                                            ctl.alasanBataltextController,
+                                        maxLines: 10,
+                                      ),
+                                      TextButton(
+                                          onPressed: () async {
+                                            await ctl.SJBatalKirim();
+                                            setState(() {
+                                              sjDibatalkan = true;
+                                            });
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text('Ok'))
+                                    ],
+                                  );
+                                },
+                              );
 
                               Navigator.pushReplacement(
                                 context,

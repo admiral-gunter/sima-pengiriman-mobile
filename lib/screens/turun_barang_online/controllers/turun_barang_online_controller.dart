@@ -6,8 +6,9 @@ import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
-
+import 'package:geolocator/geolocator.dart';
 import '../../../shared_preferences/shared_token.dart';
+import 'dart:math';
 
 class TurunBarangOnlineController extends GetxController {
   RxList<dynamic> listSJ = [].obs;
@@ -136,8 +137,7 @@ class TurunBarangOnlineController extends GetxController {
         }
 
         // Convert uniqueLocations set back to a list if needed
-        List<Map<String, dynamic>> uniqueLocationsList =
-            uniqueLocations.toList();
+        List<Map<String, dynamic>> uniqueLocationsList = uniqueLocations.toList();
         listLoc.clear();
         // Print the unique combinations
         uniqueLocationsList.forEach((location) {
@@ -164,10 +164,25 @@ class TurunBarangOnlineController extends GetxController {
             }
           }
         });
-        print('list loc ${listLoc}');
 
-        print(
-            'barang Tap = ${barangHarusTap.value} \n tapped ${barangTap.value}');
+        Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+        double cur_latitude = position.latitude;
+        double cur_longitude = position.longitude;
+
+        // setState((){
+
+        //   });
+
+        for (int i = 0; i < listLoc.length; i++) {
+          var item = listLoc[i];
+          double dest_latitude = double.parse(item['loc_latitude']);
+          double dest_longitude = double.parse(item['loc_longitude']);
+          final distanceKm = haversine(cur_latitude, cur_longitude, dest_latitude, dest_longitude);
+          listLoc[i]['dest_calc'] = distanceKm.toStringAsFixed(2);
+        }
+        listLoc.sort((a, b) => (a['dest_calc'] as double).compareTo(b['dest_calc'] as double));
+        print(listLoc);
       } else {
         print('POST request failed with status: ${response.statusCode}');
       }
@@ -235,4 +250,32 @@ class TurunBarangOnlineController extends GetxController {
       print('Error making POST request: $error');
     }
   }
+
+  double degreesToRadians(double degrees) {
+    return degrees * pi / 180.0;
+  }
+
+
+  double haversine(double lat1, double lon1, double lat2, double lon2) {
+    // Convert latitude and longitude from degrees to radians
+    lat1 = degreesToRadians(lat1);
+    lon1 = degreesToRadians(lon1);
+    lat2 = degreesToRadians(lat2);
+    lon2 = degreesToRadians(lon2);
+
+    var dlat = lat2 - lat1;
+    var dlon = lon2 - lon1;
+    var a = pow(sin(dlat / 2), 2) +
+        cos(lat1) * cos(lat2) * pow(sin(dlon / 2), 2);
+    var c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    // Radius of Earth in kilometers (mean value)
+    var R = 6371.0;
+
+    // Calculate the distance
+    var distance = R * c;
+
+    return distance;
+  }
+
 }
