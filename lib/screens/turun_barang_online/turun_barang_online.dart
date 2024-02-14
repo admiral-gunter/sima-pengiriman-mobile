@@ -479,41 +479,36 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                              // showDialog(
-                              //   context: context,
-                              //   builder: (BuildContext context) {
-                              //     return AlertDialog(
-                              //       title: Text('Pilih Tujuan'),
-                              //       content: Text(
-                              //           'Sebutkan Alasan untuk SJ ${ctl.nomorSJ} Pending'),
-                              //       actions: <Widget>[
-                              //         TextFormField(
-                              //           controller:
-                              //               ctl.alasanBataltextController,
-                              //           maxLines: 10,
-                              //         ),
-                              //         TextButton(
-                              //             onPressed: () async {
-                              //               await ctl.SJBatalKirim();
-                              //               setState(() {
-                              //                 sjDibatalkan = true;
-                              //               });
-                              //               Navigator.pop(context);
-                              //             },
-                              //             child: Text('Ok'))
-                              //       ],
-                              //     );
-                              //   },
-                              // );
-
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => MapsView(
-                                      goBackRouteName:
-                                          TurunBarangOnlineScreen.routeName),
-                                ),
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text('Pilih Tujuan'),
+                                    content: SingleChildScrollView(
+                                      child: Column(
+                                        children: [
+                                          for (final item in ctl.listLoc)
+                                            Row(
+                                              children: [
+                                                Text(item['loc_name']),
+                                                Text(item['loc_name']),
+                                              ],
+                                            ), // Assuming item is not a string, you might need to adjust this
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               );
+
+                              // Navigator.pushReplacement(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //     builder: (context) => MapsView(
+                              //         goBackRouteName:
+                              //             TurunBarangOnlineScreen.routeName),
+                              //   ),
+                              // );
                             },
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green),
