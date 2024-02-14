@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
+import 'package:sima_pengiriman/screens/maps_view/controllers/maps_view_controller.dart';
 import 'package:sima_pengiriman/screens/maps_view/maps_view.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
 import 'package:sima_pengiriman/screens/universal_scannner/universal_scanner_screen.dart';
@@ -488,12 +489,44 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                       child: Column(
                                         children: [
                                           for (final item in ctl.listLoc)
-                                            Row(
-                                              children: [
-                                                Text(item['loc_name']),
-                                                Text(item['loc_name']),
-                                              ],
-                                            ), // Assuming item is not a string, you might need to adjust this
+                                            InkWell(
+                                              onTap: () {
+                                                final MapsViewController ctk =
+                                                    MapsViewController();
+                                                ctk.liveLokRefData['lat_dest'] =
+                                                    item['dest_loc_latitude'];
+                                                ctk.liveLokRefData[
+                                                        'long_dest'] =
+                                                    item['dest_loc_longitude'];
+
+                                                ctk.liveLokRefData[
+                                                        'lat_source'] =
+                                                    item['lat_sj'];
+                                                ctk.liveLokRefData[
+                                                        'long_source'] =
+                                                    item['long_sj'];
+
+                                                Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => MapsView(
+                                                        goBackRouteName:
+                                                            TurunBarangOnlineScreen
+                                                                .routeName),
+                                                  ),
+                                                );
+                                              },
+                                              child: Row(
+                                                children: [
+                                                  Text(item['dest_loc_name']),
+                                                  SizedBox(
+                                                      width:
+                                                          8), // Adjust the width as needed
+                                                  Text(
+                                                      '${item['dest_calc']} Km'),
+                                                ],
+                                              ),
+                                            ),
                                         ],
                                       ),
                                     ),

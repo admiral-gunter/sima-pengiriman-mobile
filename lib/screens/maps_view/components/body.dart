@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'package:sima_pengiriman/screens/maps_view/controllers/maps_view_controller.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../shared_preferences/shared_token.dart';
@@ -52,10 +53,21 @@ class _DirectionState extends State<Direction> {
   }
 
   void setInitialLocation() {
-    currentLocation =
-        LatLng(SOURCE_LOCATION.latitude, SOURCE_LOCATION.longitude);
-    destinationLocation =
-        LatLng(DEST_LOCATION.latitude, DEST_LOCATION.longitude);
+    // currentLocation =
+    //     LatLng(SOURCE_LOCATION.latitude, SOURCE_LOCATION.longitude);
+    // destinationLocation =
+    //     LatLng(DEST_LOCATION.latitude, DEST_LOCATION.longitude);
+    final MapsViewController ctl = MapsViewController();
+
+    final liveLokRefData = ctl.liveLokRefData;
+    double latSource = ctl.liveLokRefData['lat_source'] as double;
+    double longSource = ctl.liveLokRefData['long_source'] as double;
+
+    double destLatSource = ctl.liveLokRefData['lat_dest'] as double;
+    double destLongSource = ctl.liveLokRefData['long_dest'] as double;
+
+    currentLocation = LatLng(latSource, longSource);
+    destinationLocation = LatLng(destLatSource, destLongSource);
   }
 
   Future<void> _addLokasiFirebaseFromLok(Position currentPosition) async {
@@ -64,17 +76,36 @@ class _DirectionState extends State<Direction> {
     String curTimeStamp = DateFormat('dd/MM/yyyy HH:mm:ss').format(timestamp);
 
     var uuid = Uuid();
-    final username = await SharedToken.univGetterString('username');
+    String username = await SharedToken.univGetterString('username');
+    username = username.replaceAll(' ', '_');
     String timestampLink = DateFormat('dd-MM-yyyy').format(timestamp);
 
     // final String userId = username.toString() + '_' + uuid.v4().toString();
     final DatabaseReference dblokRef =
         FirebaseDatabase.instance.ref('sima_pengiriman_supir');
 
-    final DatabaseReference livelokRef =
-        FirebaseDatabase.instance.ref('perjalanan_supir_sima_${timestampLink}');
+    // final String username = await SharedToken.univGetterString('username');
 
+    final DatabaseReference livelokRef = FirebaseDatabase.instance
+        .ref('perjalanan_supir_${username}_${timestampLink}');
+    final MapsViewController ctl = MapsViewController();
     try {
+      final liveLokRefData = ctl.liveLokRefData;
+      double latSource = ctl.liveLokRefData['lat_source'] as double;
+      double longSource = ctl.liveLokRefData['long_source'] as double;
+
+      double destLatSource = ctl.liveLokRefData['lat_dest'] as double;
+      double destLongSource = ctl.liveLokRefData['long_dest'] as double;
+
+      currentLocation = LatLng(latSource, longSource);
+      destinationLocation = LatLng(destLatSource, destLongSource);
+
+      liveLokRefData['lat_cur'] = currentPosition.latitude;
+      liveLokRefData['long_cur'] = currentPosition.longitude;
+      liveLokRefData['updated_at'] = curTimeStamp;
+
+      await livelokRef.set(liveLokRefData);
+
       await dblokRef.push().set({
         'created_at': curTimeStamp,
         'supir': username,
@@ -82,18 +113,6 @@ class _DirectionState extends State<Direction> {
         'cur_lat': currentPosition.latitude,
         'id': uuid.v4()
       });
-
-      await livelokRef.set(
-        {
-          "lat_cur": currentPosition.latitude,
-          "lat_dest": -6.9299906,
-          "lat_source": -6.9353,
-          "long_cur": currentPosition.longitude,
-          "long_dest": 107.5689666,
-          "long_source": 107.7169,
-          "updated_at": curTimeStamp
-        },
-      );
 
       // BODY PERJALANAN SUPIR FORMAT : perjalanan_supir_nama_HARI-TANGGAL-BULAN-TAHUN
       // "perjalanan_supir_sima": {

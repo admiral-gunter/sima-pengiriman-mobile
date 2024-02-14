@@ -76,7 +76,6 @@ class _MenuScreenState extends State<MenuScreen> {
         'name': name,
         'email': email,
       });
-      print('User added successfully!');
     } catch (e) {
       print('Error adding user: $e');
     }
