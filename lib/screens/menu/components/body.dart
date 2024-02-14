@@ -418,21 +418,21 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                           width: double.infinity,
                           child: ElevatedButton(
                               onPressed: () {
-                                // for (final data in recordTugas) {
-                                //   if (data['status_id'] == '21') {
-                                //     Navigator.pushNamed(context,
-                                //         ScanPengirimanScreen.routeName);
-                                //   }
-                                // }
-                                // if (recordTugas.length > 0) {
-                                //   ScaffoldMessenger.of(context).showSnackBar(
-                                //     SnackBar(
-                                //       content: Text(
-                                //           'Masih Ada Surat Jalan Belum Selesai'),
-                                //     ),
-                                //   );
-                                //   return;
-                                // }
+                                for (final data in recordTugas) {
+                                  if (data['status_id'] == '21') {
+                                    Navigator.pushNamed(context,
+                                        ScanPengirimanScreen.routeName);
+                                  }
+                                }
+                                if (recordTugas.length > 0) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'Masih Ada Surat Jalan Belum Selesai'),
+                                    ),
+                                  );
+                                  return;
+                                }
 
                                 Navigator.pushNamed(
                                     context, ScanPengirimanScreen.routeName);
