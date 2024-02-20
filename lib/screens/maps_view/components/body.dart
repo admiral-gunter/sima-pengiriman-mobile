@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:sima_pengiriman/screens/maps_view/controllers/maps_view_controller.dart';
 import 'package:uuid/uuid.dart';
+import 'package:get/get.dart';
 
 import '../../../shared_preferences/shared_token.dart';
 
@@ -57,9 +58,10 @@ class _DirectionState extends State<Direction> {
     //     LatLng(SOURCE_LOCATION.latitude, SOURCE_LOCATION.longitude);
     // destinationLocation =
     //     LatLng(DEST_LOCATION.latitude, DEST_LOCATION.longitude);
-    final MapsViewController ctl = MapsViewController();
+    final MapsViewController ctl = Get.put(MapsViewController());
 
     final liveLokRefData = ctl.liveLokRefData;
+    print('CAMARAD ${liveLokRefData}');
     double latSource = ctl.liveLokRefData['lat_source'] as double;
     double longSource = ctl.liveLokRefData['long_source'] as double;
 
@@ -88,7 +90,7 @@ class _DirectionState extends State<Direction> {
 
     final DatabaseReference livelokRef = FirebaseDatabase.instance
         .ref('perjalanan_supir_${username}_${timestampLink}');
-    final MapsViewController ctl = MapsViewController();
+    final MapsViewController ctl = Get.put(MapsViewController());
     try {
       final liveLokRefData = ctl.liveLokRefData;
       double latSource = ctl.liveLokRefData['lat_source'] as double;

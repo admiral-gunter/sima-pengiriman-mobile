@@ -11,12 +11,17 @@ import '../../../shared_preferences/shared_token.dart';
 import 'dart:math';
 
 class MapsViewController extends GetxController {
-  var liveLokRefData = {
+  RxMap<String, dynamic> liveLokRefData = {
     "lat_cur": '',
-    "lat_dest": -6.9299906,
-    "lat_source": -6.9353,
+    "lat_dest": 0.0,
+    "lat_source": 0.0,
     "long_cur": '',
-    "long_dest": 107.5689666,
-    "long_source": 107.7169,
+    "long_dest": 0.0,
+    "long_source": 0.0,
   }.obs;
+
+   void updateLiveLokRefData(dynamic newData) {
+    liveLokRefData.addAll(newData);
+    // liveLokRefData= newData
+  }
 }
