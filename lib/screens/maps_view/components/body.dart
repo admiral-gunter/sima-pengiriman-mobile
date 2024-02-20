@@ -170,24 +170,33 @@ class _DirectionState extends State<Direction> {
   }
 
   void setPolylines() async {
-    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-        "AIzaSyAuTc1cEdpSMnqduAMMAdtNAzp2jiE5Kdw",
-        PointLatLng(currentLocation.latitude, currentLocation.longitude),
-        PointLatLng(
-            destinationLocation.latitude, destinationLocation.longitude));
+    try {
+      PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+          "AIzaSyAuTc1cEdpSMnqduAMMAdtNAzp2jiE5Kdw",
+          PointLatLng(currentLocation.latitude, currentLocation.longitude),
+          PointLatLng(
+              destinationLocation.latitude, destinationLocation.longitude));
 
-    if (result.status == 'OK') {
-      result.points.forEach((PointLatLng point) {
-        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-      });
+      if (result.status == 'OK') {
+        result.points.forEach((PointLatLng point) {
+          polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+        });
 
-      setState(() {
-        _polylines.add(Polyline(
-            width: 10,
-            polylineId: PolylineId('polyLine'),
-            color: Color.fromARGB(255, 255, 166, 0),
-            points: polylineCoordinates));
-      });
+        setState(() {
+          _polylines.add(Polyline(
+              width: 10,
+              polylineId: PolylineId('polyLine'),
+              color: Color.fromARGB(255, 255, 166, 0),
+              points: polylineCoordinates));
+        });
+      } else {
+        // Handle other status codes if needed
+        print("Error: ${result.status}");
+      }
+    } catch (e) {
+      // Handle any exceptions that occur during the execution
+      print("Error: $e");
+      // You can also show a user-friendly error message here if needed
     }
   }
 }
