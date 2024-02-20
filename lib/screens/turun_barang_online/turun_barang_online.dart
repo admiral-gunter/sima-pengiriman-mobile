@@ -490,22 +490,17 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                         children: [
                                           for (final item in ctl.listLoc)
                                             InkWell(
-                                              onTap: () {
+                                              onTap: () async {
                                                 final MapsViewController ctk =
-                                                    MapsViewController();
-                                                ctk.liveLokRefData['lat_dest'] =
-                                                    item['dest_loc_latitude'];
-                                                ctk.liveLokRefData[
-                                                        'long_dest'] =
-                                                    item['dest_loc_longitude'];
+                                                    Get.put(MapsViewController());
+                                               ctk.liveLokRefData['lat_dest'] = double.parse(item['dest_loc_latitude'].toString());
+ctk.liveLokRefData['long_dest'] = double.parse(item['dest_loc_longitude'].toString());
+ctk.liveLokRefData['lat_source'] = double.parse(item['lat_sj'].toString());
+ctk.liveLokRefData['long_source'] = double.parse(item['long_sj'].toString());
 
-                                                ctk.liveLokRefData[
-                                                        'lat_source'] =
-                                                    item['lat_sj'];
-                                                ctk.liveLokRefData[
-                                                        'long_source'] =
-                                                    item['long_sj'];
 
+                                                    setState(() {});
+ await Future.delayed(Duration(seconds: 1));
                                                 Navigator.pushReplacement(
                                                   context,
                                                   MaterialPageRoute(
