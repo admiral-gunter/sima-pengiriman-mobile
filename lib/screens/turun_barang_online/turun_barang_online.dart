@@ -11,6 +11,7 @@ import 'package:sima_pengiriman/screens/universal_scannner/universal_scanner_scr
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
 import 'package:location/location.dart';
@@ -74,7 +75,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
         });
       }
     } catch (e) {
-      // Handle errors, such as permissions or location services not enabled.
       print("Error getting location: $e");
     }
   }
@@ -281,6 +281,26 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     return outputString;
   }
 
+  void _launchMapsUrl(List listLoc) async {
+    String destUrl = '';
+    for (var i = 0; i < listLoc.length; i++) {
+      if (i == 0) {
+        destUrl += latitude.toString() + ',' + longitude.toString() + '/';
+      }
+      destUrl += listLoc[i]['dest_loc_latitude'] +
+          ',' +
+          listLoc[i]['dest_loc_longitude'] +
+          '/';
+    }
+
+    final url = 'https://www.google.com/maps/dir/${destUrl}';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final TurunBarangOnlineController ctl =
@@ -480,6 +500,8 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
+                              _launchMapsUrl(ctl.listLoc);
+                              return;
                               showDialog(
                                 context: context,
                                 builder: (BuildContext context) {
@@ -492,24 +514,39 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                             InkWell(
                                               onTap: () async {
                                                 final MapsViewController ctk =
-                                                    Get.put(MapsViewController());
-                                               ctk.liveLokRefData['lat_dest'] = double.parse(item['dest_loc_latitude'].toString());
-ctk.liveLokRefData['long_dest'] = double.parse(item['dest_loc_longitude'].toString());
-ctk.liveLokRefData['lat_source'] = double.parse(item['lat_sj'].toString());
-ctk.liveLokRefData['long_source'] = double.parse(item['long_sj'].toString());
+                                                    Get.put(
+                                                        MapsViewController());
+                                                ctk.liveLokRefData['lat_dest'] =
+                                                    double.parse(item[
+                                                            'dest_loc_latitude']
+                                                        .toString());
+                                                ctk.liveLokRefData[
+                                                        'long_dest'] =
+                                                    double.parse(item[
+                                                            'dest_loc_longitude']
+                                                        .toString());
+                                                ctk.liveLokRefData[
+                                                        'lat_source'] =
+                                                    double.parse(item['lat_sj']
+                                                        .toString());
+                                                ctk.liveLokRefData[
+                                                        'long_source'] =
+                                                    double.parse(item['long_sj']
+                                                        .toString());
 
-
-                                                    setState(() {});
- await Future.delayed(Duration(seconds: 1));
-                                                Navigator.pushReplacement(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) => MapsView(
-                                                        goBackRouteName:
-                                                            TurunBarangOnlineScreen
-                                                                .routeName),
-                                                  ),
-                                                );
+                                                setState(() {});
+                                                await Future.delayed(
+                                                    Duration(seconds: 1));
+                                                // _launchMapsUrl();
+                                                // Navigator.pushReplacement(
+                                                //   context,
+                                                //   MaterialPageRoute(
+                                                //     builder: (context) => MapsView(
+                                                //         goBackRouteName:
+                                                //             TurunBarangOnlineScreen
+                                                //                 .routeName),
+                                                //   ),
+                                                // );
                                               },
                                               child: Row(
                                                 children: [

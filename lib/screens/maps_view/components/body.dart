@@ -126,6 +126,13 @@ class _DirectionState extends State<Direction> {
       //   "long_source": ""
       // },
 
+      // FIREBASE BUAT DASHBOARD
+      final DatabaseReference dashboardLive =
+          FirebaseDatabase.instance.ref('realtime_supir_dashboard/${username}');
+
+      await dashboardLive.set(
+          {"lat": currentPosition.latitude, "long": currentPosition.longitude});
+      //FIREBASE BUAT DASHBOARD
       print('User added successfully!');
     } catch (e) {
       print('Error adding user: $e');
