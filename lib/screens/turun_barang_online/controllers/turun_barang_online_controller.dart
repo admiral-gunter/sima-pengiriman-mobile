@@ -184,8 +184,12 @@ class TurunBarangOnlineController extends GetxController {
 
         for (int i = 0; i < listLoc.length; i++) {
           var item = listLoc[i];
-          double dest_latitude = double.parse(item['dest_loc_latitude']);
-          double dest_longitude = double.parse(item['dest_loc_longitude']);
+          // double dest_latitude = double.parse(item['dest_loc_latitude']);
+          // double dest_longitude = double.parse(item['dest_loc_longitude']);
+          double dest_latitude =
+              double.tryParse(item['dest_loc_latitude'] ?? '') ?? 0.0;
+          double dest_longitude =
+              double.tryParse(item['dest_loc_longitude'] ?? '') ?? 0.0;
           final distanceKm = haversine(
               cur_latitude, cur_longitude, dest_latitude, dest_longitude);
           listLoc[i]['dest_calc'] = distanceKm.toStringAsFixed(2);
@@ -193,14 +197,20 @@ class TurunBarangOnlineController extends GetxController {
           listLoc[i]['lat_sj'] = latlongSJ['lat_sj'];
           listLoc[i]['long_sj'] = latlongSJ['long_sj'];
         }
-        listLoc.sort((a, b) =>
-            (a['dest_calc'] as double).compareTo(b['dest_calc'] as double));
+        // listLoc.sort((a, b) =>
+        //     (a['dest_calc'] as double).compareTo(b['dest_calc'] as double));
+
+        listLoc.sort((a, b) {
+          double aDestCalc = double.tryParse(a['dest_calc'] ?? '') ?? 0.0;
+          double bDestCalc = double.tryParse(b['dest_calc'] ?? '') ?? 0.0;
+          return aDestCalc.compareTo(bDestCalc);
+        });
         print(listLoc);
       } else {
         print('POST request failed with status: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
+      print('Error get item by no SJ: $e');
     }
   }
 

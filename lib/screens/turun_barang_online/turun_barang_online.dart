@@ -1,7 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/screens/maps_view/controllers/maps_view_controller.dart';
@@ -12,6 +17,7 @@ import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:uuid/uuid.dart';
 import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
 import 'package:location/location.dart';
@@ -41,6 +47,10 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   String username = '';
   int totalBarangHarusDiTap = 0;
 
+  final LocationSettings locationSettings = LocationSettings(
+    distanceFilter: 100,
+  );
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +65,33 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
             });
           }
         });
+      }
+    });
+    StreamSubscription<Position> positionStream =
+        Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+            (Position? position) {
+      // do what you want to do with the position here
+      if (mounted) {
+        setState(() async {
+          // currentLocation = LatLng(position!.latitude, position!.longitude);
+          await _addLokasiFirebaseFromLok(position!);
+        });
+      }
+    }, onError: (error) {
+      print("Error getting location: $error");
+      // Handle error appropriately
+    });
+    Timer.periodic(Duration(seconds: 3), (Timer timer) async {
+      try {
+        await _getLocationData();
+        // final DatabaseReference dashboardLive = FirebaseDatabase.instance
+        //     .ref('realtime_supir_dashboard/${username}');
+        // await dashboardLive
+        //     .set({"lat": latitude.toString(), "long": longitude.toString()});
+        // print('aduhai');
+      } catch (e) {
+        // Handle the exception as per your requirement
+        print('Error we: $e');
       }
     });
   }
@@ -301,6 +338,82 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     }
   }
 
+  Future<void> _addLokasiFirebaseFromLok(Position currentPosition) async {
+    DateTime timestamp = DateTime.now();
+
+    String curTimeStamp = DateFormat('dd/MM/yyyy HH:mm:ss').format(timestamp);
+
+    var uuid = Uuid();
+    String username = await SharedToken.univGetterString('username');
+    username = username.replaceAll(' ', '_');
+    String timestampLink = DateFormat('dd-MM-yyyy').format(timestamp);
+
+    // final String userId = username.toString() + '_' + uuid.v4().toString();
+    final DatabaseReference dblokRef =
+        FirebaseDatabase.instance.ref('sima_pengiriman_supir');
+
+    // final String username = await SharedToken.univGetterString('username');
+
+    final DatabaseReference livelokRef = FirebaseDatabase.instance
+        .ref('perjalanan_supir_${username}_${timestampLink}');
+    final MapsViewController ctl = Get.put(MapsViewController());
+    try {
+      final liveLokRefData = ctl.liveLokRefData;
+      double latSource = ctl.liveLokRefData['lat_source'] as double;
+      double longSource = ctl.liveLokRefData['long_source'] as double;
+
+      double destLatSource = ctl.liveLokRefData['lat_dest'] as double;
+      double destLongSource = ctl.liveLokRefData['long_dest'] as double;
+
+      liveLokRefData['lat_cur'] = currentPosition.latitude;
+      liveLokRefData['long_cur'] = currentPosition.longitude;
+      liveLokRefData['updated_at'] = curTimeStamp;
+
+      // await livelokRef.set(liveLokRefData);
+
+      await dblokRef.push().set({
+        'created_at': curTimeStamp,
+        'supir': username,
+        'cur_long': currentPosition.longitude,
+        'cur_lat': currentPosition.latitude,
+        'id': uuid.v4()
+      });
+
+      // BODY PERJALANAN SUPIR FORMAT : perjalanan_supir_nama_HARI-TANGGAL-BULAN-TAHUN
+      // "perjalanan_supir_sima": {
+      //   "lat_cur": -6.9466,
+      //   "lat_dest": "",
+      //   "lat_source": -6.9465,
+      //   "long_cur": 107.7299,
+      //   "long_dest": "",
+      //   "long_source": ""
+      // },
+
+      // FIREBASE BUAT DASHBOARD
+      // final DatabaseReference dashboardLive =
+      //     FirebaseDatabase.instance.ref('realtime_supir_dashboard/${username}');
+
+      // await dashboardLive.set({
+      //   "lat": currentPosition.latitude.toString(),
+      //   "long": currentPosition.longitude.toString()
+      // });
+
+      final DatabaseReference dashboardLive =
+          FirebaseDatabase.instance.ref('realtime_supir_dashboard');
+
+      await dashboardLive.set({
+        "${username}": {
+          "lat": currentPosition.latitude.toString(),
+          "long": currentPosition.longitude.toString()
+        }
+      });
+      //FIREBASE BUAT DASHBOARD
+      print('User added successfully!');
+    } catch (e) {
+      print('Error adding user: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final TurunBarangOnlineController ctl =
@@ -481,9 +594,11 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                       TextButton(
                                           onPressed: () async {
                                             await ctl.SJBatalKirim();
-                                            setState(() {
-                                              sjDibatalkan = true;
-                                            });
+                                            if (mounted) {
+                                              setState(() {
+                                                sjDibatalkan = true;
+                                              });
+                                            }
                                             Navigator.pop(context);
                                           },
                                           child: Text('Ok'))
@@ -502,78 +617,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                             onPressed: () {
                               _launchMapsUrl(ctl.listLoc);
                               return;
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text('Pilih Tujuan'),
-                                    content: SingleChildScrollView(
-                                      child: Column(
-                                        children: [
-                                          for (final item in ctl.listLoc)
-                                            InkWell(
-                                              onTap: () async {
-                                                final MapsViewController ctk =
-                                                    Get.put(
-                                                        MapsViewController());
-                                                ctk.liveLokRefData['lat_dest'] =
-                                                    double.parse(item[
-                                                            'dest_loc_latitude']
-                                                        .toString());
-                                                ctk.liveLokRefData[
-                                                        'long_dest'] =
-                                                    double.parse(item[
-                                                            'dest_loc_longitude']
-                                                        .toString());
-                                                ctk.liveLokRefData[
-                                                        'lat_source'] =
-                                                    double.parse(item['lat_sj']
-                                                        .toString());
-                                                ctk.liveLokRefData[
-                                                        'long_source'] =
-                                                    double.parse(item['long_sj']
-                                                        .toString());
-
-                                                setState(() {});
-                                                await Future.delayed(
-                                                    Duration(seconds: 1));
-                                                // _launchMapsUrl();
-                                                // Navigator.pushReplacement(
-                                                //   context,
-                                                //   MaterialPageRoute(
-                                                //     builder: (context) => MapsView(
-                                                //         goBackRouteName:
-                                                //             TurunBarangOnlineScreen
-                                                //                 .routeName),
-                                                //   ),
-                                                // );
-                                              },
-                                              child: Row(
-                                                children: [
-                                                  Text(item['dest_loc_name']),
-                                                  SizedBox(
-                                                      width:
-                                                          8), // Adjust the width as needed
-                                                  Text(
-                                                      '${item['dest_calc']} Km'),
-                                                ],
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-
-                              // Navigator.pushReplacement(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //     builder: (context) => MapsView(
-                              //         goBackRouteName:
-                              //             TurunBarangOnlineScreen.routeName),
-                              //   ),
-                              // );
                             },
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green),
