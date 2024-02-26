@@ -399,13 +399,11 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       // });
 
       final DatabaseReference dashboardLive =
-          FirebaseDatabase.instance.ref('realtime_supir_dashboard');
+          FirebaseDatabase.instance.ref('realtime_supir_dashboard/${username}');
 
       await dashboardLive.set({
-        "${username}": {
-          "lat": currentPosition.latitude.toString(),
-          "long": currentPosition.longitude.toString()
-        }
+        "lat": currentPosition.latitude.toString(),
+        "long": currentPosition.longitude.toString()
       });
       //FIREBASE BUAT DASHBOARD
       print('User added successfully!');
