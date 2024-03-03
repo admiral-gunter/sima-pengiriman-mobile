@@ -17,6 +17,8 @@ import '../../size_config.dart';
 import 'components/body.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class MenuScreen extends StatefulWidget {
   static var routeName = '/menu';
@@ -45,6 +47,41 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
+  void setPermissionHandler() async {
+    var status = await Permission.locationWhenInUse.status;
+    if (!status.isGranted) {
+      var status = await Permission.locationWhenInUse.request();
+      if (status.isGranted) {
+        var status = await Permission.locationAlways.request();
+        if (status.isGranted) {
+          //Do some stuff
+        } else {
+          //Do another stuff
+        }
+      } else {
+        //The user deny the permission
+      }
+      if (status.isPermanentlyDenied) {
+        //When the user previously rejected the permission and select never ask again
+        //Open the screen of settings
+        bool res = await openAppSettings();
+      }
+    } else {
+      //In use is available, check the always in use
+      var status = await Permission.locationAlways.status;
+      if (!status.isGranted) {
+        var status = await Permission.locationAlways.request();
+        if (status.isGranted) {
+          //Do some stuff
+        } else {
+          //Do another stuff
+        }
+      } else {
+        //previously available, do some stuff or nothing
+      }
+    }
+  }
+
   @override
   void dispose() {
     client.close();
@@ -54,6 +91,8 @@ class _MenuScreenState extends State<MenuScreen> {
   @override
   void initState() {
     super.initState();
+    setPermissionHandler();
+    _getBatteryLevel();
     // _backgroundServices();
     // _addLokasiFirebaseFromLok('aa', 'aa');
     checkTokenAndNavigate();
@@ -99,6 +138,25 @@ class _MenuScreenState extends State<MenuScreen> {
     } catch (e) {
       print('error background: ${e}');
     }
+  }
+
+  static const platform = MethodChannel('samples.flutter.dev/battery');
+// Get battery level.
+  String _batteryLevel = 'Unknown battery level.';
+
+  Future<void> _getBatteryLevel() async {
+    String batteryLevel;
+    try {
+      final result = await platform.invokeMethod<int>('getBatteryLevel');
+      batteryLevel = 'Battery level at $result % .';
+    } on PlatformException catch (e) {
+      batteryLevel = "Failed to get battery level: '${e.message}'.";
+    }
+
+    setState(() {
+      print('battery ${_batteryLevel}');
+      _batteryLevel = batteryLevel;
+    });
   }
 
   @override
