@@ -91,8 +91,6 @@ class _MenuScreenState extends State<MenuScreen> {
   @override
   void initState() {
     super.initState();
-    setPermissionHandler();
-    _getBatteryLevel();
     // _backgroundServices();
     // _addLokasiFirebaseFromLok('aa', 'aa');
     checkTokenAndNavigate();
@@ -138,25 +136,6 @@ class _MenuScreenState extends State<MenuScreen> {
     } catch (e) {
       print('error background: ${e}');
     }
-  }
-
-  static const platform = MethodChannel('samples.flutter.dev/battery');
-// Get battery level.
-  String _batteryLevel = 'Unknown battery level.';
-
-  Future<void> _getBatteryLevel() async {
-    String batteryLevel;
-    try {
-      final result = await platform.invokeMethod<int>('getBatteryLevel');
-      batteryLevel = 'Battery level at $result % .';
-    } on PlatformException catch (e) {
-      batteryLevel = "Failed to get battery level: '${e.message}'.";
-    }
-
-    setState(() {
-      print('battery ${_batteryLevel}');
-      _batteryLevel = batteryLevel;
-    });
   }
 
   @override
