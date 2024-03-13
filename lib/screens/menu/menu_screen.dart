@@ -41,7 +41,8 @@ class _MenuScreenState extends State<MenuScreen> {
     if (token != null && currentRoute != MenuScreen.routeName) {
       Navigator.pushReplacementNamed(context, MenuScreen.routeName);
     } else if (token == null && currentRoute != SignInScreen.routeName) {
-      DatabaseHelper.instance.emptyAllTables();
+      await DatabaseHelper.instance.emptyAllTables();
+
       await SharedToken.tokenRemover();
       Navigator.pushReplacementNamed(context, SignInScreen.routeName);
     }
