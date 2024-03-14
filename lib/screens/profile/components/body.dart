@@ -40,7 +40,7 @@ class Body extends StatelessWidget {
             text: "Log Out",
             icon: "assets/icons/Log out.svg",
             press: () async {
-              DatabaseHelper.instance.emptyAllTables();
+              await DatabaseHelper.instance.emptyAllTables();
               await SharedToken.tokenRemover();
               Navigator.pushReplacementNamed(context, SignInScreen.routeName);
             },

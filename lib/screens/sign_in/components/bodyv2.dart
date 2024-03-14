@@ -140,6 +140,7 @@ class _BodyV2State extends State<BodyV2> {
                     DefaultButton(
                       text: "Sign In",
                       press: () async {
+                        await DatabaseHelper.instance.emptyAllTables();
                         await SharedToken.tokenRemover();
                         if (_formKey.currentState!.validate()) {
                           final resp = await _ctl.loging();
