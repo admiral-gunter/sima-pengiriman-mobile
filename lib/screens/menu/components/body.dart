@@ -326,11 +326,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                             ? ListView.builder(
                                 itemCount: recordTugas.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  // bool isRecordDone = recordTugasDone.any(
-                                  //     (doneItem) =>
-                                  //         doneItem["nomor_order"] ==
-                                  //         recordTugas[index]["nomor_order"]);
-
                                   return ListTile(
                                     subtitle: Column(
                                       crossAxisAlignment:
@@ -364,12 +359,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                               fontWeight: FontWeight.bold,
                                             ),
                                     ),
-                                    // trailing: Text(
-                                    //   'Incompleted',
-                                    //   style: TextStyle(
-                                    //       color: Colors.orange,
-                                    //       fontWeight: FontWeight.bold),
-                                    // ),
                                     title:
                                         Text(recordTugas[index]["nomor_order"]),
                                     onTap: () async {
@@ -418,21 +407,21 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                           width: double.infinity,
                           child: ElevatedButton(
                               onPressed: () {
-                                for (final data in recordTugas) {
-                                  if (data['status_id'] == '21') {
-                                    Navigator.pushNamed(context,
-                                        ScanPengirimanScreen.routeName);
-                                  }
-                                }
-                                if (recordTugas.length > 0) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          'Masih Ada Surat Jalan Belum Selesai'),
-                                    ),
-                                  );
-                                  return;
-                                }
+                                // for (final data in recordTugas) {
+                                //   if (data['status_id'] == '21') {
+                                //     Navigator.pushNamed(context,
+                                //         ScanPengirimanScreen.routeName);
+                                //   }
+                                // }
+                                // if (recordTugas.length > 0) {
+                                //   ScaffoldMessenger.of(context).showSnackBar(
+                                //     SnackBar(
+                                //       content: Text(
+                                //           'Masih Ada Surat Jalan Belum Selesai'),
+                                //     ),
+                                //   );
+                                //   return;
+                                // }
 
                                 Navigator.pushNamed(
                                     context, ScanPengirimanScreen.routeName);
