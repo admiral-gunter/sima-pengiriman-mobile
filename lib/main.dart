@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:sima_pengiriman/routes.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
 import 'package:sima_pengiriman/theme.dart';
@@ -31,8 +32,26 @@ void onStart(ServiceInstance serviceInstance) async {
       "lat": position.latitude.toString(),
       "long": position.longitude.toString()
     });
+  });
 
-    // print('fumu ${position.latitude} ${position.longitude}');
+  Timer.periodic(Duration(seconds: 30), (Timer timer) async {
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+
+    final DatabaseReference dashboardLive = FirebaseDatabase.instance
+        .ref('realtime_supir_dashboard/${username}_log/${formattedDate}');
+
+    await dashboardLive.set({
+      "lat": position.latitude.toString(),
+      "long": position.longitude.toString()
+    });
   });
 }
 
