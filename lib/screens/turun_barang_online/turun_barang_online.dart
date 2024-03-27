@@ -359,11 +359,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     final MapsViewController ctl = Get.put(MapsViewController());
     try {
       final liveLokRefData = ctl.liveLokRefData;
-      double latSource = ctl.liveLokRefData['lat_source'] as double;
-      double longSource = ctl.liveLokRefData['long_source'] as double;
-
-      double destLatSource = ctl.liveLokRefData['lat_dest'] as double;
-      double destLongSource = ctl.liveLokRefData['long_dest'] as double;
 
       liveLokRefData['lat_cur'] = currentPosition.latitude;
       liveLokRefData['long_cur'] = currentPosition.longitude;
@@ -477,8 +472,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                       ListView.builder(
                           itemCount: output.length,
                           itemBuilder: ((context, index) {
-                            var currentItem = output[index];
-
                             if (output[index]['qty_tap'] ==
                                 output[index]['qty']) {
                               return ListTile(

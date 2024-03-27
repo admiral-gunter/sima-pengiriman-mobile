@@ -17,20 +17,26 @@ import 'package:http/http.dart' as http;
 
 void onStart(ServiceInstance serviceInstance) async {
   String username = await SharedToken.univGetterString('username');
+  username = username.replaceAll(' ', '_');
 
-  Timer.periodic(Duration(seconds: 20), (Timer timer) async {
+  Timer.periodic(Duration(seconds: 10), (Timer timer) async {
+    print('aaa');
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
     final DatabaseReference dashboardLive =
         FirebaseDatabase.instance.ref('realtime_supir_dashboard/${username}');
 
     await dashboardLive.set({
       "lat": position.latitude.toString(),
-      "long": position.longitude.toString()
+      "long": position.longitude.toString(),
+      "updated_at": formattedDate
     });
   });
 
@@ -43,14 +49,16 @@ void onStart(ServiceInstance serviceInstance) async {
     );
 
     DateTime now = DateTime.now();
+    String yMd = DateFormat('yyyy-MM-dd').format(now);
     String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
 
     final DatabaseReference dashboardLive = FirebaseDatabase.instance
-        .ref('realtime_supir_dashboard/${username}_log/${formattedDate}');
+        .ref('supir_activity_log/${username}/${formattedDate}');
 
     await dashboardLive.set({
       "lat": position.latitude.toString(),
-      "long": position.longitude.toString()
+      "long": position.longitude.toString(),
+      "created_at": formattedDate
     });
   });
 }
