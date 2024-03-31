@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:sima_pengiriman/screens/complete_profile/complete_profile_screen.dart';
+import 'package:sima_pengiriman/screens/delivery_order_menu/delivery_order_menu.dart';
 import 'package:sima_pengiriman/screens/list_barcodes/list_barcodes_screen.dart';
 import 'package:sima_pengiriman/screens/login_success/login_success_screen.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
@@ -8,6 +9,7 @@ import 'package:sima_pengiriman/screens/sign_in/sign_in_screen.dart';
 import 'package:sima_pengiriman/screens/splash/splash_screen.dart';
 import 'package:sima_pengiriman/screens/turun_barang_offline/turun_barang_offline_screen.dart';
 
+import 'screens/delivery_instant/delivery_instant_screen.dart';
 import 'screens/history_turun_barang/history_turun_barang.dart';
 import 'screens/maps_view/maps_view.dart';
 import 'screens/scan_pengiriman/scan_pengiriman_screen.dart';
@@ -34,5 +36,7 @@ final Map<String, WidgetBuilder> routes = {
   HistoryBarangScreen.routeName: (context) => HistoryBarangScreen(),
   TurunBarangOnlineHistoryScreen.routeName: (context) =>
       TurunBarangOnlineHistoryScreen(),
-  MapsView.routeName: (context) => MapsView()
+  MapsView.routeName: (context) => MapsView(),
+  DeliverOrderMenu.routeName: (context) => DeliverOrderMenu(),
+  DeliveryInstantScreen.routeName: (context) => DeliveryInstantScreen()
 };

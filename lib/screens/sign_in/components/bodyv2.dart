@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
+import 'package:sima_pengiriman/screens/delivery_order_menu/delivery_order_menu.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 
 import '../../../components/default_button.dart';
@@ -142,6 +143,9 @@ class _BodyV2State extends State<BodyV2> {
                       press: () async {
                         await DatabaseHelper.instance.emptyAllTables();
                         await SharedToken.tokenRemover();
+                        // Navigator.pushReplacementNamed(
+                        //     context, DeliverOrderMenu.routeName);
+                        // return;
                         if (_formKey.currentState!.validate()) {
                           final resp = await _ctl.loging();
 
