@@ -3,6 +3,8 @@ import 'package:sima_pengiriman/components/default_button.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
 import 'package:sima_pengiriman/size_config.dart';
 
+import '../../delivery_order_menu/delivery_order_menu.dart';
+
 class Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -28,7 +30,10 @@ class Body extends StatelessWidget {
           child: DefaultButton(
             text: "Back to home",
             press: () {
-              Navigator.pushReplacementNamed(context, MenuScreen.routeName);
+              Navigator.pushReplacementNamed(
+                  context, DeliverOrderMenu.routeName);
+
+              // Navigator.pushReplacementNamed(context, MenuScreen.routeName);
             },
           ),
         ),
