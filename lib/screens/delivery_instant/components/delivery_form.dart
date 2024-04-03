@@ -8,6 +8,7 @@ class DeliveryForm extends StatefulWidget {
 class _DeliveryFormState extends State<DeliveryForm> {
   DateTime selectedDate = DateTime.now();
   TimeOfDay selectedTime = TimeOfDay.now();
+  final _formKey = GlobalKey<FormState>();
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -36,91 +37,100 @@ class _DeliveryFormState extends State<DeliveryForm> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 800,
+      height:
+          WidgetsBinding.instance.window.viewInsets.bottom > 0.0 ? 500 : 800,
       child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(children: [
-              TextFormField(
-                decoration: InputDecoration(
-                  icon: Icon(Icons.location_on),
-                  hintText: 'Adress..',
-                  labelText: 'From',
-                ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              TextFormField(
-                decoration: InputDecoration(
-                  icon: Icon(Icons.location_on),
-                  hintText: 'Adress..',
-                  labelText: 'To',
-                ),
-              ),
-              SizedBox(
-                height: 40,
-              ),
-              Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Date & Time Pickup')),
-              Row(
-                children: <Widget>[
-                  ElevatedButton(
-                    onPressed: () => _selectDate(context),
-                    child: Text(' ${selectedDate.toString().substring(0, 10)}'),
-                  ),
-                  SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: () => _selectTime(context),
-                    child:
-                        Text(' ${selectedTime.toString().substring(10, 15)}'),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 40,
-              ),
-              SizedBox(
-                height: 100,
-                child: TextFormField(
-                  maxLines: 10,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Column(mainAxisSize: MainAxisSize.min, children: [
+                TextFormField(
                   decoration: InputDecoration(
-                    hintText: 'Enter package details',
-                    labelText: 'Package Details',
+                    icon: Icon(Icons.location_on),
+                    hintText: 'Adress..',
+                    labelText: 'From',
                   ),
                 ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              TextFormField(
-                decoration: InputDecoration(
-                  hintText: 'Penerima',
-                  labelText: 'nama penerima',
+                SizedBox(
+                  height: 20,
                 ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              TextFormField(
-                decoration: InputDecoration(
-                  hintText: 'No. Telp',
-                  labelText: 'nomor telepon',
+                TextFormField(
+                  decoration: InputDecoration(
+                    icon: Icon(Icons.location_on),
+                    hintText: 'Adress..',
+                    labelText: 'To',
+                  ),
                 ),
-              ),
-            ]),
-            SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text(
-                      'Submit',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
-                    )))
-          ],
+                SizedBox(
+                  height: 40,
+                ),
+                Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Date & Time Pickup')),
+                Row(
+                  children: <Widget>[
+                    ElevatedButton(
+                      onPressed: () => _selectDate(context),
+                      child:
+                          Text(' ${selectedDate.toString().substring(0, 10)}'),
+                    ),
+                    SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () => _selectTime(context),
+                      child:
+                          Text(' ${selectedTime.toString().substring(10, 15)}'),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 40,
+                ),
+                SizedBox(
+                  height: 100,
+                  child: TextFormField(
+                    maxLines: 10,
+                    decoration: InputDecoration(
+                      hintText: 'Enter package details',
+                      labelText: 'Package Details',
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                TextFormField(
+                  decoration: InputDecoration(
+                    hintText: 'Penerima',
+                    labelText: 'nama penerima',
+                  ),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                TextFormField(
+                  scrollPadding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom + 5 * 4),
+                  decoration: InputDecoration(
+                    hintText: 'No. Telp',
+                    labelText: 'nomor telepon',
+                  ),
+                ),
+              ]),
+              SizedBox(height: 70),
+              SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                      onPressed: () {},
+                      child: Text(
+                        'Submit',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 24),
+                      )))
+            ],
+          ),
         ),
       ),
     );
