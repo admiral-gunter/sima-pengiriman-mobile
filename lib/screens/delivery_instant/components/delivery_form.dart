@@ -118,6 +118,16 @@ class _DeliveryFormState extends State<DeliveryForm> {
                     labelText: 'nomor telepon',
                   ),
                 ),
+                SizedBox(
+                  height: 20,
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: Icon(Icons.camera),
+                      label: Text('Foto Package')),
+                )
               ]),
               SizedBox(height: 70),
               SizedBox(
