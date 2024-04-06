@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:async';
+import 'dart:io';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:open_file_plus/open_file_plus.dart';
 
 class ShowCase extends StatelessWidget {
   const ShowCase({Key? key}) : super(key: key);
@@ -156,6 +160,47 @@ class _FetchingCourierTextState extends State<FetchingCourierText> {
   }
 }
 
+Future<String?> getDownloadPath() async {
+  Directory? directory;
+  try {
+    if (Platform.isIOS) {
+      directory = await getApplicationDocumentsDirectory();
+    } else {
+      directory = Directory('/storage/emulated/0/Download');
+      // Put file in global download folder, if for an unknown reason it didn't exist, we fallback
+      // ignore: avoid_slow_async_io
+      if (!await directory.exists())
+        directory = await getExternalStorageDirectory();
+    }
+  } catch (err, stack) {
+    print("Cannot get download folder path");
+  }
+  return directory?.path;
+}
+
+generatePDF() async {
+  final pdf = pw.Document();
+  pdf.addPage(
+    pw.Page(
+      build: (pw.Context context) => pw.Center(
+        child: pw.BarcodeWidget(
+          barcode: pw.Barcode.qrCode(),
+          data: 'ss',
+          width: 200,
+          height: 200,
+        ),
+      ),
+    ),
+  );
+
+  final output = await getDownloadPath();
+  final file = File("${output}/example.pdf");
+
+  await file.writeAsBytes(await pdf.save());
+
+  return file;
+}
+
 class Body extends StatefulWidget {
   const Body({super.key});
 
@@ -186,10 +231,22 @@ class _BodyState extends State<Body> {
               builder: (context) => Padding(
                 padding: const EdgeInsets.only(bottom: 20),
                 child: _courierFound
-                    ? Text(
-                        'Found!',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 24),
+                    ? InkWell(
+                        onTap: () {
+                          generatePDF().then((file) {
+                            print("PDF file saved at: ${file.path}");
+                            Future.delayed(Duration(seconds: 1), () {
+                              OpenFile.open("/sdcard/Download/example.pdf");
+                            });
+                          }).catchError((error) {
+                            print("Error generating PDF: $error");
+                          });
+                        },
+                        child: Text(
+                          'Found!',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 24),
+                        ),
                       )
                     : FetchingCourierText(),
               ),
