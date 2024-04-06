@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sima_pengiriman/screens/map_picker/map_picker.dart';
+
+import '../../looking_for_courier/looking_for_courier.dart';
 
 class DeliveryForm extends StatefulWidget {
   @override
@@ -47,21 +50,55 @@ class _DeliveryFormState extends State<DeliveryForm> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Column(mainAxisSize: MainAxisSize.min, children: [
-                TextFormField(
-                  decoration: InputDecoration(
-                    icon: Icon(Icons.location_on),
-                    hintText: 'Adress..',
-                    labelText: 'From',
+                InkWell(
+                  onTap: () {
+                    Navigator.pushReplacementNamed(
+                        context, MapPicker.routeName);
+                  },
+                  child: Container(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Icon(Icons.location_on),
+                        SizedBox(
+                          width: 5,
+                        ),
+                        Column(
+                          children: [
+                            Text('Lokasi Jemput',
+                                style: TextStyle(fontSize: 10)),
+                            Text('Adress...'),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 SizedBox(
                   height: 20,
                 ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    icon: Icon(Icons.location_on),
-                    hintText: 'Adress..',
-                    labelText: 'To',
+                InkWell(
+                  onTap: () {
+                    Navigator.pushReplacementNamed(
+                        context, MapPicker.routeName);
+                  },
+                  child: Container(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Icon(Icons.location_on),
+                        SizedBox(
+                          width: 5,
+                        ),
+                        Column(
+                          children: [
+                            Text('Lokasi Tujuan',
+                                style: TextStyle(fontSize: 10)),
+                            Text('Adress...'),
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 ),
                 SizedBox(
@@ -72,13 +109,13 @@ class _DeliveryFormState extends State<DeliveryForm> {
                     child: Text('Date & Time Pickup')),
                 Row(
                   children: <Widget>[
-                    ElevatedButton(
+                    FilledButton(
                       onPressed: () => _selectDate(context),
                       child:
                           Text(' ${selectedDate.toString().substring(0, 10)}'),
                     ),
                     SizedBox(width: 10),
-                    ElevatedButton(
+                    FilledButton(
                       onPressed: () => _selectTime(context),
                       child:
                           Text(' ${selectedTime.toString().substring(10, 15)}'),
@@ -87,6 +124,15 @@ class _DeliveryFormState extends State<DeliveryForm> {
                 ),
                 SizedBox(
                   height: 40,
+                ),
+                TextFormField(
+                  decoration: InputDecoration(
+                    hintText: 'Input package weight',
+                    labelText: 'Weight (kg)',
+                  ),
+                ),
+                SizedBox(
+                  height: 20,
                 ),
                 SizedBox(
                   height: 100,
@@ -126,14 +172,29 @@ class _DeliveryFormState extends State<DeliveryForm> {
                   child: ElevatedButton.icon(
                       onPressed: () {},
                       icon: Icon(Icons.camera),
-                      label: Text('Foto Package')),
+                      label: Text('Foto Package (optional)')),
                 )
               ]),
+              SizedBox(
+                height: 10,
+              ),
+              SizedBox(
+                child: Row(
+                  children: [
+                    Text('Total Bil :'),
+                    SizedBox(width: 5),
+                    Text('20.000,00')
+                  ],
+                ),
+              ),
               SizedBox(height: 70),
               SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(
+                            context, LookingForCourier.routeName);
+                      },
                       child: Text(
                         'Submit',
                         style: TextStyle(

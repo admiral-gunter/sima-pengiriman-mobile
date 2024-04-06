@@ -73,6 +73,9 @@ dependencies:
   uuid: 3.0.7
   workmanager: ^0.5.2
   permission_handler: ^11.3.0
+  open_street_map_search_and_pick: ^0.1.0
+  flutter_spinkit: ^5.2.1
+  flutter_icons: ^1.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

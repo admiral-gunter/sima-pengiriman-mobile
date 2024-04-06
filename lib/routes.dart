@@ -11,6 +11,8 @@ import 'package:sima_pengiriman/screens/turun_barang_offline/turun_barang_offlin
 
 import 'screens/delivery_instant/delivery_instant_screen.dart';
 import 'screens/history_turun_barang/history_turun_barang.dart';
+import 'screens/looking_for_courier/looking_for_courier.dart';
+import 'screens/map_picker/map_picker.dart';
 import 'screens/maps_view/maps_view.dart';
 import 'screens/scan_pengiriman/scan_pengiriman_screen.dart';
 import 'screens/scanner_offline/scanner_offline_screen.dart';
@@ -38,5 +40,9 @@ final Map<String, WidgetBuilder> routes = {
       TurunBarangOnlineHistoryScreen(),
   MapsView.routeName: (context) => MapsView(),
   DeliverOrderMenu.routeName: (context) => DeliverOrderMenu(),
-  DeliveryInstantScreen.routeName: (context) => DeliveryInstantScreen()
+  DeliveryInstantScreen.routeName: (context) => DeliveryInstantScreen(),
+  MapPicker.routeName: (context) => MapPicker(
+        title: 'Map Picker',
+      ),
+  LookingForCourier.routeName: (context) => LookingForCourier()
 };
