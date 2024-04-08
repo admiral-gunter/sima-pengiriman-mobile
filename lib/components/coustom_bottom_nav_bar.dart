@@ -5,6 +5,7 @@ import 'package:sima_pengiriman/screens/profile/profile_screen.dart';
 
 import '../constants.dart';
 import '../enums.dart';
+import '../screens/order_delivery_screen/order_delivery_screen.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   const CustomBottomNavBar({
@@ -53,6 +54,38 @@ class CustomBottomNavBar extends StatelessWidget {
                       Navigator.pushNamed(context, MenuScreen.routeName);
                     }
                   }),
+              // for driver
+              Stack(
+                children: [
+                  Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(100)),
+                      child: Center(
+                          child: Text(
+                        '8',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ))),
+                  IconButton(
+                      icon: Icon(Icons.car_repair,
+                          color: MenuState.orderDelivery == selectedMenu
+                              ? kPrimaryColor
+                              : inActiveIconColor),
+                      onPressed: () {
+                        String? currentRoute =
+                            ModalRoute.of(context)?.settings.name;
+
+                        if (currentRoute != OrderDeliveryScreen.routeName) {
+                          Navigator.pushNamed(
+                              context, OrderDeliveryScreen.routeName);
+                        }
+                      }),
+                ],
+              ),
+              // for driver
               IconButton(
                   icon: SvgPicture.asset(
                     "assets/icons/User Icon.svg",

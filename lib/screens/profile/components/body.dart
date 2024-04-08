@@ -4,6 +4,7 @@ import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../../history_order/history_order_screen.dart';
 import 'profile_menu.dart';
 import 'profile_pic.dart';
 
@@ -22,9 +23,12 @@ class Body extends StatelessWidget {
             press: () => {},
           ),
           ProfileMenu(
-            text: "Notifications",
+            text: "History Order",
             icon: "assets/icons/Bell.svg",
-            press: () {},
+            press: () {
+              Navigator.pushReplacementNamed(
+                  context, HistoryOrderScreen.routeName);
+            },
           ),
           ProfileMenu(
             text: "Settings",
