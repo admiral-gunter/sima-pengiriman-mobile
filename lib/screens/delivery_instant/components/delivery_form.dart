@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sima_pengiriman/screens/map_picker/map_picker.dart';
 
 import '../../looking_for_courier/looking_for_courier.dart';
@@ -126,6 +127,7 @@ class _DeliveryFormState extends State<DeliveryForm> {
                   height: 40,
                 ),
                 TextFormField(
+                  keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     hintText: 'Input package weight',
                     labelText: 'Weight (kg)',

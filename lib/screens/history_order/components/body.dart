@@ -28,10 +28,9 @@ class Body extends StatelessWidget {
               return ListTile(
                 title: Text('Item $index'),
                 subtitle: Text('This is a dummy item.'),
-                leading: Icon(Icons.circle), // Just for illustration
+                leading: const Icon(Icons.list), // Just for illustration
                 onTap: () {
-                  Navigator.pushReplacementNamed(
-                      context, SummaryOrderScreen.routeName);
+                  Navigator.pushNamed(context, SummaryOrderScreen.routeName);
                   print('Tapped on item $index');
                 },
               );
