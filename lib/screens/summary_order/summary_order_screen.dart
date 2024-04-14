@@ -13,23 +13,25 @@ class SummaryOrderScreen extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text("Summary Order"),
+        title: const Text("Summary Order"),
       ),
-      body: Padding(padding: EdgeInsets.all(10), child: Body()),
+      body: const Padding(padding: EdgeInsets.all(10), child: Body()),
       bottomNavigationBar: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-              child: ElevatedButton(
-                  onPressed: () {},
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.help),
-                      Text('Help'),
-                    ],
-                  ))),
-          SizedBox(
+            child: ElevatedButton(
+              onPressed: () {},
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.help),
+                  Text('Help'),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(
             width: 5,
           ),
           Expanded(

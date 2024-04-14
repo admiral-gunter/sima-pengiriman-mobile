@@ -9,6 +9,7 @@ import 'package:sima_pengiriman/screens/sign_in/sign_in_screen.dart';
 import 'package:sima_pengiriman/screens/splash/splash_screen.dart';
 import 'package:sima_pengiriman/screens/turun_barang_offline/turun_barang_offline_screen.dart';
 
+import 'screens/courier_delivery_task_detail/delivery_task_detail.dart';
 import 'screens/delivery_instant/delivery_instant_screen.dart';
 import 'screens/history_order/history_order_screen.dart';
 import 'screens/history_turun_barang/history_turun_barang.dart';
@@ -50,5 +51,6 @@ final Map<String, WidgetBuilder> routes = {
   LookingForCourier.routeName: (context) => LookingForCourier(),
   OrderDeliveryScreen.routeName: (context) => OrderDeliveryScreen(),
   HistoryOrderScreen.routeName: (context) => HistoryOrderScreen(),
-  SummaryOrderScreen.routeName: (context) => SummaryOrderScreen()
+  SummaryOrderScreen.routeName: (context) => SummaryOrderScreen(),
+  DeliveryTaskDetail.routeName: (context) => DeliveryTaskDetail()
 };
