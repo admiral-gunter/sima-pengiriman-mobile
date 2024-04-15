@@ -3,6 +3,7 @@ import 'package:sima_pengiriman/components/default_button.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
 import 'package:sima_pengiriman/size_config.dart';
 
+import '../../../shared_preferences/shared_token.dart';
 import '../../delivery_order_menu/delivery_order_menu.dart';
 
 class Body extends StatelessWidget {
@@ -29,11 +30,14 @@ class Body extends StatelessWidget {
           width: SizeConfig.screenWidth * 0.6,
           child: DefaultButton(
             text: "Back to home",
-            press: () {
-              // Navigator.pushReplacementNamed(
-              //     context, DeliverOrderMenu.routeName);
-
-              Navigator.pushReplacementNamed(context, MenuScreen.routeName);
+            press: () async {
+              String uname = await SharedToken.univGetterString('username');
+              if (uname == 'sima') {
+                Navigator.pushReplacementNamed(
+                    context, DeliverOrderMenu.routeName);
+              } else {
+                Navigator.pushReplacementNamed(context, MenuScreen.routeName);
+              }
             },
           ),
         ),
