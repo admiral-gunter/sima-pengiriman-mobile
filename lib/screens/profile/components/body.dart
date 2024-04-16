@@ -17,24 +17,11 @@ class Body extends StatelessWidget {
           ProfilePic(),
           SizedBox(height: 20),
           ProfileMenu(
-            text: "My Account",
-            icon: "assets/icons/User Icon.svg",
-            press: () => {},
-          ),
-          ProfileMenu(
-            text: "Notifications",
-            icon: "assets/icons/Bell.svg",
-            press: () {},
-          ),
-          ProfileMenu(
-            text: "Settings",
+            text: "Pemantauan Perjalanan & Perkiraan Bahan Bakar",
             icon: "assets/icons/Settings.svg",
-            press: () {},
-          ),
-          ProfileMenu(
-            text: "Help Center",
-            icon: "assets/icons/Question mark.svg",
-            press: () {},
+            press: () => {
+              Navigator.pushReplacementNamed(context, SignInScreen.routeName)
+            },
           ),
           ProfileMenu(
             text: "Log Out",
