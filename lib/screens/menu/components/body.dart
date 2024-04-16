@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
+import 'package:sima_pengiriman/screens/courier_delivery_task_detail/delivery_task_detail.dart';
+import 'package:sima_pengiriman/screens/delivery_order_menu/delivery_order_menu.dart';
 import 'package:sima_pengiriman/screens/scan_pengiriman/scan_pengiriman_screen.dart';
 import 'package:sima_pengiriman/screens/turun_barang_online/controllers/turun_barang_online_controller.dart';
 import 'package:http/http.dart' as http;
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
+import '../../../enums.dart';
+import '../../../helper/debouncer.dart';
 import '../../turun_barang_online/turun_barang_online.dart';
 import '../../turun_barang_online/turun_barang_online_history.dart';
 
@@ -44,7 +48,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       // print('common no ORder list W ${e}');
       for (var i in e) {
         kumpulanNoSJStr +=
-            "'" + i['nomor_order'].toString().replaceAll(' ', '') + "',";
+            "'${i['nomor_order'].toString().replaceAll(' ', '')}',";
       }
       kumpulanNoSJStr += "''";
     } catch (error) {
@@ -56,7 +60,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   String statusSyncData = "LOADING";
   String kumpulanNoSnStr = "";
   Future getsyncDataTapInsert() async {
-    final url = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-pengiriman-by-user');
+    final url = Uri.parse('${kURL_ORIGIN}pengiriman/sync-pengiriman-by-user');
 
     List dataList = await DatabaseHelper.instance.getDataTapForToday();
 
@@ -105,11 +109,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
             };
 
             await DatabaseHelper.instance.insertRecordTugasHistory(tugasItem);
-            // item.remove('id');
-            // item.remove('status');
-            // item.remove('status_id');
-            // item.remove('status_nama');
-            // item.remove('keterangan');
 
             final Map<String, dynamic> itemInsert = {
               'nomor_order': item['nomor_order'],
@@ -143,7 +142,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
           await DatabaseHelper.instance.getRecordTugasDT2();
 
       if (mounted) {
-        if (tugasValue.length > 0) {
+        if (tugasValue.isNotEmpty) {
           setState(() {
             recordTugas.clear();
 
@@ -176,6 +175,20 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
           });
         }
 
+        if (true) {
+          if (mounted) {
+            setState(() {
+              recordTugas.add({
+                'nomor_order': 'GO-086',
+                'status_id': 0,
+                'status_nama': 'Incomplete',
+                'qty_sum': '3 Kg',
+                'tipe_pengiriman': 'instant'
+              });
+            });
+          }
+        }
+
         List<dynamic> historyValue =
             await DatabaseHelper.instance.getHistorySuratJalan();
 
@@ -184,7 +197,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
             recordTugasDone = historyValue;
           });
 
-          SJDalamPengiriman(historyValue);
+          sjDalamPengiriman(historyValue);
         }
       }
     } catch (error) {
@@ -196,7 +209,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     try {
       final username = await SharedToken.univGetterString('username');
 
-      final apiUrl = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-supir-beda');
+      final apiUrl = Uri.parse('${kURL_ORIGIN}pengiriman/sync-supir-beda');
 
       var data = {'sj': kumpulanNoSJStr, 'supir': username};
 
@@ -232,15 +245,15 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  Future SJDalamPengiriman(List data) async {
+  Future sjDalamPengiriman(List data) async {
     String strSJ = "";
     for (var element in data) {
       var noOd = element['nomor_order'].toString().replaceAll(' ', '');
-      strSJ += "'" + noOd + "',";
+      strSJ += "'$noOd',";
     }
-    strSJ += "'" + "" + "'";
+    strSJ += "''";
     final url =
-        Uri.parse(kURL_ORIGIN + 'pengiriman/update-pengiriman-from-mobile');
+        Uri.parse('${kURL_ORIGIN}pengiriman/update-pengiriman-from-mobile');
     Map<String, dynamic> requestBody = {"sj": strSJ, "status": "2"};
 
     try {
@@ -264,31 +277,31 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final _debouncer = Debouncer(delay: Duration(milliseconds: 500));
+
     final TurunBarangOnlineController ctl =
         Get.put(TurunBarangOnlineController());
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Container(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(Icons.list),
-              InkWell(
-                onTap: () {
-                  DatabaseHelper.instance.getRecordTugas().then((value) {
-                    if (mounted) {}
-                  });
-                },
-                child: Text(
-                  'Supir',
-                  style: TextStyle(color: Colors.black),
-                ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Icon(Icons.list),
+            InkWell(
+              onTap: () {
+                DatabaseHelper.instance.getRecordTugas().then((value) {
+                  if (mounted) {}
+                });
+              },
+              child: const Text(
+                'Supir',
+                style: TextStyle(color: Colors.black),
               ),
-              Icon(Icons.person)
-            ],
-          ),
+            ),
+            const Icon(Icons.person)
+          ],
         ),
         bottom: TabBar(
           controller: _tabController,
@@ -309,9 +322,8 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         ),
       ),
       body: statusSyncData == "LOADING"
-          ? Center(
+          ? const Center(
               child: CircularProgressIndicator(
-                // Customize the appearance of the CircularProgressIndicator
                 backgroundColor: Colors.grey,
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
               ),
@@ -322,7 +334,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                 Column(
                   children: [
                     Expanded(
-                        child: recordTugas.length > 0
+                        child: recordTugas.isNotEmpty
                             ? ListView.builder(
                                 itemCount: recordTugas.length,
                                 itemBuilder: (BuildContext context, int index) {
@@ -350,11 +362,11 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                               recordTugas[index]['status_id']
                                                       .toString() ==
                                                   '23'
-                                          ? TextStyle(
+                                          ? const TextStyle(
                                               color: Colors.red,
                                               fontWeight: FontWeight.bold,
                                             )
-                                          : TextStyle(
+                                          : const TextStyle(
                                               color: Colors.orange,
                                               fontWeight: FontWeight.bold,
                                             ),
@@ -363,6 +375,13 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                         Text(recordTugas[index]["nomor_order"]),
                                     onTap: () async {
                                       var selectedTugas = recordTugas[index];
+
+                                      if (selectedTugas['tipe_pengiriman'] !=
+                                          null) {
+                                        Navigator.pushNamed(context,
+                                            DeliveryTaskDetail.routeName);
+                                        return;
+                                      }
                                       await ctl.getItemsByNoSJ([selectedTugas]);
                                       if (recordTugas[index]['status_id']
                                                   .toString() ==
@@ -373,16 +392,26 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
                                           SnackBar(
-                                            content: Text(
+                                            content: const Text(
                                                 'Lanjutkan Pengiriman SJ?'),
-                                            duration: Duration(seconds: 2),
+                                            duration:
+                                                const Duration(seconds: 2),
                                             action: SnackBarAction(
                                               label: 'Oke',
                                               onPressed: () {
-                                                Navigator.pushNamed(
-                                                    context,
-                                                    TurunBarangOnlineScreen
-                                                        .routeName);
+                                                if (recordTugas[index]
+                                                        ['tipe_pengiriman'] ==
+                                                    null) {
+                                                  Navigator.pushNamed(
+                                                      context,
+                                                      TurunBarangOnlineScreen
+                                                          .routeName);
+                                                } else {
+                                                  Navigator.pushNamed(
+                                                      context,
+                                                      TurunBarangOnlineScreen
+                                                          .routeName);
+                                                }
                                               },
                                             ),
                                           ),
@@ -396,7 +425,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                   );
                                 },
                               )
-                            : Center(
+                            : const Center(
                                 child: Text(
                                     'Anda belum memiliki tugas silahkan klik tombol Scan Pengiriman untuk tugas anda hari ini'),
                               )),
@@ -407,31 +436,15 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                           width: double.infinity,
                           child: ElevatedButton(
                               onPressed: () {
-                                // for (final data in recordTugas) {
-                                //   if (data['status_id'] == '21') {
-                                //     Navigator.pushNamed(context,
-                                //         ScanPengirimanScreen.routeName);
-                                //   }
-                                // }
-                                // if (recordTugas.length > 0) {
-                                //   ScaffoldMessenger.of(context).showSnackBar(
-                                //     SnackBar(
-                                //       content: Text(
-                                //           'Masih Ada Surat Jalan Belum Selesai'),
-                                //     ),
-                                //   );
-                                //   return;
-                                // }
-
                                 Navigator.pushNamed(
                                     context, ScanPengirimanScreen.routeName);
                               },
-                              child: Text('Scan Pengiriman'))),
+                              child: const Text('Scan Pengiriman'))),
                     ),
                   ],
                 ),
-                recordTugasDone.length == 0
-                    ? Center(
+                recordTugasDone.isEmpty
+                    ? const Center(
                         child: Text(
                             'Anda belum memiliki tugas silahkan klik tombol Scan Pengiriman untuk tugas anda hari ini'),
                       )
@@ -446,8 +459,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                               await ctl.getItemsByNoSJ([selectedTugas]);
                               Navigator.pushNamed(context,
                                   TurunBarangOnlineHistoryScreen.routeName);
-                              // Navigator.pushNamed(
-                              //     context, TurunBarangOnlineScreen.routeName);
                             },
                           );
                         },
