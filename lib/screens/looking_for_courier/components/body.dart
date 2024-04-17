@@ -10,6 +10,7 @@ import 'package:sima_pengiriman/screens/delivery_instant/delivery_instant_screen
 import 'package:sima_pengiriman/screens/order_delivery_screen/order_delivery_screen.dart';
 
 import '../../delivery_order_menu/delivery_order_menu.dart';
+import '../../summary_order/summary_order_screen.dart';
 
 class ShowCase extends StatelessWidget {
   const ShowCase({Key? key}) : super(key: key);
@@ -188,9 +189,9 @@ generatePDF() async {
     pw.Page(
       build: (pw.Context context) => pw.Center(
         child: pw.BarcodeWidget(
-          barcode: pw.Barcode.qrCode(),
-          data: 'ss',
-          width: 200,
+          barcode: pw.Barcode.upcA(),
+          data: '423423345358',
+          width: double.infinity,
           height: 200,
         ),
       ),
@@ -242,8 +243,9 @@ class _BodyState extends State<Body> {
                             Future.delayed(Duration(seconds: 1), () {
                               OpenFile.open("/sdcard/Download/example.pdf");
                             });
+
                             Navigator.pushReplacementNamed(
-                                context, DeliverOrderMenu.routeName);
+                                context, SummaryOrderScreen.routeName);
                           }).catchError((error) {
                             print("Error generating PDF: $error");
                           });
