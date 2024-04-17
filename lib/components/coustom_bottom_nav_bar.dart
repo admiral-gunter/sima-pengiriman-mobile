@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
 import 'package:sima_pengiriman/screens/profile/profile_screen.dart';
+import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 
 import '../constants.dart';
 import '../enums.dart';
+import '../screens/delivery_order_menu/delivery_order_menu.dart';
 import '../screens/order_delivery_screen/order_delivery_screen.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
@@ -46,12 +48,19 @@ class CustomBottomNavBar extends StatelessWidget {
                         ? kPrimaryColor
                         : inActiveIconColor,
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     String? currentRoute =
                         ModalRoute.of(context)?.settings.name;
 
                     if (currentRoute != MenuScreen.routeName) {
-                      Navigator.pushNamed(context, MenuScreen.routeName);
+                      final username =
+                          await SharedToken.univGetterString('username');
+                      if (username == 'sima') {
+                        Navigator.pushNamed(
+                            context, DeliverOrderMenu.routeName);
+                      } else {
+                        Navigator.pushNamed(context, MenuScreen.routeName);
+                      }
                     }
                   }),
               IconButton(

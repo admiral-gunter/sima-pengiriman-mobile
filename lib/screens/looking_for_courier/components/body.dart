@@ -6,6 +6,10 @@ import 'dart:async';
 import 'dart:io';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:open_file_plus/open_file_plus.dart';
+import 'package:sima_pengiriman/screens/delivery_instant/delivery_instant_screen.dart';
+import 'package:sima_pengiriman/screens/order_delivery_screen/order_delivery_screen.dart';
+
+import '../../delivery_order_menu/delivery_order_menu.dart';
 
 class ShowCase extends StatelessWidget {
   const ShowCase({Key? key}) : super(key: key);
@@ -229,7 +233,7 @@ class _BodyState extends State<Body> {
           Align(
             child: Builder(
               builder: (context) => Padding(
-                padding: const EdgeInsets.only(bottom: 20),
+                padding: EdgeInsets.only(bottom: 20),
                 child: _courierFound
                     ? InkWell(
                         onTap: () {
@@ -238,12 +242,14 @@ class _BodyState extends State<Body> {
                             Future.delayed(Duration(seconds: 1), () {
                               OpenFile.open("/sdcard/Download/example.pdf");
                             });
+                            Navigator.pushReplacementNamed(
+                                context, DeliverOrderMenu.routeName);
                           }).catchError((error) {
                             print("Error generating PDF: $error");
                           });
                         },
                         child: Text(
-                          'Found!',
+                          'Download PDF!',
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 24),
                         ),
