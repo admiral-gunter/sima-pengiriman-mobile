@@ -151,8 +151,11 @@ class DeliverOrderMenu extends StatelessWidget {
                           onTap: () {
                             Navigator.pushNamed(
                                 context, SummaryOrderScreen.routeName);
-                            print('Tapped on item $index');
                           },
+                          trailing: Text('Completed',
+                              style: TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold)),
                         );
                       },
                     ),
