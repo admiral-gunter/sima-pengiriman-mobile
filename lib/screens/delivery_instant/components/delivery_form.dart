@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:sima_pengiriman/screens/map_picker/map_picker.dart';
 
+import '../../../shared_preferences/shared_token.dart';
 import '../../looking_for_courier/looking_for_courier.dart';
+import '../controllers/delivery_form_controller.dart';
 
 class DeliveryForm extends StatefulWidget {
   @override
@@ -40,6 +43,7 @@ class _DeliveryFormState extends State<DeliveryForm> {
 
   @override
   Widget build(BuildContext context) {
+    final DeliveryFormController ctl = Get.put(DeliveryFormController());
     return SizedBox(
       height:
           WidgetsBinding.instance.window.viewInsets.bottom > 0.0 ? 500 : 800,
@@ -52,54 +56,73 @@ class _DeliveryFormState extends State<DeliveryForm> {
             children: [
               Column(mainAxisSize: MainAxisSize.min, children: [
                 InkWell(
-                  onTap: () {
+                  onTap: () async {
+                    await SharedToken.univSetterString(
+                        'type_pickup', 'pickup_location');
                     Navigator.pushReplacementNamed(
                         context, MapPicker.routeName);
                   },
-                  child: Container(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Icon(Icons.location_on),
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Column(
-                          children: [
-                            Text('Lokasi Jemput',
-                                style: TextStyle(fontSize: 10)),
-                            Text('Adress...'),
-                          ],
-                        ),
-                      ],
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.location_on),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Pick-up Location',
+                              style: TextStyle(fontSize: 10)),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width - 50,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Obx(
+                                () => Text(
+                                    ctl.form['customer_address'] ?? 'Adress..'),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(
                   height: 20,
                 ),
                 InkWell(
-                  onTap: () {
+                  onTap: () async {
+                    await SharedToken.univSetterString(
+                        'type_pickup', 'pickup_destination');
                     Navigator.pushReplacementNamed(
                         context, MapPicker.routeName);
                   },
-                  child: Container(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Icon(Icons.location_on),
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Column(
-                          children: [
-                            Text('Lokasi Tujuan',
-                                style: TextStyle(fontSize: 10)),
-                            Text('Adress...'),
-                          ],
-                        )
-                      ],
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.location_on),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Pick-up Destination',
+                              style: TextStyle(fontSize: 10)),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width - 50,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Obx(() => Text(
+                                  ctl.form['destination_address'] ??
+                                      'Adress...')),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
                   ),
                 ),
                 SizedBox(
