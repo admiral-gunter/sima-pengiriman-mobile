@@ -143,9 +143,6 @@ class _BodyV2State extends State<BodyV2> {
                       press: () async {
                         await DatabaseHelper.instance.emptyAllTables();
                         await SharedToken.tokenRemover();
-                        // Navigator.pushReplacementNamed(
-                        //     context, DeliverOrderMenu.routeName);
-                        // return;
                         if (_formKey.currentState!.validate()) {
                           final resp = await _ctl.loging();
 
@@ -165,6 +162,10 @@ class _BodyV2State extends State<BodyV2> {
                             await SharedToken.univSetterString(
                                 'username', val['username']);
                             await SharedToken.tokenSetter(token);
+                            if (val['user_role'] != null) {
+                              await SharedToken.univSetterString(
+                                  'USER_ROLE', val['user_role']);
+                            }
                             DateTime now = DateTime.now();
 
                             String formattedDate =
@@ -174,6 +175,7 @@ class _BodyV2State extends State<BodyV2> {
                                 'last_login_dt', formattedDate);
                             // _formKey.currentState!.save();
                             KeyboardUtil.hideKeyboard(context);
+
                             Navigator.pushReplacementNamed(
                                 context, LoginSuccessScreen.routeName);
                           }

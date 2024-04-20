@@ -97,7 +97,8 @@ class _MyHomePageState extends State<MapPicker> {
                   if (typePickup == 'pickup_destination') {
                     ctl.form['destination_address'] = pickedData.addressName;
                   }
-                  print(ctl.form['customer_address']);
+                  Navigator.pushReplacementNamed(
+                      context, DeliveryInstantScreen.routeName);
                   // print(pickedData.latLong.latitude);
                   // print(pickedData.latLong.longitude);
                   // print(pickedData.address);

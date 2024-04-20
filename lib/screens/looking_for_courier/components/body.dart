@@ -137,11 +137,15 @@ class _FetchingCourierTextState extends State<FetchingCourierText> {
     _stream = _streamController.stream;
 
     Timer.periodic(Duration(milliseconds: 500), (timer) {
-      _streamController
-          .add('Fetching you nearest courier' + '.' * (_dotsCount % 4));
-      setState(() {
-        _dotsCount++;
-      });
+      if (mounted) {
+        _streamController
+            .add('Fetching you nearest courier${'.' * (_dotsCount % 4)}');
+        setState(() {
+          _dotsCount++;
+        });
+      } else {
+        timer.cancel();
+      }
     });
   }
 
@@ -174,8 +178,9 @@ Future<String?> getDownloadPath() async {
       directory = Directory('/storage/emulated/0/Download');
       // Put file in global download folder, if for an unknown reason it didn't exist, we fallback
       // ignore: avoid_slow_async_io
-      if (!await directory.exists())
+      if (!await directory.exists()) {
         directory = await getExternalStorageDirectory();
+      }
     }
   } catch (err, stack) {
     print("Cannot get download folder path");
@@ -232,6 +237,7 @@ class _BodyState extends State<Body> {
       child: Stack(
         children: <Widget>[
           Align(
+            alignment: Alignment.bottomCenter,
             child: Builder(
               builder: (context) => Padding(
                 padding: EdgeInsets.only(bottom: 20),
@@ -251,7 +257,7 @@ class _BodyState extends State<Body> {
                           });
                         },
                         child: Text(
-                          'Download PDF!',
+                          'Click Here!',
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 24),
                         ),
@@ -259,7 +265,6 @@ class _BodyState extends State<Body> {
                     : FetchingCourierText(),
               ),
             ),
-            alignment: Alignment.bottomCenter,
           ),
           _courierFound
               ? Center(

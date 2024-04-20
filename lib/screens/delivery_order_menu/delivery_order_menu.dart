@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:sima_pengiriman/components/coustom_bottom_nav_bar.dart';
 import 'package:sima_pengiriman/screens/history_turun_barang/history_turun_barang.dart';
 
 import '../../enums.dart';
 import '../../helper/debouncer.dart';
+import '../delivery_instant/controllers/delivery_form_controller.dart';
 import '../delivery_instant/delivery_instant_screen.dart';
 import '../history_order/history_order_screen.dart';
 import '../summary_order/summary_order_screen.dart';
@@ -21,7 +23,7 @@ class DeliverOrderMenu extends StatelessWidget {
         appBar: AppBar(
           automaticallyImplyLeading: false,
           title: Text('Hi '),
-          bottom: TabBar(
+          bottom: const TabBar(
             tabs: [
               Tab(text: 'Select Delivery'),
               Tab(text: 'History Order'),
@@ -49,6 +51,9 @@ class DeliverOrderMenu extends StatelessWidget {
                             width: double.infinity,
                             child: ElevatedButton.icon(
                                 onPressed: () {
+                                  final DeliveryFormController ctl =
+                                      Get.put(DeliveryFormController());
+                                  ctl.form = {}.obs;
                                   Navigator.pushNamed(
                                       context, DeliveryInstantScreen.routeName);
                                 },

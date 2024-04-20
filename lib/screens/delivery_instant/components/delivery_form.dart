@@ -1,6 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/screens/map_picker/map_picker.dart';
 
 import '../../../shared_preferences/shared_token.dart';
@@ -13,6 +19,7 @@ class DeliveryForm extends StatefulWidget {
 }
 
 class _DeliveryFormState extends State<DeliveryForm> {
+  File? _selectedImg;
   DateTime selectedDate = DateTime.now();
   TimeOfDay selectedTime = TimeOfDay.now();
   final _formKey = GlobalKey<FormState>();
@@ -35,10 +42,83 @@ class _DeliveryFormState extends State<DeliveryForm> {
       context: context,
       initialTime: selectedTime,
     );
-    if (pickedTime != null && pickedTime != selectedTime)
+    if (pickedTime != null && pickedTime != selectedTime) {
       setState(() {
         selectedTime = pickedTime;
       });
+    }
+  }
+
+  Future _pickImgFromGallery() async {
+    final returnedImg =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (returnedImg == null) return;
+    setState(() {
+      _selectedImg = File(returnedImg.path);
+    });
+  }
+
+  Future<void> _postData(BuildContext context) async {
+    try {
+      final DeliveryFormController ctl = Get.put(DeliveryFormController());
+
+      if (ctl.form['package_weight'] == null ||
+          ctl.form['receiver_telp'] == null ||
+          ctl.form['receiver_name'] == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please fill all the possible fields',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.white)),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      ctl.form['delivery_type'] = 'INSTANT';
+      ctl.form['delivery_date'] = '$selectedDate $selectedTime';
+      final token = await SharedToken.tokenGetter();
+      final Uri url =
+          Uri.parse('${kURL_ORIGIN}pengiriman/kurir/create-order?token=$token');
+      var request = http.MultipartRequest('POST', url);
+
+      if (_selectedImg != null) {
+        var stream = http.ByteStream(_selectedImg!.openRead().cast());
+        var length = await _selectedImg!.length();
+        var multipartFile = http.MultipartFile(
+          'file',
+          stream,
+          length,
+          filename: _selectedImg!.path.split('/').last,
+        );
+        request.files.add(multipartFile);
+      }
+
+      request.fields['dataset'] = jsonEncode(ctl.form);
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        response.stream.transform(utf8.decoder).listen((value) {
+          print(value);
+          Navigator.pushNamed(context, LookingForCourier.routeName);
+        });
+      } else {
+        print('Request failed with status: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Request failed with status: ${response.statusCode}'),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error in sending data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error in sending data: $e'),
+        ),
+      );
+    }
   }
 
   @override
@@ -128,7 +208,7 @@ class _DeliveryFormState extends State<DeliveryForm> {
                 SizedBox(
                   height: 40,
                 ),
-                Align(
+                const Align(
                     alignment: Alignment.centerLeft,
                     child: Text('Date & Time Pickup')),
                 Row(
@@ -146,7 +226,7 @@ class _DeliveryFormState extends State<DeliveryForm> {
                     ),
                   ],
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 40,
                 ),
                 TextFormField(
@@ -155,8 +235,12 @@ class _DeliveryFormState extends State<DeliveryForm> {
                     hintText: 'Input package weight',
                     labelText: 'Weight (kg)',
                   ),
+                  onChanged: (value) {
+                    ctl.form['package_weight'] = value;
+                    ctl.form['quantity'] = 1;
+                  },
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 SizedBox(
@@ -167,9 +251,12 @@ class _DeliveryFormState extends State<DeliveryForm> {
                       hintText: 'Enter package details',
                       labelText: 'Package Details',
                     ),
+                    onChanged: (value) {
+                      ctl.form['package_detail'] = value;
+                    },
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 TextFormField(
@@ -177,8 +264,11 @@ class _DeliveryFormState extends State<DeliveryForm> {
                     hintText: 'Penerima',
                     labelText: 'nama penerima',
                   ),
+                  onChanged: (value) {
+                    ctl.form['receiver_name'] = value;
+                  },
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 TextFormField(
@@ -188,19 +278,27 @@ class _DeliveryFormState extends State<DeliveryForm> {
                     hintText: 'No. Telp',
                     labelText: 'nomor telepon',
                   ),
+                  onChanged: (value) {
+                    ctl.form['receiver_telp'] = value;
+                  },
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () async {
+                        await _pickImgFromGallery();
+                      },
                       icon: Icon(Icons.camera),
                       label: Text('Foto Package (optional)')),
                 )
               ]),
-              SizedBox(
+              _selectedImg != null
+                  ? SizedBox(height: 150, child: Image.file(_selectedImg!))
+                  : const Text('no image has been attached'),
+              const SizedBox(
                 height: 10,
               ),
               SizedBox(
@@ -212,19 +310,19 @@ class _DeliveryFormState extends State<DeliveryForm> {
                   ],
                 ),
               ),
-              SizedBox(height: 70),
+              const SizedBox(height: 70),
               SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(
-                            context, LookingForCourier.routeName);
-                      },
-                      child: Text(
-                        'Submit',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 24),
-                      )))
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await _postData(context);
+                  },
+                  child: Text(
+                    'Submit',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+                  ),
+                ),
+              )
             ],
           ),
         ),

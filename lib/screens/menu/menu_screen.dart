@@ -5,6 +5,7 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sima_pengiriman/screens/delivery_order_menu/delivery_order_menu.dart';
 import 'package:sima_pengiriman/screens/sign_in/sign_in_screen.dart';
 import 'package:http/http.dart' as http;
 
@@ -34,9 +35,15 @@ class _MenuScreenState extends State<MenuScreen> {
 
   Future<void> checkTokenAndNavigate() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
+    final uRole = await SharedToken.univGetterString('USER_ROLE');
     String? token = prefs.getString('token');
     String? currentRoute = ModalRoute.of(context)?.settings.name;
+
+    if (token != null && uRole == 'USER_SENDER') {
+      print('retard');
+      Navigator.pushReplacementNamed(context, DeliverOrderMenu.routeName);
+      return;
+    }
 
     if (token != null && currentRoute != MenuScreen.routeName) {
       Navigator.pushReplacementNamed(context, MenuScreen.routeName);

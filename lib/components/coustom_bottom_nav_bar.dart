@@ -53,9 +53,9 @@ class CustomBottomNavBar extends StatelessWidget {
                         ModalRoute.of(context)?.settings.name;
 
                     if (currentRoute != MenuScreen.routeName) {
-                      final username =
-                          await SharedToken.univGetterString('username');
-                      if (username == 'sima') {
+                      final uRole =
+                          await SharedToken.univGetterString('USER_ROLE');
+                      if (uRole == 'USER_SENDER') {
                         Navigator.pushNamed(
                             context, DeliverOrderMenu.routeName);
                       } else {

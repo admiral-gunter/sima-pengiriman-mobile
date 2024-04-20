@@ -31,8 +31,8 @@ class Body extends StatelessWidget {
           child: DefaultButton(
             text: "Back to home",
             press: () async {
-              String uname = await SharedToken.univGetterString('username');
-              if (uname == 'sima') {
+              String uRoLe = await SharedToken.univGetterString('USER_ROLE');
+              if (uRoLe == 'USER_SENDER') {
                 Navigator.pushReplacementNamed(
                     context, DeliverOrderMenu.routeName);
               } else {
