@@ -161,6 +161,8 @@ class _BodyV2State extends State<BodyV2> {
                                 'no_plat', noPlat);
                             await SharedToken.univSetterString(
                                 'username', val['username']);
+                            await SharedToken.univSetterString(
+                                'user_id', val['user_id']);
                             await SharedToken.tokenSetter(token);
                             if (val['user_role'] != null) {
                               await SharedToken.univSetterString(

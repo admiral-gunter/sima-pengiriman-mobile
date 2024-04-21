@@ -78,6 +78,8 @@ class _DeliveryFormState extends State<DeliveryForm> {
       }
       ctl.form['delivery_type'] = 'INSTANT';
       ctl.form['delivery_date'] = '$selectedDate $selectedTime';
+      ctl.form['user_id'] = await SharedToken.univGetterString('user_id');
+
       final token = await SharedToken.tokenGetter();
       final Uri url =
           Uri.parse('${kURL_ORIGIN}pengiriman/kurir/create-order?token=$token');
@@ -99,10 +101,14 @@ class _DeliveryFormState extends State<DeliveryForm> {
       var response = await request.send();
 
       if (response.statusCode == 200) {
-        response.stream.transform(utf8.decoder).listen((value) {
-          print(value);
-          Navigator.pushNamed(context, LookingForCourier.routeName);
-        });
+        // response.stream.transform(utf8.decoder).listen((value) {
+        //   print(value);
+        //   Navigator.pushNamed(context, LookingForCourier.routeName);
+        // });
+        var responseBody = await response.stream.bytesToString();
+        Navigator.pushNamed(context, LookingForCourier.routeName);
+
+        print('Response Body: $responseBody');
       } else {
         print('Request failed with status: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
