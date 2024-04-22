@@ -101,13 +101,10 @@ class _DeliveryFormState extends State<DeliveryForm> {
       var response = await request.send();
 
       if (response.statusCode == 200) {
-        // response.stream.transform(utf8.decoder).listen((value) {
-        //   print(value);
-        //   Navigator.pushNamed(context, LookingForCourier.routeName);
-        // });
         var responseBody = await response.stream.bytesToString();
+        await SharedToken.univSetterString(
+            'generated_order_code', jsonDecode(responseBody)['data']);
         Navigator.pushNamed(context, LookingForCourier.routeName);
-
         print('Response Body: $responseBody');
       } else {
         print('Request failed with status: ${response.statusCode}');

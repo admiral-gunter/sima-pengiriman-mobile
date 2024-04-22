@@ -8,6 +8,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:open_file_plus/open_file_plus.dart';
 import 'package:sima_pengiriman/screens/delivery_instant/delivery_instant_screen.dart';
 import 'package:sima_pengiriman/screens/order_delivery_screen/order_delivery_screen.dart';
+import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 
 import '../../delivery_order_menu/delivery_order_menu.dart';
 import '../../summary_order/summary_order_screen.dart';
@@ -188,14 +189,16 @@ Future<String?> getDownloadPath() async {
   return directory?.path;
 }
 
+var generatedOrderCode = '';
+
 generatePDF() async {
   final pdf = pw.Document();
   pdf.addPage(
     pw.Page(
       build: (pw.Context context) => pw.Center(
         child: pw.BarcodeWidget(
-          barcode: pw.Barcode.upcA(),
-          data: '423423345358',
+          barcode: pw.Barcode.qrCode(),
+          data: generatedOrderCode,
           width: double.infinity,
           height: 200,
         ),
@@ -204,7 +207,7 @@ generatePDF() async {
   );
 
   final output = await getDownloadPath();
-  final file = File("${output}/example.pdf");
+  final file = File("${output}/ORDER_$generatedOrderCode.pdf");
 
   await file.writeAsBytes(await pdf.save());
 
@@ -220,12 +223,18 @@ class Body extends StatefulWidget {
 
 class _BodyState extends State<Body> {
   bool _courierFound = false;
+
   @override
   void initState() {
     Future.delayed(Duration(seconds: 2), () {
-      setState(() {
-        _courierFound = true;
-      });
+      if (mounted) {
+        setState(() {
+          _courierFound = true;
+
+          SharedToken.univGetterString('generated_order_code')
+              .then((value) => generatedOrderCode = value);
+        });
+      }
     });
 
     super.initState();
@@ -247,7 +256,8 @@ class _BodyState extends State<Body> {
                           generatePDF().then((file) {
                             print("PDF file saved at: ${file.path}");
                             Future.delayed(Duration(seconds: 1), () {
-                              OpenFile.open("/sdcard/Download/example.pdf");
+                              OpenFile.open(
+                                  "/sdcard/Download/ORDER_$generatedOrderCode.pdf");
                             });
 
                             Navigator.pushReplacementNamed(
