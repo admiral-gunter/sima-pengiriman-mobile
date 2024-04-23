@@ -31,10 +31,11 @@ class _DeliveryFormState extends State<DeliveryForm> {
       firstDate: DateTime(2015, 8),
       lastDate: DateTime(2101),
     );
-    if (pickedDate != null && pickedDate != selectedDate)
+    if (pickedDate != null && pickedDate != selectedDate) {
       setState(() {
         selectedDate = pickedDate;
       });
+    }
   }
 
   Future<void> _selectTime(BuildContext context) async {
@@ -122,6 +123,42 @@ class _DeliveryFormState extends State<DeliveryForm> {
         ),
       );
     }
+  }
+
+  final TextEditingController weightController = TextEditingController();
+  final TextEditingController pckgDetailController = TextEditingController();
+  final TextEditingController receiverNmController = TextEditingController();
+  final TextEditingController receiverNoTlpController = TextEditingController();
+
+  @override
+  void initState() {
+    final DeliveryFormController ctl = Get.put(DeliveryFormController());
+
+    super.initState();
+    if (ctl.form['package_weight'] != null) {
+      weightController.text = ctl.form['package_weight'];
+    }
+
+    if (ctl.form['package_detail'] != null) {
+      pckgDetailController.text = ctl.form['package_detail'];
+    }
+
+    if (ctl.form['receiver_name'] != null) {
+      receiverNmController.text = ctl.form['receiver_name'];
+    }
+
+    if (ctl.form['receiver_telp'] != null) {
+      receiverNoTlpController.text = ctl.form['receiver_telp'];
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    weightController.dispose();
+    pckgDetailController.dispose();
+    receiverNmController.dispose();
+    receiverNoTlpController.dispose();
   }
 
   @override
@@ -233,6 +270,7 @@ class _DeliveryFormState extends State<DeliveryForm> {
                   height: 40,
                 ),
                 TextFormField(
+                  controller: weightController,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     hintText: 'Input package weight',
@@ -249,6 +287,7 @@ class _DeliveryFormState extends State<DeliveryForm> {
                 SizedBox(
                   height: 100,
                   child: TextFormField(
+                    controller: pckgDetailController,
                     maxLines: 10,
                     decoration: InputDecoration(
                       hintText: 'Enter package details',
@@ -263,6 +302,7 @@ class _DeliveryFormState extends State<DeliveryForm> {
                   height: 20,
                 ),
                 TextFormField(
+                  controller: receiverNmController,
                   decoration: InputDecoration(
                     hintText: 'Penerima',
                     labelText: 'nama penerima',
@@ -275,6 +315,7 @@ class _DeliveryFormState extends State<DeliveryForm> {
                   height: 20,
                 ),
                 TextFormField(
+                  controller: receiverNoTlpController,
                   scrollPadding: EdgeInsets.only(
                       bottom: MediaQuery.of(context).viewInsets.bottom + 5 * 4),
                   decoration: InputDecoration(
