@@ -175,7 +175,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
           });
         }
 
-        if (true) {
+        if (false) {
           if (mounted) {
             setState(() {
               recordTugas.add({

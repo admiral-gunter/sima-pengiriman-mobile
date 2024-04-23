@@ -51,6 +51,6 @@ OutlineInputBorder outlineInputBorder() {
 
 const pfixRnded18 = 5.0;
 
-// const kURL_ORIGIN = 'https://grobx.sinarmaju.co.id/api/';
-const kURL_ORIGIN = 'http://192.168.221.131/simait/api/';
+// const kURL_ORIGIN = 'https://appid.sinarmaju.co.id/api/';
+const kURL_ORIGIN = 'http://192.168.91.236/simait/api/';
 // const kURL_ORIGIN = 'https://devgrobx.sinarmaju.co.id/api/';

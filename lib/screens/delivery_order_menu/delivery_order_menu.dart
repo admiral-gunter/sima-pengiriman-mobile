@@ -12,7 +12,7 @@ import '../history_order/history_order_screen.dart';
 import '../summary_order/summary_order_screen.dart';
 
 class DeliverOrderMenu extends StatelessWidget {
-  final _debouncer = Debouncer(delay: Duration(milliseconds: 500));
+  final _debouncer = Debouncer(delay: const Duration(milliseconds: 500));
   DeliverOrderMenu({super.key});
 
   static String routeName = "/delivery-order-menu";
@@ -79,7 +79,7 @@ class DeliverOrderMenu extends StatelessWidget {
                       )
                     ],
                   ),
-                  OngoingDeliveryComponent()
+                  const OngoingDeliveryComponent()
                 ],
               ),
               Column(

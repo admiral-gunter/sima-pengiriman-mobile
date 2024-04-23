@@ -1,7 +1,33 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
-class Body extends StatelessWidget {
+import '../../../shared_preferences/shared_token.dart';
+
+class Body extends StatefulWidget {
   const Body({super.key});
+
+  @override
+  State<Body> createState() => _BodyState();
+}
+
+class _BodyState extends State<Body> {
+  var selectedOrderCode = '';
+  var selectedOrderItem = {};
+  @override
+  void initState() {
+    super.initState();
+    SharedToken.univGetterString('selected_order_code').then((value) => {
+          SharedToken.univGetterString('selected_order_item').then((value) => {
+                setState(() {
+                  selectedOrderItem = jsonDecode(value);
+                })
+              }),
+          setState(() {
+            selectedOrderCode = value;
+          })
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +62,7 @@ class Body extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text('Order No 01823419'),
+                Text('Order No ${selectedOrderCode}'),
               ],
             ),
             SizedBox(
@@ -100,7 +126,7 @@ class Body extends StatelessWidget {
                         children: [
                           Text('Pickup Address'),
                           Text(
-                            'Isi Alamat',
+                            selectedOrderItem['pickup_address'].toString().substring(0,30) ??'EMPTY',
                             style: TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
@@ -149,7 +175,8 @@ class Body extends StatelessWidget {
                         children: [
                           Text('Delivery Address'),
                           Text(
-                            'Isi Alamat',
+                            selectedOrderItem['destination_address'].toString().substring(0,30) ?? 'EMPTY',
+                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,

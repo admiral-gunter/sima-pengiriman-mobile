@@ -167,6 +167,9 @@ class _BodyV2State extends State<BodyV2> {
                             if (val['user_role'] != null) {
                               await SharedToken.univSetterString(
                                   'USER_ROLE', val['user_role']);
+                            } else {
+                              await SharedToken.univSetterString(
+                                  'USER_ROLE', 'USER_COURIER');
                             }
                             DateTime now = DateTime.now();
 

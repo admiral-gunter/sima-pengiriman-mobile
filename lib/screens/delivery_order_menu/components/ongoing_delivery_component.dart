@@ -73,7 +73,7 @@ class _OngoingDeliveryComponentState extends State<OngoingDeliveryComponent> {
           'Ongoing Delivery',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
-        Container(
+        SizedBox(
           height: 200,
           child: ListView.builder(
             itemCount: onGoingDelivery.length,
@@ -83,7 +83,12 @@ class _OngoingDeliveryComponentState extends State<OngoingDeliveryComponent> {
                 subtitle: Text(
                     onGoingDelivery[index]['destination_address'] ?? 'EMPTY'),
                 leading: const Icon(Icons.list), // Just for illustration
-                onTap: () {
+                onTap: () async {
+                  await SharedToken.univSetterString('selected_order_code',
+                      onGoingDelivery[index]['order_code']);
+
+                  await SharedToken.univSetterString('selected_order_item',
+                      jsonEncode(onGoingDelivery[index]));
                   Navigator.pushNamed(context, SummaryOrderScreen.routeName);
                   print('Tapped on item $index');
                 },
