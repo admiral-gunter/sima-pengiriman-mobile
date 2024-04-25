@@ -12,16 +12,6 @@ import '../delivery_instant/delivery_instant_screen.dart';
 class MapPicker extends StatefulWidget {
   const MapPicker({Key? key, required this.title}) : super(key: key);
   static String routeName = "/map-picker";
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -53,14 +43,12 @@ class _MyHomePageState extends State<MapPicker> {
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
 
-      // Update the UI with the current position
       setState(() {
         if (mounted) {
           _currentPosition = position;
         }
       });
     } catch (e) {
-      // Handle any errors that occur during the process
       print(e);
     }
   }
@@ -91,7 +79,7 @@ class _MyHomePageState extends State<MapPicker> {
                 buttonText: 'Set Current Location',
                 onPicked: (pickedData) async {
                   if (typePickup == 'pickup_location') {
-                    ctl.form['customer_address'] = pickedData.addressName;
+                    ctl.form['pickup_address'] = pickedData.addressName;
                   }
 
                   if (typePickup == 'pickup_destination') {

@@ -66,7 +66,9 @@ class _DeliveryFormState extends State<DeliveryForm> {
 
       if (ctl.form['package_weight'] == null ||
           ctl.form['receiver_telp'] == null ||
-          ctl.form['receiver_name'] == null) {
+          ctl.form['receiver_name'] == null ||
+          ctl.form['destination_address'] == null ||
+          ctl.form['pickup_address'] == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Please fill all the possible fields',
@@ -80,7 +82,7 @@ class _DeliveryFormState extends State<DeliveryForm> {
       ctl.form['delivery_type'] = 'INSTANT';
       ctl.form['delivery_date'] = '$selectedDate $selectedTime';
       ctl.form['user_id'] = await SharedToken.univGetterString('user_id');
-
+      ctl.form['user_name'] = await SharedToken.univGetterString('username');
       final token = await SharedToken.tokenGetter();
       final Uri url =
           Uri.parse('${kURL_ORIGIN}pengiriman/kurir/create-order?token=$token');
@@ -200,7 +202,7 @@ class _DeliveryFormState extends State<DeliveryForm> {
                               scrollDirection: Axis.horizontal,
                               child: Obx(
                                 () => Text(
-                                    ctl.form['customer_address'] ?? 'Adress..'),
+                                    ctl.form['pickup_address'] ?? 'Adress..'),
                               ),
                             ),
                           ),

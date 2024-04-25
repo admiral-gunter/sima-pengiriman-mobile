@@ -18,10 +18,11 @@ class OngoingDeliveryComponent extends StatefulWidget {
 
 class _OngoingDeliveryComponentState extends State<OngoingDeliveryComponent> {
   List onGoingDelivery = [];
-  Future<void> makePostRequest() async {
+  var length = 0;
+  Future<void> getMyOrders() async {
     final userId = await SharedToken.univGetterString('user_id');
     final url = Uri.parse(
-        '${kURL_ORIGIN}pengiriman/kurir/get-orders?user_id=$userId&length=0&limit=10');
+        '${kURL_ORIGIN}pengiriman/kurir/get-orders?user_id=$userId&length=${length}&limit=10');
 
     try {
       final response = await http.post(
@@ -62,7 +63,7 @@ class _OngoingDeliveryComponentState extends State<OngoingDeliveryComponent> {
   @override
   void initState() {
     super.initState();
-    makePostRequest();
+    getMyOrders();
   }
 
   @override
@@ -106,7 +107,7 @@ class _OngoingDeliveryComponentState extends State<OngoingDeliveryComponent> {
             height: 50,
             alignment: Alignment.center,
             child: Text(
-              'See My Deliveries (1)',
+              'See My Deliveries ',
               style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,

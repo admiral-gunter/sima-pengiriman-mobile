@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../shared_preferences/shared_token.dart';
 
@@ -29,6 +30,16 @@ class _BodyState extends State<Body> {
         });
   }
 
+  String convertDateFormat(String inputText) {
+    // Parse the input text into a DateTime object
+    DateTime dateTime = DateTime.parse(inputText.trim());
+
+    // Format the DateTime object to get the desired format
+    String formattedDate = DateFormat('d MMMM').format(dateTime);
+
+    return formattedDate;
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -48,7 +59,7 @@ class _BodyState extends State<Body> {
                       fontSize: 20),
                 ),
                 Text(
-                  '02 Apr 04:13',
+                  convertDateFormat(selectedOrderItem['created_at']) ?? 'EMPTY',
                 ),
               ],
             ),
@@ -56,7 +67,7 @@ class _BodyState extends State<Body> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Item Delivered',
+                  selectedOrderItem['status'],
                   style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
@@ -126,7 +137,10 @@ class _BodyState extends State<Body> {
                         children: [
                           Text('Pickup Address'),
                           Text(
-                            selectedOrderItem['pickup_address'].toString().substring(0,30) ??'EMPTY',
+                            selectedOrderItem['pickup_address']
+                                    .toString()
+                                    .substring(0, 30) ??
+                                'EMPTY',
                             style: TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
@@ -175,8 +189,11 @@ class _BodyState extends State<Body> {
                         children: [
                           Text('Delivery Address'),
                           Text(
-                            selectedOrderItem['destination_address'].toString().substring(0,30) ?? 'EMPTY',
-                             overflow: TextOverflow.ellipsis,
+                            selectedOrderItem['destination_address']
+                                    .toString()
+                                    .substring(0, 30) ??
+                                'EMPTY',
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
