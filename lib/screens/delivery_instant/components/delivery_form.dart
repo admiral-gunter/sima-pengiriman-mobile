@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -42,7 +45,14 @@ class _DeliveryFormState extends State<DeliveryForm> {
     final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
       initialTime: selectedTime,
+      builder: (BuildContext context, Widget? child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
     );
+
     if (pickedTime != null && pickedTime != selectedTime) {
       setState(() {
         selectedTime = pickedTime;
@@ -58,6 +68,26 @@ class _DeliveryFormState extends State<DeliveryForm> {
     setState(() {
       _selectedImg = File(returnedImg.path);
     });
+  }
+
+  double calculateDistance(
+      double lat1, double long1, double lat2, double long2) {
+    var dLat = _toRadians(lat2 - lat1);
+    var dLong = _toRadians(long2 - long1);
+    lat1 = _toRadians(lat1);
+    lat2 = _toRadians(lat2);
+
+    var a =
+        pow(sin(dLat / 2), 2) + pow(sin(dLong / 2), 2) * cos(lat1) * cos(lat2);
+    var c = 2 * asin(sqrt(a));
+    const radius = 6371; // Radius of the Earth in kilometers
+    final res = radius * c;
+    print(res);
+    return radius * c;
+  }
+
+  double _toRadians(double degree) {
+    return degree * (pi / 180);
   }
 
   Future<void> _postData(BuildContext context) async {
@@ -79,6 +109,41 @@ class _DeliveryFormState extends State<DeliveryForm> {
         );
         return;
       }
+      var closestLocationDriver = null;
+      print('pickup latlong = ' +
+          ctl.form['pickup_lat'].toString() +
+          ',' +
+          ctl.form['pickup_long'].toString());
+
+      /// ASSIGN DRIVER
+      final DatabaseReference dashboardLive =
+          FirebaseDatabase.instance.ref('realtime_supir_dashboard');
+
+      dashboardLive.onValue.listen((event) {
+        if (event.snapshot.value != null) {
+          Map? data = event.snapshot.value as Map?;
+          var minDistance = double.infinity;
+
+          data!.forEach((key, value) {
+            var lat = double.parse(value['lat']);
+            var long = double.parse(value['long']);
+            var distance = calculateDistance(
+                ctl.form['pickup_lat'], ctl.form['pickup_long'], lat, long);
+            if (key != 'sima') {
+              if (distance < minDistance) {
+                minDistance = distance;
+                closestLocationDriver = key.toString().replaceAll('_', ' ');
+              }
+            }
+          });
+        }
+      }, onError: (error) {
+        print('Error: $error');
+      });
+
+      /// ASSIGN DRIVER
+
+      ctl.form['assigned_courier'] = closestLocationDriver;
       ctl.form['delivery_type'] = 'INSTANT';
       ctl.form['delivery_date'] = '$selectedDate $selectedTime';
       ctl.form['user_id'] = await SharedToken.univGetterString('user_id');
@@ -108,7 +173,6 @@ class _DeliveryFormState extends State<DeliveryForm> {
         await SharedToken.univSetterString(
             'generated_order_code', jsonDecode(responseBody)['data']);
         Navigator.pushNamed(context, LookingForCourier.routeName);
-        print('Response Body: $responseBody');
       } else {
         print('Request failed with status: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(

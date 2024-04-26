@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'dart:io';
@@ -10,6 +11,7 @@ import 'package:sima_pengiriman/screens/delivery_instant/delivery_instant_screen
 import 'package:sima_pengiriman/screens/order_delivery_screen/order_delivery_screen.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 
+import '../../delivery_instant/controllers/delivery_form_controller.dart';
 import '../../delivery_order_menu/delivery_order_menu.dart';
 import '../../summary_order/summary_order_screen.dart';
 
@@ -252,7 +254,10 @@ class _BodyState extends State<Body> {
                 padding: EdgeInsets.only(bottom: 20),
                 child: _courierFound
                     ? InkWell(
-                        onTap: () {
+                        onTap: () async {
+                          await SharedToken.univSetterString(
+                              'selected_order_code', generatedOrderCode);
+
                           generatePDF().then((file) {
                             print("PDF file saved at: ${file.path}");
                             Future.delayed(Duration(seconds: 1), () {

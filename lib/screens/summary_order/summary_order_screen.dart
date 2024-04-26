@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sima_pengiriman/screens/delivery_order_menu/delivery_order_menu.dart';
 import 'components/body.dart';
 
 import '../../components/coustom_bottom_nav_bar.dart';
@@ -14,6 +15,12 @@ class SummaryOrderScreen extends StatelessWidget {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text("Summary Order"),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, DeliverOrderMenu.routeName);
+          },
+        ),
       ),
       body: const Padding(padding: EdgeInsets.all(10), child: Body()),
       bottomNavigationBar: Row(

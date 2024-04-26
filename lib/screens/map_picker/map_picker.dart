@@ -80,6 +80,9 @@ class _MyHomePageState extends State<MapPicker> {
                 onPicked: (pickedData) async {
                   if (typePickup == 'pickup_location') {
                     ctl.form['pickup_address'] = pickedData.addressName;
+
+                    ctl.form['pickup_lat'] = pickedData.latLong.latitude;
+                    ctl.form['pickup_long'] = pickedData.latLong.longitude;
                   }
 
                   if (typePickup == 'pickup_destination') {
