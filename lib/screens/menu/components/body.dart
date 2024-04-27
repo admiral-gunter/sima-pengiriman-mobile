@@ -37,7 +37,8 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     // GET DATA SJ LIMIT 20
     // GET ITEM SN ONLY WHEN CLICKED AT SJ
     // THEN INSERT
-    syncDataTap().then((value) => getsyncDataTapInsert().then((value) => null));
+    syncDataTap().then(
+        (value) => getsyncDataTapInsert().then((value) => getTaskKurir()));
 
     _tabController = TabController(length: 2, vsync: this); // Number of tabs
   }
@@ -272,6 +273,41 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       }
     } catch (error) {
       print('Error making POST request SJ Peng: $error');
+    }
+  }
+
+  Future getTaskKurir() async {
+    try {
+      final assignedCourier = await SharedToken.univGetterString('username');
+      final userId = await SharedToken.univGetterString('user_id');
+      final response = await http.post(
+        Uri.parse(
+            '${kURL_ORIGIN}pengiriman/kurir/get-supir-task?courier_id=$userId&assigned_courier=$assignedCourier'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        if (mounted) {
+          setState(() {
+            for (final data in jsonDecode(response.body)['data']) {
+              recordTugas.add({
+                'nomor_order': data['order_code'],
+                'status_id': 0,
+                'status_nama': data['status'],
+                'qty_sum': '${data['package_weight']}  Kg',
+                'tipe_pengiriman': data['delivery_type']
+              });
+            }
+          });
+        }
+        print('Success! Response: ${response.body}');
+      } else {
+        print('Failed with status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('error: $e');
     }
   }
 
