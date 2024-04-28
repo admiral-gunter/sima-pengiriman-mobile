@@ -414,6 +414,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
 
                                       if (selectedTugas['tipe_pengiriman'] !=
                                           null) {
+                                        await SharedToken.univSetterString(
+                                            'selected_order_code',
+                                            recordTugas[index]["nomor_order"]);
                                         Navigator.pushNamed(context,
                                             DeliveryTaskDetail.routeName);
                                         return;

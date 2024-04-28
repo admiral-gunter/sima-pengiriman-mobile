@@ -15,6 +15,7 @@ import 'package:sima_pengiriman/screens/map_picker/map_picker.dart';
 import '../../../shared_preferences/shared_token.dart';
 import '../../looking_for_courier/looking_for_courier.dart';
 import '../controllers/delivery_form_controller.dart';
+import 'dropdown_supir.dart';
 
 class DeliveryForm extends StatefulWidget {
   @override
@@ -110,36 +111,32 @@ class _DeliveryFormState extends State<DeliveryForm> {
         return;
       }
       var closestLocationDriver = null;
-      print('pickup latlong = ' +
-          ctl.form['pickup_lat'].toString() +
-          ',' +
-          ctl.form['pickup_long'].toString());
 
       /// ASSIGN DRIVER
-      final DatabaseReference dashboardLive =
-          FirebaseDatabase.instance.ref('realtime_supir_dashboard');
+      // final DatabaseReference dashboardLive =
+      //     FirebaseDatabase.instance.ref('realtime_supir_dashboard');
 
-      dashboardLive.onValue.listen((event) {
-        if (event.snapshot.value != null) {
-          Map? data = event.snapshot.value as Map?;
-          var minDistance = double.infinity;
+      // dashboardLive.onValue.listen((event) {
+      //   if (event.snapshot.value != null) {
+      //     Map? data = event.snapshot.value as Map?;
+      //     var minDistance = double.infinity;
 
-          data!.forEach((key, value) {
-            var lat = double.parse(value['lat']);
-            var long = double.parse(value['long']);
-            var distance = calculateDistance(
-                ctl.form['pickup_lat'], ctl.form['pickup_long'], lat, long);
-            if (key != 'sima') {
-              if (distance < minDistance) {
-                minDistance = distance;
-                closestLocationDriver = key.toString().replaceAll('_', ' ');
-              }
-            }
-          });
-        }
-      }, onError: (error) {
-        print('Error: $error');
-      });
+      //     data!.forEach((key, value) {
+      //       var lat = double.parse(value['lat']);
+      //       var long = double.parse(value['long']);
+      //       var distance = calculateDistance(
+      //           ctl.form['pickup_lat'], ctl.form['pickup_long'], lat, long);
+      //       if (key != 'sima') {
+      //         if (distance < minDistance) {
+      //           minDistance = distance;
+      //           closestLocationDriver = key.toString().replaceAll('_', ' ');
+      //         }
+      //       }
+      //     });
+      //   }
+      // }, onError: (error) {
+      //   print('Error: $error');
+      // });
 
       /// ASSIGN DRIVER
 
@@ -391,6 +388,14 @@ class _DeliveryFormState extends State<DeliveryForm> {
                   onChanged: (value) {
                     ctl.form['receiver_telp'] = value;
                   },
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child:
+                      SizedBox(width: double.infinity, child: DropdownSupir()),
                 ),
                 const SizedBox(
                   height: 20,
