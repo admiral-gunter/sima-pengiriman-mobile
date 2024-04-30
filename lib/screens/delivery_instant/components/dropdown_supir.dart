@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:sima_pengiriman/constants.dart';
+import '../controllers/delivery_form_controller.dart';
 
 class DropdownSupir extends StatefulWidget {
   const DropdownSupir({super.key});
@@ -53,10 +55,15 @@ class _DropdownSupirState extends State<DropdownSupir> {
 
   @override
   Widget build(BuildContext context) {
+    final DeliveryFormController ctl = Get.put(DeliveryFormController());
+
     return DropdownButton<String>(
       value: _selectedItem,
       onChanged: (newValue) async {
         setState(() {
+          final List<dynamic> selected = newValue.toString().split('-');
+          ctl.form['courier_id'] = selected[0];
+          ctl.form['assigned_courier'] = selected[1];
           _selectedItem = newValue;
         });
       },

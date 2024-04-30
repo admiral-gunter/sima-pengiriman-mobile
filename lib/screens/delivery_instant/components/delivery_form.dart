@@ -140,7 +140,6 @@ class _DeliveryFormState extends State<DeliveryForm> {
 
       /// ASSIGN DRIVER
 
-      ctl.form['assigned_courier'] = closestLocationDriver;
       ctl.form['delivery_type'] = 'INSTANT';
       ctl.form['delivery_date'] = '$selectedDate $selectedTime';
       ctl.form['user_id'] = await SharedToken.univGetterString('user_id');
