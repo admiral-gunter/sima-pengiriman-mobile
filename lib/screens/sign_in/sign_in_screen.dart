@@ -12,6 +12,7 @@ class SignInScreen extends StatelessWidget {
 
     return const Scaffold(
       body: BodyV2(),
+      resizeToAvoidBottomInset: true,
     );
   }
 }

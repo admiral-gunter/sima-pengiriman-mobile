@@ -177,10 +177,22 @@ class _BodyState extends State<Body> {
                   children: [
                     Text(
                       detailData['status'].toString().toUpperCase(),
-                      style: TextStyle(
-                          color: Colors.orange, fontWeight: FontWeight.bold),
+                      style: detailData['status'] == 'pending'
+                          ? const TextStyle(
+                              color: Colors.orange, fontWeight: FontWeight.bold)
+                          : detailData['status'] == 'shipping'
+                              ? const TextStyle(
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold)
+                              : detailData['status'] == 'shipping'
+                                  ? const TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold)
+                                  : const TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold),
                     ),
-                    Text('Order Date')
+                    const Text('Order Date')
                   ],
                 ),
                 Row(
@@ -195,7 +207,7 @@ class _BodyState extends State<Body> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       'Total Weight',
                     ),
                     Text('${detailData['package_weight']} kg')
@@ -204,10 +216,10 @@ class _BodyState extends State<Body> {
                 Container(
                   decoration: BoxDecoration(color: Colors.grey[300]),
                   height: 1,
-                  margin: EdgeInsets.symmetric(vertical: 10),
+                  margin: const EdgeInsets.symmetric(vertical: 10),
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(
@@ -217,19 +229,19 @@ class _BodyState extends State<Body> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.location_on, color: Colors.red),
-                      SizedBox(
+                      const Icon(Icons.location_on, color: Colors.red),
+                      const SizedBox(
                         width: 5,
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Pickup Address'),
+                          const Text('Pickup Address'),
                           Text(
                             detailData['pickup_address']
                                 .toString()
                                 .substring(0, 32),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 20),
@@ -240,11 +252,11 @@ class _BodyState extends State<Body> {
                     ],
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(
@@ -254,56 +266,54 @@ class _BodyState extends State<Body> {
                   ),
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.location_on,
                         color: Colors.green,
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 5,
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Delivery Address'),
+                          const Text('Delivery Address'),
                           Text(
                             detailData['destination_address']
                                 .toString()
                                 .substring(0, 32),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 20),
                           ),
-                          ElevatedButton(
-                            onPressed: _takePicture,
-                            child: Row(children: [
-                              Icon(Icons.attachment, color: Colors.green[800]),
-                              Text(
-                                'Add attachment',
-                                style: TextStyle(color: Colors.green[800]),
-                              )
-                            ]),
-                          ),
-                          // Text('received by muh rafli'),
                         ],
                       )
                     ],
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.pushNamed(
-                                context, CourierScannerScreen.routeName);
-                          },
-                          icon: Icon(Icons.camera_enhance),
-                          label: Text(inRadiusToEndTask ? 'End Task' : 'Scan')),
+                      child: detailData['status'] == 'pending'
+                          ? ElevatedButton.icon(
+                              onPressed: () async {
+                                Navigator.pushNamed(
+                                    context, CourierScannerScreen.routeName);
+                              },
+                              icon: const Icon(Icons.camera_enhance),
+                              label: const Text('Scan'))
+                          : ElevatedButton.icon(
+                              onPressed: _takePicture,
+                              icon: Icon(Icons.attachment,
+                                  color: Colors.green[800]),
+                              label: Text(
+                                'Finish Task (Add Attachment)',
+                                style: TextStyle(color: Colors.green[800]),
+                              )),
                     ),
-                    SizedBox(width: 5),
+                    const SizedBox(width: 5),
                     Expanded(
                       child: ElevatedButton.icon(
                           onPressed: () async {
@@ -315,8 +325,8 @@ class _BodyState extends State<Body> {
                               throw 'Could not launch $url';
                             }
                           },
-                          icon: Icon(Icons.map_outlined),
-                          label: Text('Open Map')),
+                          icon: const Icon(Icons.map_outlined),
+                          label: const Text('Open Map')),
                     )
                   ],
                 )

@@ -56,6 +56,8 @@ class _ScanPengirimanScreenState extends State<CourierScannerScreen> {
   }
 
   String orderCode = '';
+  String msg = '';
+  String status = '';
 
   Future _updateTask() async {
     try {
@@ -65,14 +67,21 @@ class _ScanPengirimanScreenState extends State<CourierScannerScreen> {
           await SharedToken.univGetterString('selected_order_code');
       final response = await http.post(
         Uri.parse(
-            '${kURL_ORIGIN}pengiriman/kurir/update-supir-task?courier_id=$userId&order_code=$orderCode'),
+            '${kURL_ORIGIN}pengiriman/kurir/update-supir-task?courier_id=$userId&order_code=$orderCode&user=$assignedCourier'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
 
       if (response.statusCode == 200) {
-        if (mounted) {}
+        final resp = jsonDecode(response.body);
+        print(resp);
+        if (mounted) {
+          setState(() {
+            status = resp['status'];
+            msg = resp['msg'];
+          });
+        }
       } else {
         print('Failed with status code: ${response.statusCode}');
       }
@@ -87,15 +96,15 @@ class _ScanPengirimanScreenState extends State<CourierScannerScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Berhasil'),
-          content: Text('No Surat Jalan Terdeteksi'),
+          title: Text('${status}'),
+          content: Text('${msg}'),
           actions: <Widget>[
             TextButton(
               child: Text('Close'),
               onPressed: () async {
                 orderCode =
                     await SharedToken.univGetterString('selected_order_code');
-                await _updateTask();
+                // Navigator.pop(context);
                 Navigator.pushReplacementNamed(
                     context, DeliveryTaskDetail.routeName);
               },
@@ -154,7 +163,7 @@ class _ScanPengirimanScreenState extends State<CourierScannerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "Scan Pengiriman",
           style: TextStyle(
             color: Colors
@@ -179,16 +188,25 @@ class _ScanPengirimanScreenState extends State<CourierScannerScreen> {
           // fit: BoxFit.contain,
           onDetect: (capture) async {
             final List<Barcode> barcodes = capture.barcodes;
+            final selectedOrderCode =
+                await SharedToken.univGetterString('selected_order_code');
             for (final barcode in barcodes) {
               noOrder = barcode.rawValue!;
-              debugPrint('Barcode found! ${barcode.rawValue}');
-              cameraController.stop();
-              showCustomDialog(context);
+              if (selectedOrderCode == barcode.rawValue) {
+                setState(() {
+                  orderCode = barcode.rawValue!;
+                });
+                cameraController.stop();
+                await _updateTask();
+                showCustomDialog(context);
+                return;
+              }
             }
           },
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar(selectedMenu: MenuState.home),
+      bottomNavigationBar:
+          const CustomBottomNavBar(selectedMenu: MenuState.home),
     );
   }
 }
