@@ -45,13 +45,20 @@ class _BodyState extends State<Body> {
     }
 
     try {
+      final assignedCourier = await SharedToken.univGetterString('username');
+      final userId = await SharedToken.univGetterString('user_id');
+      final orderCode =
+          await SharedToken.univGetterString('selected_order_code');
       var request = http.MultipartRequest(
-          'POST', Uri.parse('https://your-api-endpoint.com/upload'));
+          'POST',
+          Uri.parse(
+              '${kURL_ORIGIN}pengiriman/kurir/done-task-courier?courier_id=$userId&order_code=$orderCode&assigned_courier=$assignedCourier'));
       request.files
           .add(await http.MultipartFile.fromPath('image', _imageFile!.path));
 
       var response = await request.send();
       if (response.statusCode == 200) {
+        await getData();
         print('Image uploaded successfully');
       } else {
         print('Failed to upload image. Status code: ${response.statusCode}');
@@ -292,44 +299,47 @@ class _BodyState extends State<Body> {
                   ),
                 ),
                 const Spacer(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: detailData['status'] == 'pending'
-                          ? ElevatedButton.icon(
-                              onPressed: () async {
-                                Navigator.pushNamed(
-                                    context, CourierScannerScreen.routeName);
-                              },
-                              icon: const Icon(Icons.camera_enhance),
-                              label: const Text('Scan'))
-                          : ElevatedButton.icon(
-                              onPressed: _takePicture,
-                              icon: Icon(Icons.attachment,
-                                  color: Colors.green[800]),
-                              label: Text(
-                                'Finish Task (Add Attachment)',
-                                style: TextStyle(color: Colors.green[800]),
-                              )),
-                    ),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                          onPressed: () async {
-                            final url =
-                                'https://www.google.com/maps/dir/${_currentPosition!.latitude},${_currentPosition!.longitude}/${detailData['pickup_lat']},${detailData['pickup_long']}/${detailData['destination_lat']},${detailData['destination_long']}';
-                            if (await canLaunch(url)) {
-                              await launch(url);
-                            } else {
-                              throw 'Could not launch $url';
-                            }
-                          },
-                          icon: const Icon(Icons.map_outlined),
-                          label: const Text('Open Map')),
-                    )
-                  ],
-                )
+                detailData['status'] != 'shipped'
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: detailData['status'] == 'pending'
+                                ? ElevatedButton.icon(
+                                    onPressed: () async {
+                                      Navigator.pushNamed(context,
+                                          CourierScannerScreen.routeName);
+                                    },
+                                    icon: const Icon(Icons.camera_enhance),
+                                    label: const Text('Scan'))
+                                : ElevatedButton.icon(
+                                    onPressed: _takePicture,
+                                    icon: Icon(Icons.attachment,
+                                        color: Colors.green[800]),
+                                    label: Text(
+                                      'Finish Task (Add Attachment)',
+                                      style:
+                                          TextStyle(color: Colors.green[800]),
+                                    )),
+                          ),
+                          const SizedBox(width: 5),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  final url =
+                                      'https://www.google.com/maps/dir/${_currentPosition!.latitude},${_currentPosition!.longitude}/${detailData['pickup_lat']},${detailData['pickup_long']}/${detailData['destination_lat']},${detailData['destination_long']}';
+                                  if (await canLaunch(url)) {
+                                    await launch(url);
+                                  } else {
+                                    throw 'Could not launch $url';
+                                  }
+                                },
+                                icon: const Icon(Icons.map_outlined),
+                                label: const Text('Open Map')),
+                          )
+                        ],
+                      )
+                    : Center(child: Text('TASK DONE'))
               ],
             ),
           );
