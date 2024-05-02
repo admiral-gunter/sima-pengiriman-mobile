@@ -299,7 +299,7 @@ class _BodyState extends State<Body> {
                   ),
                 ),
                 const Spacer(),
-                detailData['status'] != 'shipped'
+                detailData['status'] != 'delivered'
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
