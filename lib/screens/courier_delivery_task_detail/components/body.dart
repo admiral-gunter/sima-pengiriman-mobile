@@ -52,7 +52,7 @@ class _BodyState extends State<Body> {
       var request = http.MultipartRequest(
           'POST',
           Uri.parse(
-              '${kURL_ORIGIN}pengiriman/kurir/done-task-courier?courier_id=$userId&order_code=$orderCode&assigned_courier=$assignedCourier'));
+              '${kURL_ORIGIN}pengiriman/kurir/done-task-courier?courier_id=$userId&order_code=$orderCode&assigned_courier=$assignedCourier&latitude=${_currentPosition?.latitude!}&longitude=${_currentPosition?.longitude!}'));
       request.files
           .add(await http.MultipartFile.fromPath('image', _imageFile!.path));
 
