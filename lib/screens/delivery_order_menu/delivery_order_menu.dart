@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sima_pengiriman/components/coustom_bottom_nav_bar.dart';
+import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/screens/delivery_order_menu/components/ongoing_delivery_component.dart';
 import 'package:sima_pengiriman/screens/history_turun_barang/history_turun_barang.dart';
+import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 
 import '../../enums.dart';
 import '../../helper/debouncer.dart';
@@ -10,12 +14,52 @@ import '../delivery_instant/controllers/delivery_form_controller.dart';
 import '../delivery_instant/delivery_instant_screen.dart';
 import '../history_order/history_order_screen.dart';
 import '../summary_order/summary_order_screen.dart';
+import 'package:http/http.dart' as http;
 
-class DeliverOrderMenu extends StatelessWidget {
-  final _debouncer = Debouncer(delay: const Duration(milliseconds: 500));
+class DeliverOrderMenu extends StatefulWidget {
   DeliverOrderMenu({super.key});
 
   static String routeName = "/delivery-order-menu";
+
+  @override
+  State<DeliverOrderMenu> createState() => _DeliverOrderMenuState();
+}
+
+class _DeliverOrderMenuState extends State<DeliverOrderMenu> {
+  final _debouncer = Debouncer(delay: const Duration(milliseconds: 500));
+
+  String cntOrder = '0';
+
+  Future getCntOrder() async {
+    // Define the endpoint URL
+    final userId = await SharedToken.univGetterString('user_id');
+    var url = Uri.parse(
+        '${kURL_ORIGIN}pengiriman/kurir/get-supir-task-cnt?user_id=$userId');
+
+    // Define the request body (if needed)
+
+    // Make the POST request
+    var response = await http.post(url);
+
+    // Check the status code of the response
+    if (response.statusCode == 200) {
+      print('Request successful');
+      print('Response: ${response.body}');
+      setState(() {
+        cntOrder = jsonDecode(response.body);
+      });
+    } else {
+      print('Request failed with status: ${response.statusCode}');
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCntOrder();
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -41,7 +85,7 @@ class DeliverOrderMenu extends StatelessWidget {
                   Column(
                     children: [
                       Column(children: [
-                        Text('You Have 0 Deliveries today'),
+                        Text('You Have ${cntOrder} Deliveries On-Going'),
                         SizedBox(
                           height: 20,
                         )

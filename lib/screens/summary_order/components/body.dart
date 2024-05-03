@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../../../constants.dart';
 import '../../../shared_preferences/shared_token.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -81,6 +82,26 @@ class _BodyState extends State<Body> {
     return formattedDate;
   }
 
+  void openImagePreview(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Image Preview'),
+          content: Image.network(imageUrl),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -139,7 +160,9 @@ class _BodyState extends State<Body> {
                               children: [
                                 Text('Driver '),
                                 Text(':'),
-                                Text('Ridwan Kamil',
+                                Text(
+                                    selectedOrderItem['assigned_courier']
+                                        .toString(),
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
@@ -149,9 +172,8 @@ class _BodyState extends State<Body> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Plat No '),
-                                Text(':'),
-                                Text('D 98543 FG'),
+                                Text('Delivery  '),
+                                Text(selectedOrderItem['delivery_type']),
                               ],
                             )
                           ],
@@ -190,19 +212,6 @@ class _BodyState extends State<Body> {
                                       fontWeight: FontWeight.bold,
                                       fontSize: 20),
                                 ),
-                                Container(
-                                  decoration:
-                                      BoxDecoration(color: Colors.purple[100]),
-                                  child: Row(children: [
-                                    Icon(Icons.attachment,
-                                        color: Colors.purple),
-                                    Text(
-                                      'attachment',
-                                      style: TextStyle(color: Colors.purple),
-                                    )
-                                  ]),
-                                ),
-                                Text('picked up from muh rafli')
                               ],
                             )
                           ],
@@ -244,18 +253,32 @@ class _BodyState extends State<Body> {
                                       fontWeight: FontWeight.bold,
                                       fontSize: 20),
                                 ),
-                                Container(
-                                  decoration:
-                                      BoxDecoration(color: Colors.green[100]),
-                                  child: Row(children: [
-                                    Icon(Icons.attachment, color: Colors.green),
-                                    Text(
-                                      'attachment',
-                                      style: TextStyle(color: Colors.green),
-                                    )
-                                  ]),
-                                ),
-                                Text('received by muh rafli')
+                                selectedOrderItem['attachment_courier'] != null
+                                    ? InkWell(
+                                        onTap: () {
+                                          String imageUrl = kURL_ORIGIN_ASSET +
+                                              selectedOrderItem[
+                                                  'attachment_courier'];
+                                          openImagePreview(context, imageUrl);
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                              color: Colors.green[100]),
+                                          child: Row(children: [
+                                            Icon(Icons.attachment,
+                                                color: Colors.green),
+                                            Text(
+                                              'attachment',
+                                              style: TextStyle(
+                                                  color: Colors.green),
+                                            )
+                                          ]),
+                                        ),
+                                      )
+                                    : Container(),
+                                selectedOrderItem['attachment_courier'] != null
+                                    ? Text('received ')
+                                    : Container()
                               ],
                             )
                           ],
@@ -324,6 +347,53 @@ class _BodyState extends State<Body> {
                                 Text('20.000'),
                               ],
                             )
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(1.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(
+                            color: Colors.black, // Border color
+                            width: 0.5, // Adjust this value for the thickness
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Text('User Attachment',
+                                style: TextStyle(color: Colors.black)),
+                            selectedOrderItem['attachment'] != null
+                                ? Image.network(
+                                    kURL_ORIGIN_ASSET +
+                                            selectedOrderItem['attachment'] ??
+                                        '',
+                                    loadingBuilder: (BuildContext context,
+                                        Widget child,
+                                        ImageChunkEvent? loadingProgress) {
+                                      if (loadingProgress == null) {
+                                        return child;
+                                      } else {
+                                        return CircularProgressIndicator(
+                                          value: loadingProgress
+                                                      .expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                      .cumulativeBytesLoaded /
+                                                  loadingProgress
+                                                      .expectedTotalBytes!
+                                              : null,
+                                        );
+                                      }
+                                    },
+                                    errorBuilder: (BuildContext context,
+                                        Object error, StackTrace? stackTrace) {
+                                      return Text('Error loading image.');
+                                    },
+                                  )
+                                : Text('no user attachment'),
                           ],
                         ),
                       )
