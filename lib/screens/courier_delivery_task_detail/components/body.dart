@@ -298,6 +298,38 @@ class _BodyState extends State<Body> {
                     ],
                   ),
                 ),
+                SizedBox(
+                  height: 25,
+                ),
+                Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(1.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(
+                        color: Colors.black, // Border color
+                        width: 0.5, // Adjust this value for the thickness
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'User Attachment',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                              color: Colors.black),
+                        ),
+                        ElevatedButton(
+                            onPressed: () {
+                              if (detailData['attachment'] == null) return;
+                              final url =
+                                  kURL_ORIGIN_ASSET + detailData['attachment'];
+                              openImagePreview(context, url);
+                            },
+                            child: Text('View User Attachment')),
+                      ],
+                    )),
                 const Spacer(),
                 detailData['status'] != 'delivered'
                     ? Row(
@@ -344,4 +376,24 @@ class _BodyState extends State<Body> {
             ),
           );
   }
+}
+
+void openImagePreview(BuildContext context, String imageUrl) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Image Preview'),
+        content: Image.network(imageUrl),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('Close'),
+          ),
+        ],
+      );
+    },
+  );
 }
