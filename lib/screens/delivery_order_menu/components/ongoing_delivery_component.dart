@@ -71,7 +71,7 @@ class _OngoingDeliveryComponentState extends State<OngoingDeliveryComponent> {
     return Column(
       children: [
         Text(
-          'Ongoing Delivery',
+          'Today Delivery',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
         SizedBox(
@@ -87,7 +87,8 @@ class _OngoingDeliveryComponentState extends State<OngoingDeliveryComponent> {
                 onTap: () async {
                   await SharedToken.univSetterString('selected_order_code',
                       onGoingDelivery[index]['order_code']);
-
+                  await SharedToken.univSetterString('generated_order_code',
+                      onGoingDelivery[index]['order_code']);
                   await SharedToken.univSetterString('selected_order_item',
                       jsonEncode(onGoingDelivery[index]));
                   Navigator.pushNamed(context, SummaryOrderScreen.routeName);

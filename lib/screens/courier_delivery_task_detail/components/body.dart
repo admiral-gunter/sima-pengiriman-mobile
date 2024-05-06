@@ -220,6 +220,24 @@ class _BodyState extends State<Body> {
                     Text('${detailData['package_weight']} kg')
                   ],
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Receiver Name',
+                    ),
+                    Text('${detailData['receiver_name'] ?? ''}')
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Receiver Telp',
+                    ),
+                    Text('${detailData['receiver_telp'] ?? ''}')
+                  ],
+                ),
                 Container(
                   decoration: BoxDecoration(color: Colors.grey[300]),
                   height: 1,

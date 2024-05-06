@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 import '../../../constants.dart';
 import '../../../shared_preferences/shared_token.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -175,7 +177,27 @@ class _BodyState extends State<Body> {
                                 Text('Delivery  '),
                                 Text(selectedOrderItem['delivery_type']),
                               ],
-                            )
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Receiver Name',
+                                ),
+                                Text(
+                                    '${selectedOrderItem['receiver_name'] ?? ''}')
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Receiver Telp',
+                                ),
+                                Text(
+                                    '${selectedOrderItem['receiver_telp'] ?? ''}')
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -268,7 +290,7 @@ class _BodyState extends State<Body> {
                                             Icon(Icons.attachment,
                                                 color: Colors.green),
                                             Text(
-                                              'attachment',
+                                              'View Courier attachment',
                                               style: TextStyle(
                                                   color: Colors.green),
                                             )
@@ -366,33 +388,12 @@ class _BodyState extends State<Body> {
                             Text('User Attachment',
                                 style: TextStyle(color: Colors.black)),
                             selectedOrderItem['attachment'] != null
-                                ? Image.network(
-                                    kURL_ORIGIN_ASSET +
-                                            selectedOrderItem['attachment'] ??
-                                        '',
-                                    loadingBuilder: (BuildContext context,
-                                        Widget child,
-                                        ImageChunkEvent? loadingProgress) {
-                                      if (loadingProgress == null) {
-                                        return child;
-                                      } else {
-                                        return CircularProgressIndicator(
-                                          value: loadingProgress
-                                                      .expectedTotalBytes !=
-                                                  null
-                                              ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                              : null,
-                                        );
-                                      }
+                                ? ElevatedButton(
+                                    onPressed: () {
+                                      openImagePreview(context,
+                                          '${kURL_ORIGIN_ASSET}${selectedOrderItem['attachment']}');
                                     },
-                                    errorBuilder: (BuildContext context,
-                                        Object error, StackTrace? stackTrace) {
-                                      return Text('Error loading image.');
-                                    },
-                                  )
+                                    child: Text('View User Attachment'))
                                 : Text('no user attachment'),
                           ],
                         ),
