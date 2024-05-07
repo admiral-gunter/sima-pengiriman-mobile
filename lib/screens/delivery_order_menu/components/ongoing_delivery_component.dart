@@ -71,7 +71,7 @@ class _OngoingDeliveryComponentState extends State<OngoingDeliveryComponent> {
     return Column(
       children: [
         Text(
-          'Today Delivery',
+          'Latest Delivery',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
         SizedBox(

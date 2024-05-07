@@ -154,7 +154,7 @@ class _BodyState extends State<Body> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        width: halfScreenWidth,
+                        width: double.infinity,
                         child: Column(
                           children: [
                             Row(
