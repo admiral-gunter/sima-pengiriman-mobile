@@ -276,30 +276,54 @@ class _BodyState extends State<Body> {
                                       fontSize: 20),
                                 ),
                                 selectedOrderItem['attachment_courier'] != null
-                                    ? InkWell(
-                                        onTap: () {
+                                    ? ElevatedButton(
+                                        onPressed: () {
                                           String imageUrl = kURL_ORIGIN_ASSET +
                                               selectedOrderItem[
                                                   'attachment_courier'];
                                           openImagePreview(context, imageUrl);
                                         },
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                              color: Colors.green[100]),
-                                          child: Row(children: [
-                                            Icon(Icons.attachment,
-                                                color: Colors.green),
-                                            Text(
-                                              'View Courier attachment',
-                                              style: TextStyle(
-                                                  color: Colors.green),
-                                            )
-                                          ]),
-                                        ),
+                                        child: Row(children: [
+                                          Icon(Icons.attachment,
+                                              color: Colors.green),
+                                          Text(
+                                            'View Courier attachment',
+                                            style:
+                                                TextStyle(color: Colors.green),
+                                          )
+                                        ]),
+                                      )
+                                    : Container(),
+                                selectedOrderItem['attachment_courier_lat'] !=
+                                            null &&
+                                        selectedOrderItem[
+                                                'attachment_courier_long'] !=
+                                            null
+                                    ? ElevatedButton(
+                                        onPressed: () async {
+                                          final Uri urlLatLng = Uri.parse(
+                                              'https://www.latlong.net/c/?lat=${selectedOrderItem['attachment_courier_lat']}&long=${selectedOrderItem['attachment_courier_long']}');
+                                          final Uri url =
+                                              Uri.parse('https://flutter.dev');
+                                          if (!await launchUrl(urlLatLng)) {
+                                            throw Exception(
+                                                'Could not launch $urlLatLng');
+                                          }
+                                        },
+                                        child: Row(children: [
+                                          Icon(Icons.telegram,
+                                              color: Colors.black),
+                                          Text(
+                                            'Courier Tap Location',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          )
+                                        ]),
                                       )
                                     : Container(),
                                 selectedOrderItem['attachment_courier'] != null
-                                    ? Text('received ')
+                                    ? Text(
+                                        'received at ${selectedOrderItem['delivered_timestamp'] ?? ''}')
                                     : Container()
                               ],
                             )

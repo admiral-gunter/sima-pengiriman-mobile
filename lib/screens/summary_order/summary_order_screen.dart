@@ -99,7 +99,20 @@ class _SummaryOrderScreenState extends State<SummaryOrderScreen> {
         children: [
           Expanded(
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                final snackBar = SnackBar(
+                  content: Text('Contact IT support, tag @Muhammad Rafli'),
+                  duration: Duration(seconds: 3), // Optional duration
+                  action: SnackBarAction(
+                    label: 'Close',
+                    onPressed: () {
+                      // Perform some action when the user presses the action button
+                    },
+                  ),
+                );
+
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              },
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
