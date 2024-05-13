@@ -51,9 +51,9 @@ OutlineInputBorder outlineInputBorder() {
 
 const pfixRnded18 = 5.0;
 
-// const HOST = 'http://192.168.186.131/simait';
-const HOST = 'https://devgrobx.sinarmaju.co.id';
-// const HOST = 'appid.sinarmaju.co.id';
+const HOST = 'http://192.168.76.131/simait';
+// const HOST = 'https://devgrobx.sinarmaju.co.id';
+// const HOST = 'https://appid.sinarmaju.co.id';
 
 // const kURL_ORIGIN = 'https://appid.sinarmaju.co.id/api/';
 const kURL_ORIGIN = '$HOST/api/';

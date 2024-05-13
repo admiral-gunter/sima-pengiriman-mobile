@@ -6,6 +6,7 @@ import 'package:sima_pengiriman/components/coustom_bottom_nav_bar.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/screens/delivery_order_menu/components/ongoing_delivery_component.dart';
 import 'package:sima_pengiriman/screens/history_turun_barang/history_turun_barang.dart';
+import 'package:sima_pengiriman/screens/out_of_town_cargo/out_of_town_cargo_screen.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 
 import '../../enums.dart';
@@ -68,12 +69,6 @@ class _DeliverOrderMenuState extends State<DeliverOrderMenu> {
         appBar: AppBar(
           automaticallyImplyLeading: false,
           title: Text('Hi '),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Select Delivery'),
-              Tab(text: 'History Order'),
-            ],
-          ),
         ),
         body: Padding(
           padding: EdgeInsets.all(10),
@@ -108,7 +103,13 @@ class _DeliverOrderMenuState extends State<DeliverOrderMenu> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
-                                onPressed: () {},
+                                onPressed: () {
+                                  final DeliveryFormController ctl =
+                                      Get.put(DeliveryFormController());
+                                  ctl.form = {}.obs;
+                                  Navigator.pushNamed(
+                                      context, OutOfTownCargoScreen.routeName);
+                                },
                                 icon: Icon(Icons.fire_truck),
                                 label: Text('Out-of-Town Cargo')),
                           ),

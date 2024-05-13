@@ -18,7 +18,7 @@ class DeliveryInstantScreen extends StatelessWidget {
             Navigator.pushReplacementNamed(context, DeliverOrderMenu.routeName);
           },
         ),
-        title: Text("Calculate Shipping"),
+        title: Text("Calculate Shipping (instant)"),
       ),
       body: Padding(padding: EdgeInsets.all(10), child: DeliveryForm()),
     );

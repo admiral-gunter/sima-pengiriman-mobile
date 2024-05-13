@@ -8,6 +8,7 @@ import 'package:sima_pengiriman/screens/delivery_instant/components/delivery_for
 import '../../shared_preferences/shared_token.dart';
 import '../delivery_instant/controllers/delivery_form_controller.dart';
 import '../delivery_instant/delivery_instant_screen.dart';
+import 'dart:math';
 
 class MapPicker extends StatefulWidget {
   const MapPicker({Key? key, required this.title}) : super(key: key);
@@ -53,6 +54,34 @@ class _MyHomePageState extends State<MapPicker> {
     }
   }
 
+  // Function to convert degrees to radians
+  double degToRad(double deg) {
+    return deg * (pi / 180);
+  }
+
+// Function to calculate distance using Haversine formula
+  double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const double earthRadius = 6371; // Radius of the Earth in kilometers
+
+    // Convert latitude and longitude from degrees to radians
+    lat1 = degToRad(lat1);
+    lon1 = degToRad(lon1);
+    lat2 = degToRad(lat2);
+    lon2 = degToRad(lon2);
+
+    // Calculate differences in latitude and longitude
+    double dLat = lat2 - lat1;
+    double dLon = lon2 - lon1;
+
+    // Apply Haversine formula
+    double a =
+        pow(sin(dLat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dLon / 2), 2);
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    double distance = earthRadius * c;
+
+    return distance;
+  }
+
   @override
   Widget build(BuildContext context) {
     final DeliveryFormController ctl = Get.put(DeliveryFormController());
@@ -78,7 +107,27 @@ class _MyHomePageState extends State<MapPicker> {
                 buttonColor: Colors.blue,
                 buttonText: 'Set Current Location',
                 onPicked: (pickedData) async {
+                  double lat1 = -6.920809;
+                  double lon1 = 107.604087;
                   if (typePickup == 'pickup_location') {
+                    double distance = calculateDistance(
+                        lat1,
+                        lon1,
+                        pickedData.latLong.latitude,
+                        pickedData.latLong.longitude);
+
+                    if (distance > 20 &&
+                        ctl.form['delivery_type'] == 'INSTANT') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content:
+                              Text('Instant tidak bisa melebihi kota bandung'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      return;
+                    }
+
                     ctl.form['pickup_address'] = pickedData.addressName;
 
                     ctl.form['pickup_lat'] = pickedData.latLong.latitude;
@@ -86,6 +135,23 @@ class _MyHomePageState extends State<MapPicker> {
                   }
 
                   if (typePickup == 'pickup_destination') {
+                    double distance = calculateDistance(
+                        lat1,
+                        lon1,
+                        pickedData.latLong.latitude,
+                        pickedData.latLong.longitude);
+                    if (distance > 20 &&
+                        ctl.form['delivery_type'] == 'INSTANT') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content:
+                              Text('Instant tidak bisa melebihi kota bandung'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      return;
+                    }
+
                     ctl.form['destination_address'] = pickedData.addressName;
 
                     ctl.form['destination_lat'] = pickedData.latLong.latitude;

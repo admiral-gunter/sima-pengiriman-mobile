@@ -14,15 +14,15 @@ import 'package:sima_pengiriman/screens/map_picker/map_picker.dart';
 
 import '../../../shared_preferences/shared_token.dart';
 import '../../looking_for_courier/looking_for_courier.dart';
-import '../controllers/delivery_form_controller.dart';
+import '../../delivery_instant/controllers/delivery_form_controller.dart';
 import 'dropdown_supir.dart';
 
-class DeliveryForm extends StatefulWidget {
+class Body extends StatefulWidget {
   @override
-  State<DeliveryForm> createState() => _DeliveryFormState();
+  State<Body> createState() => _BodyState();
 }
 
-class _DeliveryFormState extends State<DeliveryForm> {
+class _BodyState extends State<Body> {
   File? _selectedImg;
   DateTime selectedDate = DateTime.now();
   TimeOfDay selectedTime = TimeOfDay.now();
@@ -94,18 +94,18 @@ class _DeliveryFormState extends State<DeliveryForm> {
   Future<void> _postData(BuildContext context) async {
     try {
       final DeliveryFormController ctl = Get.put(DeliveryFormController());
-      double pw = double.parse(ctl.form['package_weight']);
-      if (pw > 20) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Package Weight cannot be more than 20Kg',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.white)),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
+      // double pw = double.parse(ctl.form['package_weight']);
+      // if (pw > 20) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     const SnackBar(
+      //       content: Text('Package Weight cannot be more than 20Kg',
+      //           style: TextStyle(
+      //               fontWeight: FontWeight.bold, color: Colors.white)),
+      //       backgroundColor: Colors.red,
+      //     ),
+      //   );
+      //   return;
+      // }
 
       if (ctl.form['package_weight'] == null ||
           ctl.form['receiver_telp'] == null ||
@@ -124,7 +124,7 @@ class _DeliveryFormState extends State<DeliveryForm> {
       }
       var closestLocationDriver = null;
 
-      ctl.form['delivery_type'] = 'INSTANT';
+      ctl.form['delivery_type'] = 'OUT_OF_TOWN_CARGO';
       ctl.form['delivery_date'] = '$selectedDate $selectedTime';
       ctl.form['user_id'] = await SharedToken.univGetterString('user_id');
       ctl.form['user_name'] = await SharedToken.univGetterString('username');
@@ -179,7 +179,7 @@ class _DeliveryFormState extends State<DeliveryForm> {
   @override
   void initState() {
     final DeliveryFormController ctl = Get.put(DeliveryFormController());
-    ctl.form['delivery_type'] = 'INSTANT';
+    ctl.form['delivery_type'] = 'OUT_OF_TOWN_CARGO';
 
     super.initState();
     if (ctl.form['package_weight'] != null) {
@@ -207,6 +207,16 @@ class _DeliveryFormState extends State<DeliveryForm> {
     receiverNmController.dispose();
     receiverNoTlpController.dispose();
   }
+
+  bool _isExpanded = false;
+
+  void _toggleExpanded() {
+    setState(() {
+      _isExpanded = !_isExpanded;
+    });
+  }
+
+  final GlobalKey expansionTile = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -327,6 +337,78 @@ class _DeliveryFormState extends State<DeliveryForm> {
                     ctl.form['package_weight'] = value;
                     ctl.form['quantity'] = 1;
                   },
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                ExpansionTile(
+                  key: GlobalKey(),
+                  title: Text('Weights (Kg)'),
+                  initiallyExpanded: _isExpanded,
+                  onExpansionChanged: (expanded) {
+                    if (!expanded) {
+                      _toggleExpanded(); // Collapse when expanded state changes to false
+                    }
+                  },
+                  children: [
+                    ListTile(
+                      title: Text('20Kg'),
+                      onTap: () {
+                        ctl.form['package_weight'] = 20;
+                        setState(() {
+                          weightController.text = '20';
+                        });
+                        _toggleExpanded();
+                        // Handle item 1 click
+                      },
+                    ),
+                    ListTile(
+                      title: Text('30kg'),
+                      onTap: () {
+                        ctl.form['package_weight'] = 30;
+                        setState(() {
+                          weightController.text = '30';
+                        });
+                        _toggleExpanded();
+                        // Handle item 2 click
+                      },
+                    ),
+                    ListTile(
+                      title: Text('50kg'),
+                      onTap: () {
+                        ctl.form['package_weight'] = 50;
+                        setState(() {
+                          weightController.text = '50';
+                        });
+                        _toggleExpanded();
+                        // Handle item 2 click
+                      },
+                    ),
+                    ListTile(
+                      title: Text('80kg'),
+                      onTap: () {
+                        ctl.form['package_weight'] = 80;
+                        setState(() {
+                          weightController.text = '80';
+                        });
+                        _toggleExpanded();
+                        // Handle item 2 click
+                      },
+                    ),
+                    ListTile(
+                      title: Text('100kg'),
+                      onTap: () {
+                        setState(() {
+                          weightController.text = '100';
+                        });
+                        ctl.form['package_weight'] = 100;
+
+                        _toggleExpanded();
+                        // Handle item 2 click
+                      },
+                    ),
+                    // Add more ListTiles as needed
+                  ],
                 ),
                 const SizedBox(
                   height: 20,
