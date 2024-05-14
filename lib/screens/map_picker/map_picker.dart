@@ -90,9 +90,9 @@ class _MyHomePageState extends State<MapPicker> {
           title: Text(typePickup.replaceAll('_', ' ')),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pushReplacementNamed(
-                  context, DeliveryInstantScreen.routeName);
+            onPressed: () async {
+              final ruteBack = await SharedToken.univGetterString('backToMenu');
+              Navigator.pushReplacementNamed(context, ruteBack);
             },
           ),
         ),
@@ -157,8 +157,9 @@ class _MyHomePageState extends State<MapPicker> {
                     ctl.form['destination_lat'] = pickedData.latLong.latitude;
                     ctl.form['destination_long'] = pickedData.latLong.longitude;
                   }
-                  Navigator.pushReplacementNamed(
-                      context, DeliveryInstantScreen.routeName);
+                  final ruteBack =
+                      await SharedToken.univGetterString('backToMenu');
+                  Navigator.pushReplacementNamed(context, ruteBack);
                   // print(pickedData.latLong.latitude);
                   // print(pickedData.latLong.longitude);
                   // print(pickedData.address);

@@ -90,7 +90,10 @@ class _DeliverOrderMenuState extends State<DeliverOrderMenu> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
-                                onPressed: () {
+                                onPressed: () async {
+                                  await SharedToken.univSetterString(
+                                      'backToMenu',
+                                      DeliveryInstantScreen.routeName);
                                   final DeliveryFormController ctl =
                                       Get.put(DeliveryFormController());
                                   ctl.form = {}.obs;
@@ -103,7 +106,10 @@ class _DeliverOrderMenuState extends State<DeliverOrderMenu> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
-                                onPressed: () {
+                                onPressed: () async {
+                                  await SharedToken.univSetterString(
+                                      'backToMenu',
+                                      OutOfTownCargoScreen.routeName);
                                   final DeliveryFormController ctl =
                                       Get.put(DeliveryFormController());
                                   ctl.form = {}.obs;

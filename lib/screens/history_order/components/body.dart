@@ -115,7 +115,9 @@ class _BodyState extends State<Body> {
             itemCount: myDeliveries.length,
             itemBuilder: (context, index) {
               return ListTile(
-                title: Text(myDeliveries[index]['order_code'] ?? 'EMPTY'),
+                title: Text(
+                    '${myDeliveries[index]['delivery_type'].toString().substring(0, 3)}-${myDeliveries[index]['order_code']}' ??
+                        'EMPTY'),
                 subtitle:
                     Text(myDeliveries[index]['destination_address'] ?? 'EMPTY'),
                 leading: const Icon(Icons.list), // Just for illustration

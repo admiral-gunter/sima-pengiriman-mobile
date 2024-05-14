@@ -22,7 +22,7 @@ class _OngoingDeliveryComponentState extends State<OngoingDeliveryComponent> {
   Future<void> getMyOrders() async {
     final userId = await SharedToken.univGetterString('user_id');
     final url = Uri.parse(
-        '${kURL_ORIGIN}pengiriman/kurir/get-orders?user_id=$userId&length=${length}&limit=10');
+        '${kURL_ORIGIN}pengiriman/kurir/get-orders?user_id=$userId&limit=10');
 
     try {
       final response = await http.post(
@@ -80,7 +80,9 @@ class _OngoingDeliveryComponentState extends State<OngoingDeliveryComponent> {
             itemCount: onGoingDelivery.length,
             itemBuilder: (context, index) {
               return ListTile(
-                title: Text(onGoingDelivery[index]['order_code'] ?? 'EMPTY'),
+                title: Text(
+                    '${onGoingDelivery[index]['delivery_type'].toString().substring(0, 3)}-${onGoingDelivery[index]['order_code']}' ??
+                        'EMPTY'),
                 subtitle: Text(
                     onGoingDelivery[index]['destination_address'] ?? 'EMPTY'),
                 leading: const Icon(Icons.list), // Just for illustration
