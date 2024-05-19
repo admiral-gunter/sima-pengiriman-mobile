@@ -51,7 +51,7 @@ OutlineInputBorder outlineInputBorder() {
 
 const pfixRnded18 = 5.0;
 
-const HOST = 'http://192.168.76.131/simait';
+const HOST = 'http://192.168.193.131/simait';
 // const HOST = 'https://devgrobx.sinarmaju.co.id';
 // const HOST = 'https://appid.sinarmaju.co.id';
 

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:sima_pengiriman/components/coustom_bottom_nav_bar.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/screens/delivery_order_menu/components/ongoing_delivery_component.dart';
+import 'package:sima_pengiriman/screens/delivery_package_by_weight/delivery_package_by_weight_screen.dart';
 import 'package:sima_pengiriman/screens/history_turun_barang/history_turun_barang.dart';
 import 'package:sima_pengiriman/screens/out_of_town_cargo/out_of_town_cargo_screen.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
@@ -122,7 +123,16 @@ class _DeliverOrderMenuState extends State<DeliverOrderMenu> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
-                                onPressed: () {},
+                                onPressed: () async {
+                                  await SharedToken.univSetterString(
+                                      'backToMenu',
+                                      DeliveryPackageByWeightScreen.routeName);
+                                  final DeliveryFormController ctl =
+                                      Get.put(DeliveryFormController());
+                                  ctl.form = {}.obs;
+                                  Navigator.pushNamed(context,
+                                      DeliveryPackageByWeightScreen.routeName);
+                                },
                                 icon: Icon(Icons.card_travel),
                                 label: Text('Package Rate by Weight')),
                           )

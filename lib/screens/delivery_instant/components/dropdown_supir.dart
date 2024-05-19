@@ -22,7 +22,6 @@ class _DropdownSupirState extends State<DropdownSupir> {
     );
 
     if (response.statusCode == 200) {
-      print('Success! Response: ${response.body}');
       // setState(() {
       //   _dropdownItems = jsonDecode(response.body)['data'];
       // });
@@ -57,18 +56,26 @@ class _DropdownSupirState extends State<DropdownSupir> {
   Widget build(BuildContext context) {
     final DeliveryFormController ctl = Get.put(DeliveryFormController());
 
-    return DropdownButton<String>(
-      value: _selectedItem,
-      onChanged: (newValue) async {
-        setState(() {
-          final List<dynamic> selected = newValue.toString().split('-');
-          ctl.form['courier_id'] = selected[0];
-          ctl.form['assigned_courier'] = selected[1];
-          _selectedItem = newValue;
-        });
-      },
-      items: _dropdownItems,
-      hint: Text('Pilih Supir'), // Placeholder text when no item is selected
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey, width: 2),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      width: double.infinity,
+      child: DropdownButton<String>(
+        value: _selectedItem,
+        onChanged: (newValue) async {
+          setState(() {
+            final List<dynamic> selected = newValue.toString().split('-');
+            ctl.form['courier_id'] = selected[0];
+            ctl.form['assigned_courier'] = selected[1];
+            _selectedItem = newValue;
+          });
+        },
+        items: _dropdownItems,
+        hint: Text('Pilih Supir'), // Placeholder text when no item is selected
+      ),
     );
   }
 }
