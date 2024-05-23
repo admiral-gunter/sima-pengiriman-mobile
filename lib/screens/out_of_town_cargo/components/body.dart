@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/screens/map_picker/map_picker.dart';
 
@@ -171,6 +172,39 @@ class _BodyState extends State<Body> {
     }
   }
 
+  int tariff = 0;
+
+  Future<http.Response> getDeliveryType() async {
+    String url =
+        '${kURL_ORIGIN}pengiriman/kurir/get-delivery-type?service_delivery_name=OUT_OF_TOWN_CARGO';
+    final headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final resp = jsonDecode(response.body);
+
+      if (mounted) {
+        setState(() {
+          tariff = int.parse(resp['data']['pricing']);
+        });
+      }
+
+      // The request was successful
+    } else {
+      // The request failed
+      print('Failed to send POST request: ${response.statusCode}');
+    }
+
+    return response;
+  }
+
   final TextEditingController weightController = TextEditingController();
   final TextEditingController pckgDetailController = TextEditingController();
   final TextEditingController receiverNmController = TextEditingController();
@@ -180,7 +214,7 @@ class _BodyState extends State<Body> {
   void initState() {
     final DeliveryFormController ctl = Get.put(DeliveryFormController());
     ctl.form['delivery_type'] = 'OUT_OF_TOWN_CARGO';
-
+    getDeliveryType();
     super.initState();
     if (ctl.form['package_weight'] != null) {
       weightController.text = ctl.form['package_weight'];
@@ -487,7 +521,8 @@ class _BodyState extends State<Body> {
                   children: [
                     Text('Total Bil :'),
                     SizedBox(width: 5),
-                    Text('20.000,00')
+                    Text(NumberFormat.currency(locale: 'id', symbol: 'Rp')
+                        .format(tariff))
                   ],
                 ),
               ),

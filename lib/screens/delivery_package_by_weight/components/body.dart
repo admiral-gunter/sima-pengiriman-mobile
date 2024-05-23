@@ -161,8 +161,8 @@ class _BodyState extends State<Body> {
     }
   }
 
-  var eval;
-  var paramEval;
+  var eval = null;
+  var paramEval = null;
 
   Future<http.Response> getDeliveryType() async {
     _itemSize.length = 0;
@@ -247,6 +247,9 @@ class _BodyState extends State<Body> {
 
     if (ctl.form['qty_pkg'] != null) {
       qtyPkgweightController.text = ctl.form['receiver_telp'];
+    } else {
+      qtyPkgweightController.text = '0';
+      ctl.form['receiver_telp'] = 0;
     }
   }
 
@@ -393,26 +396,6 @@ class _BodyState extends State<Body> {
                 const SizedBox(
                   height: 20,
                 ),
-                TextFormField(
-                  controller: qtyPkgweightController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    hintText: 'Input package quantity',
-                    labelText: 'Qty',
-                  ),
-                  onChanged: (value) {
-                    ctl.form['quantity'] = value;
-                    final price =
-                        int.parse(_selectedValue.toString().split('-')[1]);
-                    final totalPrice = price * int.parse(ctl.form['quantity']);
-                    setState(() {
-                      tariff = totalPrice;
-                    });
-                  },
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
                 ExpansionTile(
                   key: GlobalKey(),
                   title: Text('Weights (Kg)'),
@@ -481,6 +464,26 @@ class _BodyState extends State<Body> {
                     ),
                     // Add more ListTiles as needed
                   ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                TextFormField(
+                  controller: qtyPkgweightController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: 'Input package quantity',
+                    labelText: 'Qty',
+                  ),
+                  onChanged: (value) {
+                    ctl.form['quantity'] = value;
+                    final price =
+                        int.parse(_selectedValue.toString().split('-')[1]);
+                    final totalPrice = price * int.parse(ctl.form['quantity']);
+                    setState(() {
+                      tariff = totalPrice;
+                    });
+                  },
                 ),
                 const SizedBox(
                   height: 20,
@@ -564,11 +567,7 @@ class _BodyState extends State<Body> {
                 const SizedBox(
                   height: 20,
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child:
-                      SizedBox(width: double.infinity, child: DropdownSupir()),
-                ),
+                SizedBox(width: double.infinity, child: DropdownSupir()),
                 const SizedBox(
                   height: 20,
                 ),

@@ -324,7 +324,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Icon(Icons.list),
+            const Icon(Icons.circle, color: Colors.green),
             InkWell(
               onTap: () {
                 DatabaseHelper.instance.getRecordTugas().then((value) {
@@ -407,8 +407,13 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                               fontWeight: FontWeight.bold,
                                             ),
                                     ),
-                                    title:
-                                        Text(recordTugas[index]["nomor_order"]),
+                                    title: recordTugas[index]
+                                                ['tipe_pengiriman'] !=
+                                            null
+                                        ? Text(
+                                            '${recordTugas[index]['tipe_pengiriman'].toString().substring(0, 3)}-${recordTugas[index]["nomor_order"]}')
+                                        : Text(
+                                            '${recordTugas[index]["nomor_order"]}'),
                                     onTap: () async {
                                       var selectedTugas = recordTugas[index];
 
