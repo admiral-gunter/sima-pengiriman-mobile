@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sima_pengiriman/size_config.dart';
+import 'dart:async';
+import 'package:http/http.dart' as http;
 
 const kPrimaryColor = Color(0xFFFF7643);
 const kPrimaryLightColor = Color(0xFFFFECDF);
@@ -52,11 +54,16 @@ OutlineInputBorder outlineInputBorder() {
 const pfixRnded18 = 5.0;
 
 // const HOST = 'http://192.168.23.131/simait';
-const HOST = 'https://devgrobx.sinarmaju.co.id';
-// const HOST = 'https://appid.sinarmaju.co.id';
+String HOST = 'https://devgrobx.sinarmaju.co.id';
+// String HOST_BACKUP = 'https://grobx.sinarmaju.co.id';
+
+// String HOST = 'https://grobx.sinarmaju.co.id';
+String HOST_BACKUP = 'https://devgrobx.sinarmaju.co.id';
 
 // const kURL_ORIGIN = 'https://appid.sinarmaju.co.id/api/';
-const kURL_ORIGIN = '$HOST/api/';
+final kURL_ORIGIN = '$HOST/api/';
+
+final kURL_ORIGIN_BACKUP = '$HOST_BACKUP/api/';
 // const kURL_ORIGIN = 'https://devgrobx.sinarmaju.co.id/api/';
 
-const kURL_ORIGIN_ASSET = '$HOST/uploads/image/';
+final kURL_ORIGIN_ASSET = '$HOST/uploads/image/';

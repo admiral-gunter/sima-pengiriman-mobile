@@ -145,7 +145,6 @@ class _BodyV2State extends State<BodyV2> {
                         await SharedToken.tokenRemover();
                         if (_formKey.currentState!.validate()) {
                           final resp = await _ctl.loging();
-
                           final val = jsonDecode(resp);
 
                           ScaffoldMessenger.of(context).showSnackBar(

@@ -245,11 +245,11 @@ class _BodyState extends State<Body> {
       receiverNoTlpController.text = ctl.form['receiver_telp'];
     }
 
-    if (ctl.form['qty_pkg'] != null) {
-      qtyPkgweightController.text = ctl.form['receiver_telp'];
+    if (ctl.form['quantity'] != null) {
+      qtyPkgweightController.text = ctl.form['quantity'].toString();
     } else {
       qtyPkgweightController.text = '0';
-      ctl.form['receiver_telp'] = 0;
+      ctl.form['quantity'] = 0;
     }
   }
 
@@ -272,7 +272,6 @@ class _BodyState extends State<Body> {
   }
 
   var _selectedValue;
-  final GlobalKey expansionTile = GlobalKey();
   final List<Map<String, dynamic>> _itemSize = [];
   @override
   Widget build(BuildContext context) {
@@ -397,7 +396,6 @@ class _BodyState extends State<Body> {
                   height: 20,
                 ),
                 ExpansionTile(
-                  key: GlobalKey(),
                   title: Text('Weights (Kg)'),
                   initiallyExpanded: _isExpanded,
                   onExpansionChanged: (expanded) {

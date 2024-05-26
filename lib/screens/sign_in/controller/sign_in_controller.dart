@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:http/http.dart' as http;
 import 'package:sima_pengiriman/constants.dart';
 
 class SignInController {
+  String kURL_ORIGIN2 = kURL_ORIGIN;
   Map<String, String> loginCredential = {'username': '', 'password': ''};
 
   void chgCredential(String ky, String txt) {
@@ -9,15 +12,20 @@ class SignInController {
   }
 
   Future<dynamic> loging() async {
-    // debugPrint('${loginCredential}');
     try {
-      var url = Uri.parse(kURL_ORIGIN + 'pengiriman/master-supir-login');
-
-      var response = await http.post(url, body: loginCredential);
+      final timeoutDuration = Duration(seconds: 20);
+      var url = Uri.parse(kURL_ORIGIN2 + 'pengiriman/master-supir-login');
+      var response =
+          await http.post(url, body: loginCredential).timeout(timeoutDuration);
 
       return response.body;
+    } on TimeoutException catch (e) {
+      kURL_ORIGIN2 = kURL_ORIGIN_BACKUP;
+      return {'success': false, 'msg': 'Request timed out: $e'};
     } catch (e) {
+      kURL_ORIGIN2 = kURL_ORIGIN_BACKUP;
       print('Error sending POST request: $e');
+      return {'success': false, 'msg': 'Error sending POST request: $e'};
     }
   }
 }
