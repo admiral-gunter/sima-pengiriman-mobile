@@ -81,7 +81,7 @@ class _BodyV2State extends State<BodyV2> {
                       },
                       decoration: InputDecoration(
                         suffixIcon: Icon(Icons.person, color: kPrimaryColor),
-                        labelText: 'Username',
+                        labelText: 'Username/Gmail',
                         labelStyle: TextStyle(
                           color: Colors.black87,
                           fontSize: 17,
