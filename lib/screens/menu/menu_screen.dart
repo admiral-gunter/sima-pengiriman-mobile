@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:firebase_database/firebase_database.dart';
@@ -20,6 +21,7 @@ import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class MenuScreen extends StatefulWidget {
   static var routeName = '/menu';
@@ -100,7 +102,7 @@ class _MenuScreenState extends State<MenuScreen> {
   void initState() {
     super.initState();
     // _backgroundServices();
-    // _addLokasiFirebaseFromLok('aa', 'aa');
+    _addLokasiFirebaseFromLok('aa', 'aa');
     checkTokenAndNavigate();
 
     DateTime now = DateTime.now();
@@ -121,6 +123,8 @@ class _MenuScreenState extends State<MenuScreen> {
         'name': name,
         'email': email,
       });
+
+      print('data added');
     } catch (e) {
       print('Error adding user: $e');
     }

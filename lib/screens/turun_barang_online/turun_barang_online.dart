@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
@@ -374,25 +376,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
         'id': uuid.v4()
       });
 
-      // BODY PERJALANAN SUPIR FORMAT : perjalanan_supir_nama_HARI-TANGGAL-BULAN-TAHUN
-      // "perjalanan_supir_sima": {
-      //   "lat_cur": -6.9466,
-      //   "lat_dest": "",
-      //   "lat_source": -6.9465,
-      //   "long_cur": 107.7299,
-      //   "long_dest": "",
-      //   "long_source": ""
-      // },
-
-      // FIREBASE BUAT DASHBOARD
-      // final DatabaseReference dashboardLive =
-      //     FirebaseDatabase.instance.ref('realtime_supir_dashboard/${username}');
-
-      // await dashboardLive.set({
-      //   "lat": currentPosition.latitude.toString(),
-      //   "long": currentPosition.longitude.toString()
-      // });
-
       final DatabaseReference dashboardLive =
           FirebaseDatabase.instance.ref('realtime_supir_dashboard/${username}');
 
@@ -404,6 +387,177 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       print('User added successfully!');
     } catch (e) {
       print('Error adding user: $e');
+    }
+  }
+
+  bool evidenceTaken = false;
+  var attachments = [];
+  void _showTakeEvidncDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Bukti Turun Barang'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Flexible widget to use 30% of the available height
+              SizedBox(
+                height: 200,
+                child: Flexible(
+                  flex: 3,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        for (var item in attachments)
+                          InkWell(
+                            onTap: () async {
+                              final Uri url = Uri.parse(
+                                  '${HOST}/uploads/image/${item['file_name']}');
+                              if (!await launchUrl(url)) {
+                                throw Exception('Could not launch $url');
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 5.0),
+                              child: SizedBox(
+                                width: 100,
+                                height: 100,
+                                child: Image.network(
+                                  '${HOST}/uploads/image/${item['file_name']}',
+                                  fit: BoxFit
+                                      .cover, // Optional: fit the image within the SizedBox
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      setState(() {
+                        evidenceTaken = true;
+                      });
+                      await _pickImgFromGallery();
+                    },
+                    child: Text('Galeri'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      evidenceTaken = true;
+                      await _pickImgFromCamera();
+                    },
+                    child: Text('Kamera'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Submit'),
+              onPressed: () async {
+                await uploadFile();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  File? _selectedImg;
+
+  Future _pickImgFromGallery() async {
+    final img = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (img == null) return;
+    setState(() {
+      _selectedImg = File(img.path);
+    });
+  }
+
+  Future _pickImgFromCamera() async {
+    final img = await ImagePicker().pickImage(source: ImageSource.camera);
+
+    if (img == null) return;
+    setState(() {
+      _selectedImg = File(img.path);
+    });
+  }
+
+  Future<void> uploadFile() async {
+    String uname = await SharedToken.univGetterString('username');
+
+    final TurunBarangOnlineController ctl =
+        Get.put(TurunBarangOnlineController());
+    ctl.noSuratJalanSelected.value;
+    var url = Uri.parse(
+        '${kURL_ORIGIN}pengiriman/supir-upload-attachment-task?nomor_order=${ctl.noSuratJalanSelected.value}&username=$uname');
+
+    var request = http.MultipartRequest('POST', url);
+
+    var fileStream = http.ByteStream(_selectedImg!.openRead());
+    var length = await _selectedImg!.length();
+    var multipartFile = http.MultipartFile(
+      'file',
+      fileStream,
+      length,
+      filename: _selectedImg!.path,
+    );
+
+    request.files.add(multipartFile);
+
+    var response = await request.send();
+
+    // Handle the response
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('File uploaded successfully!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content:
+                Text('File upload failed with status: ${response.statusCode}')),
+      );
+    }
+  }
+
+  Future getAttachment() async {
+    final TurunBarangOnlineController ctl =
+        Get.put(TurunBarangOnlineController());
+    var url = Uri.parse(
+        '${kURL_ORIGIN}pengiriman/get-supir-upload-attachment-task?nomor_order=${ctl.noSuratJalanSelected.value}');
+
+    // Make the POST request
+    http.Response response = await http.post(url);
+
+    if (response.statusCode == 200) {
+      // If the server returns an OK response, parse the JSON
+      var responseBody = json.decode(response.body)['data'];
+
+      setState(() {
+        attachments = responseBody;
+      });
+      print('Response body: $responseBody');
+    } else {
+      // If the server returns an error response, throw an exception
+      print('Failed to load post');
     }
   }
 
@@ -426,6 +580,31 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       ),
       body: WillPopScope(
         onWillPop: () async {
+          final snackBarWarnYetTakeEvidnc = SnackBar(
+            backgroundColor: Colors.red,
+            content: Text(
+                'Anda belum mengambil bukti barang turun, tetap ke menu?',
+                style: TextStyle(color: Colors.white)),
+            action: SnackBarAction(
+              label: 'Ya',
+              onPressed: () {
+                ctl.listInv.clear();
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MenuScreen(),
+                    ));
+              },
+            ),
+          );
+
+          // Use the ScaffoldMessenger to show the SnackBar
+          if (!evidenceTaken) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(snackBarWarnYetTakeEvidnc);
+            return false;
+          }
+
           ctl.listInv.clear();
           Navigator.pushReplacement(
               context,
@@ -555,6 +734,21 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
+                          onPressed: () async {
+                            await getAttachment();
+                            // _launchMapsUrl(ctl.listLoc);
+                            // return;
+                            _showTakeEvidncDialog(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.purple),
+                          child: Text('Foto Bukti',
+                              style: TextStyle(color: Colors.white)),
+                        ),
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             primary: ctl.barangTap.value == 0
                                 ? Colors.red
@@ -603,17 +797,18 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                         ),
                       ),
                       SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              _launchMapsUrl(ctl.listLoc);
-                              return;
-                            },
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green),
-                            child: Text('Buka Maps',
-                                style: TextStyle(color: Colors.white)),
-                          ))
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            _launchMapsUrl(ctl.listLoc);
+                            return;
+                          },
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green),
+                          child: Text('Buka Maps',
+                              style: TextStyle(color: Colors.white)),
+                        ),
+                      )
                     ],
                   ),
                 ),

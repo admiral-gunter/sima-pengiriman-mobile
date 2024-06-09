@@ -16,6 +16,8 @@ import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:http/http.dart' as http;
 
+import 'helper/dependency_injection.dart';
+
 void onStart(ServiceInstance serviceInstance) async {
   String username = await SharedToken.univGetterString('username');
   username = username.replaceAll(' ', '_');
@@ -98,6 +100,7 @@ void main() async {
   ]);
 
   runApp(MyApp());
+  DependencyInjection.init();
 }
 
 class MyApp extends StatelessWidget {

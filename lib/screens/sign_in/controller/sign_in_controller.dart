@@ -20,10 +20,8 @@ class SignInController {
 
       return response.body;
     } on TimeoutException catch (e) {
-      kURL_ORIGIN2 = kURL_ORIGIN_BACKUP;
       return {'success': false, 'msg': 'Request timed out: $e'};
     } catch (e) {
-      kURL_ORIGIN2 = kURL_ORIGIN_BACKUP;
       print('Error sending POST request: $e');
       return {'success': false, 'msg': 'Error sending POST request: $e'};
     }

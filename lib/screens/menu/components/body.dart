@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -14,6 +16,7 @@ import '../../../enums.dart';
 import '../../../helper/debouncer.dart';
 import '../../turun_barang_online/turun_barang_online.dart';
 import '../../turun_barang_online/turun_barang_online_history.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class Body extends StatefulWidget {
   Body({Key? key}) : super(key: key);
@@ -28,31 +31,126 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   List recordTugasDone = [];
   String kumpulanNoOrderStr = '';
   String kumpulanNoSJStr = "";
+  bool hasInternet = true;
 
   @override
   void initState() {
     super.initState();
+
+    Timer.periodic(Duration(seconds: 10), (timer) async {
+      try {
+        final result = await InternetAddress.lookup('example.com');
+        if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+          if (mounted) {
+            setState(() {
+              hasInternet = true;
+            });
+          }
+        }
+      } on SocketException catch (_) {
+        if (mounted) {
+          setState(() {
+            hasInternet = false;
+          });
+        }
+      }
+    });
+
     // THESE FUNCTION ARE HEAVY AND UNSTABLE
     // REFACTOR WITH SCROLLING ALGORITHM SOON
     // GET DATA SJ LIMIT 20
     // GET ITEM SN ONLY WHEN CLICKED AT SJ
     // THEN INSERT
-    syncDataTap().then(
-        (value) => getsyncDataTapInsert().then((value) => getTaskKurir()));
+    // syncDataTap().then(
+    //     (value) => getsyncDataTapInsert().then((value) => getTaskKurir()));
+
+    initFunction();
 
     _tabController = TabController(length: 2, vsync: this); // Number of tabs
   }
 
+  Future initFunction() async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        await syncDataTap();
+        await getsyncDataTapInsert();
+        await getTaskKurir();
+        // syncDataTap().then(
+        //     (value) => getsyncDataTapInsert().then((value) => getTaskKurir()));
+      }
+    } on SocketException catch (_) {
+      if (mounted) {
+        setState(() {
+          statusSyncData = "DONE";
+        });
+      }
+      List<dynamic> tugasValue =
+          await DatabaseHelper.instance.getRecordTugasDT2();
+
+      if (mounted) {
+        if (tugasValue.isNotEmpty) {
+          setState(() {
+            recordTugas.clear();
+
+            var newTugas = tugasValue
+                .map((item) {
+                  return {
+                    ...item,
+                    'selected': false,
+                  };
+                })
+                .toSet()
+                .toList();
+
+            outerLoop:
+            for (var element in newTugas) {
+              var match = false;
+              for (var el in recordTugas) {
+                if (el['nomor_order'] == element['nomor_order']) {
+                  match = true;
+                  // Skip the current iteration of the outer loop
+                  continue outerLoop;
+                } else {
+                  match = false;
+                }
+              }
+              if (!match) {
+                recordTugas.add(element);
+              }
+            }
+          });
+        }
+
+        List<dynamic> historyValue =
+            await DatabaseHelper.instance.getHistorySuratJalan();
+
+        if (mounted) {
+          setState(() {
+            recordTugasDone = historyValue;
+          });
+
+          sjDalamPengiriman(historyValue);
+        }
+      }
+    }
+  }
+
   Future syncDataTap() async {
     try {
+      final timeoutDuration = Duration(seconds: 5);
       final e = await DatabaseHelper.instance.getRecordTugasDT();
-      // print('common no ORder list W ${e}');
       for (var i in e) {
         kumpulanNoSJStr +=
             "'${i['nomor_order'].toString().replaceAll(' ', '')}',";
       }
       kumpulanNoSJStr += "''";
     } catch (error) {
+      if (mounted) {
+        setState(() {
+          statusSyncData = "ERROR";
+        });
+      }
       print('Error: $error');
     }
   }
@@ -78,11 +176,22 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         "supir_actual": username,
       };
 
-      final response = await http.post(
+      final response = await http
+          .post(
         url,
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: dataSend,
-      );
+      )
+          .timeout(Duration(seconds: 120), onTimeout: () {
+        if (mounted) {
+          setState(() {
+            hasInternet = false;
+          });
+        }
+
+        return http.Response('Err', 500);
+      });
+      ;
       if (response.statusCode == 200) {
         final result = jsonDecode(response.body);
 
@@ -176,20 +285,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
           });
         }
 
-        if (false) {
-          if (mounted) {
-            setState(() {
-              recordTugas.add({
-                'nomor_order': 'GO-086',
-                'status_id': 0,
-                'status_nama': 'Incomplete',
-                'qty_sum': '3 Kg',
-                'tipe_pengiriman': 'instant'
-              });
-            });
-          }
-        }
-
         List<dynamic> historyValue =
             await DatabaseHelper.instance.getHistorySuratJalan();
 
@@ -202,6 +297,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         }
       }
     } catch (error) {
+      setState(() {
+        statusSyncData = "ERROR";
+      });
       print('Err: $error');
     }
   }
@@ -214,11 +312,19 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
 
       var data = {'sj': kumpulanNoSJStr, 'supir': username};
 
-      var response = await http.post(
+      var response = await http
+          .post(
         apiUrl,
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: data,
-      );
+      )
+          .timeout(Duration(seconds: 120), onTimeout: () {
+        setState(() {
+          hasInternet = false;
+        });
+
+        return http.Response('Err', 500);
+      });
 
       if (response.statusCode == 200) {
         final res = jsonDecode(response.body);
@@ -265,8 +371,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       );
 
       if (response.statusCode == 200) {
-        print('POST request successful! Response:');
-        print(response.body);
       } else {
         print('POST request failed with status: ${response.statusCode}');
         print(response.body);
@@ -302,11 +406,13 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
             }
           });
         }
-        print('Success! Response: ${response.body}');
       } else {
         print('Failed with status code: ${response.statusCode}');
       }
     } catch (e) {
+      setState(() {
+        statusSyncData = "ERROR";
+      });
       print('error: $e');
     }
   }
@@ -324,7 +430,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Icon(Icons.circle, color: Colors.green),
+            Icon(Icons.circle, color: hasInternet ? Colors.green : Colors.red),
             InkWell(
               onTap: () {
                 DatabaseHelper.instance.getRecordTugas().then((value) {

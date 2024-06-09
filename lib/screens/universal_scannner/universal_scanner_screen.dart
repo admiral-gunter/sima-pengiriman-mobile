@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -30,11 +31,29 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
   Map<String, dynamic> dataSNIdentifier = {'sn': null, 'identifier': null};
   var curKey = 'sn';
   final UniversalScannerData ctl = Get.put(UniversalScannerData());
+  bool hasInternet = true;
 
+  @override
   void initState() {
     ctl.clearSnIdentifier();
     cameraController.stop();
+    checkInternetConn();
     super.initState();
+  }
+
+  Future checkInternetConn() async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        setState(() {
+          hasInternet = true;
+        });
+      }
+    } on SocketException catch (_) {
+      setState(() {
+        hasInternet = false;
+      });
+    }
   }
 
   Future syncDataTap() async {
@@ -66,8 +85,26 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
   Future syncDataTapCompletion() async {
     final TurunBarangOnlineController ctr =
         Get.put(TurunBarangOnlineController());
-    final url = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-data-pengiriman');
     final username = await SharedToken.univGetterString('username');
+
+    if (!hasInternet) {
+      for (var element in ctr.listSJ) {
+        final data = {
+          "nomor_order": element['nomor_order'],
+          "nama_toko": element['toko'],
+          "creator": username,
+          "status": "unvalidasi",
+          "customer_nama": "DUMMY",
+          "customer_notelp": "DUMMY",
+          "supir": username,
+          "tapper": username
+        };
+        await DatabaseHelper.instance.insertHistorySuratJalan(data);
+      }
+      return;
+    }
+
+    final url = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-data-pengiriman');
     List dataList = await DatabaseHelper.instance.getDataTapForToday();
 
     Map<String, dynamic> requestBody = {"data": ctr.nomorSJ.value};
@@ -185,7 +222,7 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
           onPressed: () =>
               Navigator.pushReplacementNamed(context, widget.goBackRouteName),
         ),
-        title: const Text('Mobile Scanner'),
+        title: Text('Scanner ${hasInternet ? 'ONLINE' : 'OFFLINE'}'),
         actions: [
           IconButton(
             color: Colors.black,
@@ -249,6 +286,31 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
               }
 
               final username = await SharedToken.univGetterString('username');
+
+              if (!hasInternet) {
+                final dataTurun = {
+                  "nomor_order": ctr.listSJ[0]['nomor_order'],
+                  "sn": barcode,
+                  "identifier": 'IDENTIFIER',
+                  "product_name": 'PRODUCT_NAME',
+                  "long": "dummy_value",
+                  "lat": "dummy_value",
+                  "location_id": 0,
+                  "customer_id": 0,
+                  "creator": username,
+                  "status": "unvalidasi",
+                  "customer_nama": "COLUMN_TIDAK_TERPAKAI",
+                  "customer_notelp": "COLUMN_TIDAK_TERPAKAI",
+                  "supir": username,
+                  "tapper": username
+                };
+                await ctr.insertDataTurun(dataTurun);
+                AudioPlayer().play(AssetSource('audio/success.mp3'));
+
+                _dialogBuilder(context, 'SN Tervalidasi').then((value) {});
+                return;
+              }
+
               for (var element in ctr.listInv) {
                 if (element['inventory_id'] == barcode) {
                   final dataTurun = {

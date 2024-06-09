@@ -93,7 +93,7 @@ class TurunBarangOnlineController extends GetxController {
       final item = jsonEncode(element['nomor_order']);
       noSj += item + ',';
     }
-    var urli = kURL_ORIGIN + 'sale-wholesale/get-print-sj-data?no_sj=' + noSj;
+    var urli = '${kURL_ORIGIN}sale-wholesale/get-print-sj-data?no_sj=$noSj';
 
     urli = urli.replaceFirst(RegExp(r',\s*$'), '');
 
