@@ -11,6 +11,7 @@ import 'package:sima_pengiriman/screens/turun_barang_offline/turun_barang_offlin
 
 import 'screens/courier_delivery_task_detail/delivery_task_detail.dart';
 import 'screens/courier_scanner/courier_scanner_screen.dart';
+import 'screens/daily_report_driver/daily_report_driver_screen.dart';
 import 'screens/delivery_instant/delivery_instant_screen.dart';
 import 'screens/delivery_package_by_weight/delivery_package_by_weight_screen.dart';
 import 'screens/history_order/history_order_screen.dart';
@@ -59,5 +60,6 @@ final Map<String, WidgetBuilder> routes = {
   CourierScannerScreen.routeName: (context) => CourierScannerScreen(),
   OutOfTownCargoScreen.routeName: (context) => OutOfTownCargoScreen(),
   DeliveryPackageByWeightScreen.routeName: (context) =>
-      DeliveryPackageByWeightScreen()
+      DeliveryPackageByWeightScreen(),
+  DailyReportDriverScreen.routeName: (context) => DailyReportDriverScreen()
 };

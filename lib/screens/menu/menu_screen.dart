@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/src/foundation/key.dart';
@@ -103,7 +104,7 @@ class _MenuScreenState extends State<MenuScreen> {
     super.initState();
     // _backgroundServices();
     _addLokasiFirebaseFromLok('aa', 'aa');
-    checkTokenAndNavigate();
+    cekKoneksiAndLogoutIfOnline();
 
     DateTime now = DateTime.now();
     String formattedDate = DateFormat('yyyy-MM-dd').format(now);
@@ -111,6 +112,20 @@ class _MenuScreenState extends State<MenuScreen> {
           if (value != formattedDate)
             {Navigator.pushReplacementNamed(context, SignInScreen.routeName)}
         });
+  }
+
+  // CHECK CONNECTION
+  Future cekKoneksiAndLogoutIfOnline() async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        if (mounted) {
+          checkTokenAndNavigate();
+        }
+      }
+    } on SocketException catch (_) {
+      if (mounted) {}
+    }
   }
 
   // TEST CODE

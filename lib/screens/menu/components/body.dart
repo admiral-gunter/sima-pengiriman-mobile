@@ -76,8 +76,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         await syncDataTap();
         await getsyncDataTapInsert();
         await getTaskKurir();
-        // syncDataTap().then(
-        //     (value) => getsyncDataTapInsert().then((value) => getTaskKurir()));
       }
     } on SocketException catch (_) {
       if (mounted) {

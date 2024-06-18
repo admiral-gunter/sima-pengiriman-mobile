@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sima_pengiriman/screens/daily_report_driver/daily_report_driver_screen.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
 import 'package:sima_pengiriman/screens/profile/profile_screen.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
@@ -61,6 +62,22 @@ class CustomBottomNavBar extends StatelessWidget {
                       } else {
                         Navigator.pushNamed(context, MenuScreen.routeName);
                       }
+                    }
+                  }),
+              IconButton(
+                  icon: SvgPicture.asset(
+                    "assets/icons/Bill Icon.svg",
+                    color: MenuState.dailyReport == selectedMenu
+                        ? kPrimaryColor
+                        : inActiveIconColor,
+                  ),
+                  onPressed: () {
+                    String? currentRoute =
+                        ModalRoute.of(context)?.settings.name;
+
+                    if (currentRoute != DailyReportDriverScreen.routeName) {
+                      Navigator.pushNamed(
+                          context, DailyReportDriverScreen.routeName);
                     }
                   }),
               IconButton(
