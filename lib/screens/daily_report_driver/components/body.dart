@@ -160,6 +160,10 @@ class _FormReportDialogState extends State<FormReportDialog> {
     try {
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
+
+      setState(() {
+        btnDisabled = false;
+      });
       if (response.statusCode == 200) {
         print('Files uploaded successfully');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -200,6 +204,8 @@ class _FormReportDialogState extends State<FormReportDialog> {
   var kmTextController = TextEditingController();
   var literTextController = TextEditingController();
 
+  var btnDisabled = false;
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -210,6 +216,7 @@ class _FormReportDialogState extends State<FormReportDialog> {
           children: [
             TextFormField(
               controller: kmTextController,
+              keyboardType: TextInputType.number,
               decoration: InputDecoration(
                   labelText: 'KM', hintText: 'Masukkan kilometer...'),
             ),
@@ -503,12 +510,18 @@ class _FormReportDialogState extends State<FormReportDialog> {
           },
         ),
         TextButton(
-          child: Text('Submit'),
+          child: btnDisabled ? Text('Submitting...') : Text('Submit'),
           onPressed: () async {
+            if (btnDisabled) {
+              return;
+            }
+            setState(() {
+              btnDisabled = true;
+            });
             await uploadFiles();
             await _BodyState().getData();
-            // Handle form submission logic here
             Navigator.pop(context);
+            // Handle form submission logic here
           },
         ),
       ],
