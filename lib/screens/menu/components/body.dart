@@ -191,6 +191,18 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       });
       ;
       if (response.statusCode == 200) {
+        final snackBar = SnackBar(
+          content: Text('${response.body}'),
+          action: SnackBarAction(
+            label: 'Ok',
+            onPressed: () {
+              // Some code to undo the change.
+            },
+          ),
+        );
+
+        // ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
         final result = jsonDecode(response.body);
 
         for (var item in result['tapped_sj']) {
@@ -298,6 +310,17 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       setState(() {
         statusSyncData = "ERROR";
       });
+      final snackBar = SnackBar(
+        content: Text('Err: $error'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            // Some code to undo the change.
+          },
+        ),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
       print('Err: $error');
     }
   }
