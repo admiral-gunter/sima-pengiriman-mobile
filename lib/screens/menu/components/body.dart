@@ -174,22 +174,21 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         "supir_actual": username,
       };
 
-      final response = await http
-          .post(
+      final response = await http.post(
         url,
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: dataSend,
       )
-          .timeout(Duration(seconds: 120), onTimeout: () {
-        if (mounted) {
-          setState(() {
-            hasInternet = false;
-          });
-        }
+          //     .timeout(Duration(seconds: 500), onTimeout: () {
+          //   if (mounted) {
+          //     setState(() {
+          //       hasInternet = false;
+          //     });
+          //   }
 
-        return http.Response('Err', 500);
-      });
-      ;
+          //   return http.Response('Err', 500);
+          // });
+          ;
       if (response.statusCode == 200) {
         final snackBar = SnackBar(
           content: Text('${response.body}'),
@@ -255,7 +254,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         statusSyncData = "DONE";
       } else {
         print('Request failed with status: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        print('Response body Sync DAta Insert: ${response.body}');
       }
       await taskNoLongerAssigned();
       List<dynamic> tugasValue =
@@ -321,7 +320,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       );
 
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      print('Err: $error');
+      print('Err SYnc Data: $error');
     }
   }
 
@@ -491,149 +490,167 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
               ),
             )
-          : TabBarView(
-              controller: _tabController,
+          : Stack(
               children: [
-                Column(
+                Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: MediaQuery.of(context).size.height * 0.10,
+                    child: Text('data')),
+                TabBarView(
+                  controller: _tabController,
                   children: [
-                    Expanded(
-                        child: recordTugas.isNotEmpty
-                            ? ListView.builder(
-                                itemCount: recordTugas.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return ListTile(
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                            'Barang : ${recordTugas[index]['qty_sum']}')
-                                      ],
-                                    ),
-                                    trailing: Text(
-                                      recordTugas[index]['status_id']
-                                                      .toString() ==
-                                                  '21' ||
-                                              recordTugas[index]['status_id']
-                                                      .toString() ==
-                                                  '23'
-                                          ? '${recordTugas[index]['status_nama']}'
-                                          : 'Incompleted ',
-                                      style: recordTugas[index]['status_id']
-                                                      .toString() ==
-                                                  '21' ||
-                                              recordTugas[index]['status_id']
-                                                      .toString() ==
-                                                  '23'
-                                          ? const TextStyle(
-                                              color: Colors.red,
-                                              fontWeight: FontWeight.bold,
-                                            )
-                                          : const TextStyle(
-                                              color: Colors.orange,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                    ),
-                                    title: recordTugas[index]
-                                                ['tipe_pengiriman'] !=
-                                            null
-                                        ? Text(
-                                            '${recordTugas[index]['tipe_pengiriman'].toString().substring(0, 3)}-${recordTugas[index]["nomor_order"]}')
-                                        : Text(
-                                            '${recordTugas[index]["nomor_order"]}'),
-                                    onTap: () async {
-                                      var selectedTugas = recordTugas[index];
-
-                                      if (selectedTugas['tipe_pengiriman'] !=
-                                          null) {
-                                        await SharedToken.univSetterString(
-                                            'selected_order_code',
-                                            recordTugas[index]["nomor_order"]);
-                                        Navigator.pushNamed(context,
-                                            DeliveryTaskDetail.routeName);
-                                        return;
-                                      }
-                                      await ctl.getItemsByNoSJ([selectedTugas]);
-                                      if (recordTugas[index]['status_id']
-                                                  .toString() ==
-                                              '21' ||
+                    Column(
+                      children: [
+                        Expanded(
+                            child: recordTugas.isNotEmpty
+                                ? ListView.builder(
+                                    itemCount: recordTugas.length,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      return ListTile(
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                                'Barang : ${recordTugas[index]['qty_sum']}')
+                                          ],
+                                        ),
+                                        trailing: Text(
                                           recordTugas[index]['status_id']
-                                                  .toString() ==
-                                              '23') {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: const Text(
-                                                'Lanjutkan Pengiriman SJ?'),
-                                            duration:
-                                                const Duration(seconds: 2),
-                                            action: SnackBarAction(
-                                              label: 'Oke',
-                                              onPressed: () {
-                                                if (recordTugas[index]
-                                                        ['tipe_pengiriman'] ==
-                                                    null) {
-                                                  Navigator.pushNamed(
-                                                      context,
-                                                      TurunBarangOnlineScreen
-                                                          .routeName);
-                                                } else {
-                                                  Navigator.pushNamed(
-                                                      context,
-                                                      TurunBarangOnlineScreen
-                                                          .routeName);
-                                                }
-                                              },
-                                            ),
-                                          ),
-                                        );
-                                        return;
-                                      }
+                                                          .toString() ==
+                                                      '21' ||
+                                                  recordTugas[index]
+                                                              ['status_id']
+                                                          .toString() ==
+                                                      '23'
+                                              ? '${recordTugas[index]['status_nama']}'
+                                              : 'Incompleted ',
+                                          style: recordTugas[index]['status_id']
+                                                          .toString() ==
+                                                      '21' ||
+                                                  recordTugas[index]
+                                                              ['status_id']
+                                                          .toString() ==
+                                                      '23'
+                                              ? const TextStyle(
+                                                  color: Colors.red,
+                                                  fontWeight: FontWeight.bold,
+                                                )
+                                              : const TextStyle(
+                                                  color: Colors.orange,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                        ),
+                                        title: recordTugas[index]
+                                                    ['tipe_pengiriman'] !=
+                                                null
+                                            ? Text(
+                                                '${recordTugas[index]['tipe_pengiriman'].toString().substring(0, 3)}-${recordTugas[index]["nomor_order"]}')
+                                            : Text(
+                                                '${recordTugas[index]["nomor_order"]}'),
+                                        onTap: () async {
+                                          var selectedTugas =
+                                              recordTugas[index];
 
-                                      Navigator.pushNamed(context,
-                                          TurunBarangOnlineScreen.routeName);
+                                          if (selectedTugas[
+                                                  'tipe_pengiriman'] !=
+                                              null) {
+                                            await SharedToken.univSetterString(
+                                                'selected_order_code',
+                                                recordTugas[index]
+                                                    ["nomor_order"]);
+                                            Navigator.pushNamed(context,
+                                                DeliveryTaskDetail.routeName);
+                                            return;
+                                          }
+                                          await ctl
+                                              .getItemsByNoSJ([selectedTugas]);
+                                          if (recordTugas[index]['status_id']
+                                                      .toString() ==
+                                                  '21' ||
+                                              recordTugas[index]['status_id']
+                                                      .toString() ==
+                                                  '23') {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: const Text(
+                                                    'Lanjutkan Pengiriman SJ?'),
+                                                duration:
+                                                    const Duration(seconds: 2),
+                                                action: SnackBarAction(
+                                                  label: 'Oke',
+                                                  onPressed: () {
+                                                    if (recordTugas[index][
+                                                            'tipe_pengiriman'] ==
+                                                        null) {
+                                                      Navigator.pushNamed(
+                                                          context,
+                                                          TurunBarangOnlineScreen
+                                                              .routeName);
+                                                    } else {
+                                                      Navigator.pushNamed(
+                                                          context,
+                                                          TurunBarangOnlineScreen
+                                                              .routeName);
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
+
+                                          Navigator.pushNamed(
+                                              context,
+                                              TurunBarangOnlineScreen
+                                                  .routeName);
+                                        },
+                                      );
                                     },
-                                  );
-                                },
-                              )
-                            : const Center(
-                                child: Text(
-                                    'Anda belum memiliki tugas silahkan klik tombol Scan Pengiriman untuk tugas anda hari ini'),
-                              )),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4.0, vertical: 2.0),
-                      child: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushNamed(
-                                    context, ScanPengirimanScreen.routeName);
-                              },
-                              child: const Text('Scan Pengiriman'))),
+                                  )
+                                : const Center(
+                                    child: Text(
+                                        'Anda belum memiliki tugas silahkan klik tombol Scan Pengiriman untuk tugas anda hari ini'),
+                                  )),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4.0, vertical: 2.0),
+                          child: SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pushNamed(context,
+                                        ScanPengirimanScreen.routeName);
+                                  },
+                                  child: const Text('Scan Pengiriman'))),
+                        ),
+                      ],
                     ),
+                    recordTugasDone.isEmpty
+                        ? const Center(
+                            child: Text(
+                                'Anda belum memiliki tugas silahkan klik tombol Scan Pengiriman untuk tugas anda hari ini'),
+                          )
+                        : ListView.builder(
+                            itemCount: recordTugasDone.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return ListTile(
+                                title: Text(
+                                    '${recordTugasDone[index]['nomor_order']} '),
+                                onTap: () async {
+                                  var selectedTugas = recordTugasDone[index];
+                                  await ctl.getItemsByNoSJ([selectedTugas]);
+                                  Navigator.pushNamed(context,
+                                      TurunBarangOnlineHistoryScreen.routeName);
+                                },
+                              );
+                            },
+                          )
                   ],
                 ),
-                recordTugasDone.isEmpty
-                    ? const Center(
-                        child: Text(
-                            'Anda belum memiliki tugas silahkan klik tombol Scan Pengiriman untuk tugas anda hari ini'),
-                      )
-                    : ListView.builder(
-                        itemCount: recordTugasDone.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return ListTile(
-                            title: Text(
-                                '${recordTugasDone[index]['nomor_order']} '),
-                            onTap: () async {
-                              var selectedTugas = recordTugasDone[index];
-                              await ctl.getItemsByNoSJ([selectedTugas]);
-                              Navigator.pushNamed(context,
-                                  TurunBarangOnlineHistoryScreen.routeName);
-                            },
-                          );
-                        },
-                      )
               ],
             ),
     );
