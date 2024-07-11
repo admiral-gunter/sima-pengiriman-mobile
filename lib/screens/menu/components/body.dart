@@ -32,6 +32,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   String kumpulanNoOrderStr = '';
   String kumpulanNoSJStr = "";
   bool hasInternet = true;
+  String username = "";
 
   @override
   void initState() {
@@ -70,6 +71,10 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   }
 
   Future initFunction() async {
+    final uname = await SharedToken.univGetterString('username');
+    setState(() {
+      username = uname;
+    });
     try {
       final result = await InternetAddress.lookup('example.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
@@ -156,6 +161,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   //LOADING; DONE; ERROR
   String statusSyncData = "LOADING";
   String kumpulanNoSnStr = "";
+  String keyword = "";
   Future getsyncDataTapInsert() async {
     final url = Uri.parse('${kURL_ORIGIN}pengiriman/sync-pengiriman-by-user');
 
@@ -173,6 +179,10 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         "kumpulan_no_sn_str": kumpulanNoSnStr,
         "supir_actual": username,
       };
+
+      if (keyword.isNotEmpty) {
+        dataSend['keyword'] = keyword;
+      }
 
       final response = await http.post(
         url,
@@ -437,6 +447,8 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     }
   }
 
+  final TextEditingController searchKeywordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final _debouncer = Debouncer(delay: Duration(milliseconds: 500));
@@ -457,12 +469,40 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                   if (mounted) {}
                 });
               },
-              child: const Text(
-                'Supir',
+              child: Text(
+                username,
                 style: TextStyle(color: Colors.black),
               ),
             ),
-            const Icon(Icons.person)
+            IconButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Filter'),
+                        content:
+                            TextFormField(controller: searchKeywordController),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () async {
+                              await getsyncDataTapInsert();
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Submit'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Close'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                icon: Icon(Icons.search))
           ],
         ),
         bottom: TabBar(
@@ -492,11 +532,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
             )
           : Stack(
               children: [
-                Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: MediaQuery.of(context).size.height * 0.10,
-                    child: Text('data')),
                 TabBarView(
                   controller: _tabController,
                   children: [
