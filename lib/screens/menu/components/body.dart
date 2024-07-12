@@ -180,8 +180,8 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         "supir_actual": username,
       };
 
-      if (keyword.isNotEmpty) {
-        dataSend['keyword'] = keyword;
+      if (searchKeywordController.text.isNotEmpty) {
+        dataSend['keyword'] = searchKeywordController.text;
       }
 
       final response = await http.post(
@@ -236,6 +236,13 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
               'status_nama': item['status_nama'],
               'keterangan': item['keterangan']
             };
+            if (searchKeywordController.text.isNotEmpty) {
+              if (mounted) {
+                setState(() {
+                  recordTugas.add(tugasItem);
+                });
+              }
+            }
 
             await DatabaseHelper.instance.insertRecordTugasHistory(tugasItem);
 
@@ -267,8 +274,8 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         print('Response body Sync DAta Insert: ${response.body}');
       }
       await taskNoLongerAssigned();
-      List<dynamic> tugasValue =
-          await DatabaseHelper.instance.getRecordTugasDT2();
+      List<dynamic> tugasValue = await DatabaseHelper.instance
+          .getRecordTugasDT2(searchKeywordController.text);
 
       if (mounted) {
         if (tugasValue.isNotEmpty) {
@@ -486,6 +493,11 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                         actions: <Widget>[
                           TextButton(
                             onPressed: () async {
+                              if (mounted) {
+                                setState(() {
+                                  recordTugas.clear();
+                                });
+                              }
                               await getsyncDataTapInsert();
                               Navigator.of(context).pop();
                             },

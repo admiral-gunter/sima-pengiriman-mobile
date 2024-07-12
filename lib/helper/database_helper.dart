@@ -308,37 +308,45 @@ class DatabaseHelper {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getRecordTugasDT2() async {
+  Future<List<Map<String, dynamic>>> getRecordTugasDT2(
+      [String? noOrder]) async {
     final db = await instance.database;
-    // return await db.query(
-    //   'record_tugas',
-    //   orderBy: 'date_added DESC',
-    // );
-    return await db.rawQuery('''
-    SELECT 
-    record_tugas.*,
-    record_tugas_history.status_id,
-    record_tugas_history.status_nama,
-    record_tugas_history.keterangan
-FROM 
-    record_tugas
-LEFT JOIN 
-    history_tugas_surat_jalan
-    ON record_tugas.nomor_order = history_tugas_surat_jalan.nomor_order
-LEFT JOIN 
-    record_tugas_history
-    ON record_tugas_history.nomor_order_surat_jalan = record_tugas.nomor_order
-    AND record_tugas_history.date_added = (
-        SELECT MAX(date_added)
-        FROM record_tugas_history
-        WHERE nomor_order_surat_jalan = record_tugas.nomor_order
-    )
-WHERE 
-    history_tugas_surat_jalan.nomor_order IS NULL
-ORDER BY 
-    record_tugas.date_added DESC;
 
-  ''');
+    String query = '''
+    SELECT
+        record_tugas.*,
+        record_tugas_history.status_id,
+        record_tugas_history.status_nama,
+        record_tugas_history.keterangan
+    FROM
+        record_tugas
+    LEFT JOIN
+        history_tugas_surat_jalan
+        ON record_tugas.nomor_order = history_tugas_surat_jalan.nomor_order
+    LEFT JOIN
+        record_tugas_history
+        ON record_tugas_history.nomor_order_surat_jalan = record_tugas.nomor_order
+        AND record_tugas_history.date_added = (
+            SELECT MAX(date_added)
+            FROM record_tugas_history
+            WHERE nomor_order_surat_jalan = record_tugas.nomor_order
+        )
+    WHERE
+        history_tugas_surat_jalan.nomor_order IS NULL
+  ''';
+
+    if (noOrder != null && noOrder.isNotEmpty) {
+      query += '''
+      AND record_tugas_history.nomor_order_surat_jalan LIKE '%${noOrder}%'
+    ''';
+    }
+
+    query += '''
+    ORDER BY
+        record_tugas.date_added DESC
+  ''';
+
+    return await db.rawQuery(query);
   }
 
   Future<List<Map<String, dynamic>>> getBarangTurunDT() async {
