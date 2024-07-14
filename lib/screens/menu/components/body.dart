@@ -162,6 +162,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   String statusSyncData = "LOADING";
   String kumpulanNoSnStr = "";
   String keyword = "";
+  Map<String, Map<String, String>> stsPriority = {
+    '': {'': ''}
+  };
   Future getsyncDataTapInsert() async {
     final url = Uri.parse('${kURL_ORIGIN}pengiriman/sync-pengiriman-by-user');
 
@@ -215,6 +218,13 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         final result = jsonDecode(response.body);
 
         for (var item in result['tapped_sj']) {
+          setState(() {
+            stsPriority[item['nomor_order']] = {
+              'status_priority': item['status_priority'],
+              'keterangan_sts_priority': item['keterangan_sts_priority']
+            };
+            // stsPriority['nomor_order'] = item['nomor_order'];
+          });
           final newITem = {
             'nomor_order': item['nomor_order'],
             'nama_toko': 'NONE',
@@ -596,7 +606,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                             ? Text(
                                                 '${recordTugas[index]['tipe_pengiriman'].toString().substring(0, 3)}-${recordTugas[index]["nomor_order"]}')
                                             : Text(
-                                                '${recordTugas[index]["nomor_order"]}'),
+                                                '${recordTugas[index]["nomor_order"]}  ${stsPriority[recordTugas[index]["nomor_order"]]?["status_priority"] ?? ''}'),
                                         onTap: () async {
                                           var selectedTugas =
                                               recordTugas[index];
