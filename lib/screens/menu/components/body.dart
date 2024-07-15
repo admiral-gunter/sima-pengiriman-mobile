@@ -218,13 +218,16 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         final result = jsonDecode(response.body);
 
         for (var item in result['tapped_sj']) {
-          setState(() {
-            stsPriority[item['nomor_order']] = {
-              'status_priority': item['status_priority'],
-              'keterangan_sts_priority': item['keterangan_sts_priority']
-            };
-            // stsPriority['nomor_order'] = item['nomor_order'];
-          });
+          if (item['status_priority'] != null &&
+              item['keterangan_sts_priority'] != null) {
+            setState(() {
+              stsPriority[item['nomor_order']] = {
+                'status_priority': item['status_priority'],
+                'keterangan_sts_priority': item['keterangan_sts_priority']
+              };
+            });
+          }
+
           final newITem = {
             'nomor_order': item['nomor_order'],
             'nama_toko': 'NONE',
