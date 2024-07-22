@@ -26,10 +26,7 @@ class _BodyState extends State<Body> {
 
   Future getData() async {
     final url = Uri.parse('${kURL_ORIGIN}pengiriman/get-supir-upload-report');
-    // final headers = {
-    //   'Content-Type': 'application/json',
-    //   'Authorization': 'Bearer YOUR_API_TOKEN', // if you need authorization
-    // };
+    ;
 
     try {
       final response = await http.post(url);
@@ -38,9 +35,6 @@ class _BodyState extends State<Body> {
           supirReport = jsonDecode(response.body)[0];
         });
 
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   SnackBar(content: Text('${response.body}')),
-        // );
         print('Response data: ${response.body}');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -151,12 +145,6 @@ class _FormReportDialogState extends State<FormReportDialog> {
           'km_kendaraan', _listImgs['km_kendaraan']));
     }
 
-    // var response = await request.send();
-    // if (response.statusCode == 200) {
-    //   print('Files uploaded successfully');
-    // } else {
-    //   print('File upload failed with status: ${response.statusCode}');
-    // }
     try {
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
