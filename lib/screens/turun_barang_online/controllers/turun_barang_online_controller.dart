@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:http/http.dart' as http;
@@ -25,6 +26,8 @@ class TurunBarangOnlineController extends GetxController {
 
   RxInt barangTap = 0.obs;
   RxInt barangHarusTap = 0.obs;
+
+  RxBool hasPriority = false.obs;
 
   final TextEditingController alasanBataltextController =
       TextEditingController();
@@ -69,6 +72,8 @@ class TurunBarangOnlineController extends GetxController {
   }
 
   RxString noSuratJalanSelected = "".obs;
+  RxList listBarangPrioritas = [].obs;
+
   var latlongSJ = {}.obs;
   Future<void> getItemsByNoSJ(dynamic listNoSJ) async {
     print(listNoSJ);
@@ -126,6 +131,12 @@ class TurunBarangOnlineController extends GetxController {
 
         barangHarusTap.value = cntmusTap.length;
         barangTap.value = cntTapped.length;
+
+        final barangPriorias = resp['barang_prioritas'] as List;
+        if (barangPriorias.isNotEmpty) {
+          hasPriority.value = true;
+          listBarangPrioritas.addAll(barangPriorias);
+        }
 
         for (var element in resp['content2']) {
           await DatabaseHelper.instance.insertBarangTurun(element);

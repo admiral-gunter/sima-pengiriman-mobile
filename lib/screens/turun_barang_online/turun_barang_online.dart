@@ -52,9 +52,19 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   final LocationSettings locationSettings = LocationSettings(
     distanceFilter: 100,
   );
-
+  String nomorSJOrder = "";
   @override
   void initState() {
+    final TurunBarangOnlineController ctl =
+        Get.put(TurunBarangOnlineController());
+
+    final sj = ctl.noSuratJalanSelected.value.toString().replaceAll(' ', '');
+
+    if (mounted) {
+      setState(() {
+        nomorSJOrder = sj;
+      });
+    }
     super.initState();
     _getLocationData();
     _getCountProduct();
@@ -561,6 +571,39 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     }
   }
 
+  Future<void> showBarangPrioritas(BuildContext context, dynamic items) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true, // user can tap outside the dialog to dismiss it
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('List of Items'),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: items.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(items[index]['product_name']),
+                  subtitle: Text(items[index]['inventory_id']),
+                );
+              },
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final TurunBarangOnlineController ctl =
@@ -571,11 +614,27 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(50.0),
         child: AppBar(
-            title: Text(
-          "Turun Barang (Online)",
-          style: TextStyle(
-            color: Colors.black,
-          ),
+            title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Turun Barang (Online)",
+              style: TextStyle(
+                color: Colors.black,
+              ),
+            ),
+            Obx(() => ctl.hasPriority == true
+                ? IconButton(
+                    color: Colors.red,
+                    onPressed: () {
+                      List<Map<String, dynamic>> listBarangPrioritas =
+                          new List<Map<String, dynamic>>.from(
+                              ctl.listBarangPrioritas);
+                      showBarangPrioritas(context, listBarangPrioritas);
+                    },
+                    icon: Icon(Icons.warning_amber_outlined))
+                : Container())
+          ],
         )),
       ),
       body: WillPopScope(
