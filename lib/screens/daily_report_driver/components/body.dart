@@ -124,10 +124,14 @@ class _FormReportDialogState extends State<FormReportDialog> {
 
   Future<void> uploadFiles() async {
     final username = await SharedToken.univGetterString('username');
+    final plat_no = await SharedToken.univGetterString('no_plat');
+    // final noPlat = val['no_plat'] ?? '';
+    // await SharedToken.univSetterString(
+    //     'no_plat', noPlat);
     var request = http.MultipartRequest(
         'POST',
         Uri.parse(
-            '${kURL_ORIGIN}pengiriman/supir-upload-report?tipe=$dropdownValue&username=$username&km=${kmTextController.text}&liter=${literTextController.text}'));
+            '${kURL_ORIGIN}pengiriman/supir-upload-report?tipe=$dropdownValue&username=$username&km=${kmTextController.text}&liter=${literTextController.text}&plat_no=${plat_no}'));
     // for (var file in selectedFiles) {
     //   request.files.add(await http.MultipartFile.fromPath('files', file.path));
     // }
