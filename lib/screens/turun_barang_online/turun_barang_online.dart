@@ -24,6 +24,7 @@ import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
 import 'package:location/location.dart';
 import 'package:flutter_background/flutter_background.dart';
+import '../barang_tidak_muat/barang_tidak_muat_screen.dart';
 import 'controllers/turun_barang_online_controller.dart';
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 
@@ -584,10 +585,14 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
               shrinkWrap: true,
               itemCount: items.length,
               itemBuilder: (BuildContext context, int index) {
-                return ListTile(
-                  title: Text(items[index]['product_name']),
-                  subtitle: Text(items[index]['inventory_id']),
-                );
+                if (items[index]['product_name'] != null) {
+                  return ListTile(
+                    title: Text(items[index]['product_name']),
+                    subtitle: items[index]['inventory_id'] != null
+                        ? Text(items[index]['inventory_id'])
+                        : Text('Belum di out'),
+                  );
+                }
               },
             ),
           ),
@@ -790,6 +795,23 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold)))),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            // await getAttachment();
+                            // // _launchMapsUrl(ctl.listLoc);
+                            // // return;
+                            // _showTakeEvidncDialog(context);
+                            Navigator.pushReplacementNamed(
+                                context, BarangTidakMuatScreen.routeName);
+                          },
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey),
+                          child: Text('Barang tidak muat',
+                              style: TextStyle(color: Colors.black)),
+                        ),
+                      ),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(

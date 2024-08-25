@@ -9,6 +9,7 @@ import 'package:sima_pengiriman/screens/sign_in/sign_in_screen.dart';
 import 'package:sima_pengiriman/screens/splash/splash_screen.dart';
 import 'package:sima_pengiriman/screens/turun_barang_offline/turun_barang_offline_screen.dart';
 
+import 'screens/barang_tidak_muat/barang_tidak_muat_screen.dart';
 import 'screens/courier_delivery_task_detail/delivery_task_detail.dart';
 import 'screens/courier_scanner/courier_scanner_screen.dart';
 import 'screens/daily_report_driver/daily_report_driver_screen.dart';
@@ -61,5 +62,6 @@ final Map<String, WidgetBuilder> routes = {
   OutOfTownCargoScreen.routeName: (context) => OutOfTownCargoScreen(),
   DeliveryPackageByWeightScreen.routeName: (context) =>
       DeliveryPackageByWeightScreen(),
-  DailyReportDriverScreen.routeName: (context) => DailyReportDriverScreen()
+  DailyReportDriverScreen.routeName: (context) => DailyReportDriverScreen(),
+  BarangTidakMuatScreen.routeName: (context) => BarangTidakMuatScreen()
 };
