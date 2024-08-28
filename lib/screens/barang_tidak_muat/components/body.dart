@@ -40,11 +40,10 @@ class _BodyState extends State<Body> {
           true, // Set to false if you don't want the user to dismiss by tapping outside
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Dialog Title'),
+          title: Text(title!),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text(title!),
                 Text(msg!),
               ],
             ),

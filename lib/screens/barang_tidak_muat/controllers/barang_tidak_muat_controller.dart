@@ -26,7 +26,7 @@ class BarangTidakMuatController {
 
     // Headers (optional)
     final headers = {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded',
       'Authorization': 'Bearer your_token_here', // Jika perlu token
     };
 
@@ -35,7 +35,7 @@ class BarangTidakMuatController {
       final response = await http.post(
         url,
         headers: headers,
-        body: jsonEncode(requestData),
+        body: requestData,
       );
 
       // Mengecek status code
