@@ -625,6 +625,25 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                                 DeliveryTaskDetail.routeName);
                                             return;
                                           }
+                                          ctl.listSJ.value = [];
+                                          ctl.listSelected.value = [];
+                                          ctl.listInv.value = [];
+                                          ctl.tapper.value = "";
+                                          ctl.listBarangPrioritas.value = [];
+                                          // ctl.nomorSJ.value = "";
+                                          // ctl.coordinate.value = {
+                                          //   'lat': '',
+                                          //   'long': ''
+                                          // };
+                                          // ctl.suratJalanCredential.value = {
+                                          //   'nama_toko': '',
+                                          //   'no_surat_jalan': ''
+                                          // };
+                                          // ctl.listLoc.value = [
+                                          //   {'': ''}
+                                          // ];
+                                          ctl.barangTap.value = 0;
+                                          ctl.barangHarusTap.value = 0;
                                           await ctl
                                               .getItemsByNoSJ([selectedTugas]);
                                           if (recordTugas[index]['status_id']
