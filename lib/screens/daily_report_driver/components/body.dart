@@ -21,12 +21,32 @@ class _BodyState extends State<Body> {
   @override
   void initState() {
     getData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      cekStatusAbsen();
+    });
+
     super.initState();
+  }
+
+  Future cekStatusAbsen() async {
+    final stsAbsen = await SharedToken.univGetterString('STS_ABSEN');
+
+    if (stsAbsen == 'BELUM_ABSEN') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            'BUAT LAPORAN KM UNTUK MELANJUTKAN TUGAS',
+            style: TextStyle(color: Colors.white),
+          ),
+          duration: Duration(days: 1),
+        ),
+      );
+    }
   }
 
   Future getData() async {
     final url = Uri.parse('${kURL_ORIGIN}pengiriman/get-supir-upload-report');
-    ;
 
     try {
       final response = await http.post(url);
@@ -131,7 +151,7 @@ class _FormReportDialogState extends State<FormReportDialog> {
     var request = http.MultipartRequest(
         'POST',
         Uri.parse(
-            '${kURL_ORIGIN}pengiriman/supir-upload-report?tipe=$dropdownValue&username=$username&km=${kmTextController.text}&liter=${literTextController.text}&plat_no=${plat_no}'));
+            '${kURL_ORIGIN}pengiriman/supir-upload-report?tipe=$dropdownValue&username=$username&km=${kmTextController.text}&liter=${literTextController.text}&plat_no=${plat_no}&keterangan=${keteranganTextController.text}'));
     // for (var file in selectedFiles) {
     //   request.files.add(await http.MultipartFile.fromPath('files', file.path));
     // }
@@ -152,7 +172,7 @@ class _FormReportDialogState extends State<FormReportDialog> {
     try {
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
-
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       setState(() {
         btnDisabled = false;
       });
@@ -195,6 +215,8 @@ class _FormReportDialogState extends State<FormReportDialog> {
 
   var kmTextController = TextEditingController();
   var literTextController = TextEditingController();
+
+  var keteranganTextController = TextEditingController();
 
   var btnDisabled = false;
 
@@ -488,7 +510,30 @@ class _FormReportDialogState extends State<FormReportDialog> {
                               ),
                             ],
                           )
-                        : Text('')
+                        : Text(''),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Keterangan', // Label for the textarea
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(
+                        height:
+                            8), // Adds some space between the label and the input field
+                    TextField(
+                      controller: keteranganTextController,
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        hintText: 'Isi Keterangan disini',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ],

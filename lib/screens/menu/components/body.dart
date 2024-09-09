@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/screens/courier_delivery_task_detail/delivery_task_detail.dart';
+import 'package:sima_pengiriman/screens/daily_report_driver/daily_report_driver_screen.dart';
 import 'package:sima_pengiriman/screens/delivery_order_menu/delivery_order_menu.dart';
 import 'package:sima_pengiriman/screens/scan_pengiriman/scan_pengiriman_screen.dart';
 import 'package:sima_pengiriman/screens/turun_barang_online/controllers/turun_barang_online_controller.dart';
@@ -70,6 +71,38 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     _tabController = TabController(length: 2, vsync: this); // Number of tabs
   }
 
+  Future _cekAbsensi() async {
+    var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
+    var request = http.Request(
+        'POST', Uri.parse('${kURL_ORIGIN}cek-supir-km-insert-absen'));
+
+    final username = await SharedToken.univGetterString('username');
+    request.bodyFields = {'created_by': username};
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      var resp = await response.stream.bytesToString();
+      // Decode the response body as JSON
+      var jsonResp = jsonDecode(resp);
+
+      // Access the 'msg' field from the JSON
+      // print(jsonResp['msg']);
+
+      if (jsonResp['msg'] == 'SUPIR_BELUM_ABSEN') {
+        await SharedToken.univSetterString('STS_ABSEN', 'BELUM_ABSEN');
+        Navigator.pushReplacementNamed(
+            context, DailyReportDriverScreen.routeName);
+      } else {
+        await SharedToken.univSetterString('STS_ABSEN', '');
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+    } else {
+      print(response.reasonPhrase);
+    }
+  }
+
   Future initFunction() async {
     final uname = await SharedToken.univGetterString('username');
     setState(() {
@@ -78,6 +111,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     try {
       final result = await InternetAddress.lookup('example.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        await _cekAbsensi();
         await syncDataTap();
         await getsyncDataTapInsert();
         await getTaskKurir();
@@ -611,6 +645,15 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                             : Text(
                                                 '${recordTugas[index]["nomor_order"]}  ${stsPriority[recordTugas[index]["nomor_order"]]?["status_priority"] ?? ''}'),
                                         onTap: () async {
+                                          final snackBar = SnackBar(
+                                            content: Text('Mohon Tunggu...'),
+                                            backgroundColor: Colors.black,
+                                            duration: Duration(days: 1),
+                                          );
+
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(snackBar);
+
                                           var selectedTugas =
                                               recordTugas[index];
 
@@ -646,6 +689,10 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                           ctl.barangHarusTap.value = 0;
                                           await ctl
                                               .getItemsByNoSJ([selectedTugas]);
+
+                                          // To hide the snackbar manually
+                                          ScaffoldMessenger.of(context)
+                                              .hideCurrentSnackBar();
                                           if (recordTugas[index]['status_id']
                                                       .toString() ==
                                                   '21' ||

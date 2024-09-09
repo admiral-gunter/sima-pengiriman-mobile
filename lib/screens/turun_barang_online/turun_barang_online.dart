@@ -403,73 +403,89 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
 
   bool evidenceTaken = false;
   var attachments = [];
+
+  final keteranganTxt = TextEditingController();
+
   void _showTakeEvidncDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Bukti Turun Barang'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Flexible widget to use 30% of the available height
-              SizedBox(
-                height: 200,
-                child: Flexible(
-                  flex: 3,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        for (var item in attachments)
-                          InkWell(
-                            onTap: () async {
-                              final Uri url = Uri.parse(
-                                  '${HOST}/uploads/image/${item['file_name']}');
-                              if (!await launchUrl(url)) {
-                                throw Exception('Could not launch $url');
-                              }
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 5.0),
-                              child: SizedBox(
-                                width: 100,
-                                height: 100,
-                                child: Image.network(
-                                  '${HOST}/uploads/image/${item['file_name']}',
-                                  fit: BoxFit
-                                      .cover, // Optional: fit the image within the SizedBox
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Flexible widget to use 30% of the available height
+                SizedBox(
+                  height: 200,
+                  child: Flexible(
+                    flex: 3,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          for (var item in attachments)
+                            InkWell(
+                              onTap: () async {
+                                final Uri url = Uri.parse(
+                                    '${HOST}/uploads/image/${item['file_name']}');
+                                if (!await launchUrl(url)) {
+                                  throw Exception('Could not launch $url');
+                                }
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 5.0),
+                                child: SizedBox(
+                                  width: 100,
+                                  height: 100,
+                                  child: Image.network(
+                                    '${HOST}/uploads/image/${item['file_name']}',
+                                    fit: BoxFit
+                                        .cover, // Optional: fit the image within the SizedBox
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      setState(() {
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () async {
+                        setState(() {
+                          evidenceTaken = true;
+                        });
+                        await _pickImgFromGallery();
+                      },
+                      child: Text('Galeri'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
                         evidenceTaken = true;
-                      });
-                      await _pickImgFromGallery();
-                    },
-                    child: Text('Galeri'),
+                        await _pickImgFromCamera();
+                      },
+                      child: Text('Kamera'),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: keteranganTxt,
+                  decoration: InputDecoration(
+                    labelText: 'Keterangan', // Label for the text area
+                    border: OutlineInputBorder(), // Optional: Add a border
                   ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      evidenceTaken = true;
-                      await _pickImgFromCamera();
-                    },
-                    child: Text('Kamera'),
-                  ),
-                ],
-              ),
-            ],
+                  maxLines: null, // Allows unlimited lines
+                  keyboardType:
+                      TextInputType.multiline, // Enables multi-line input
+                )
+              ],
+            ),
           ),
           actions: <Widget>[
             TextButton(
@@ -518,7 +534,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
         Get.put(TurunBarangOnlineController());
     ctl.noSuratJalanSelected.value;
     var url = Uri.parse(
-        '${kURL_ORIGIN}pengiriman/supir-upload-attachment-task?nomor_order=${ctl.noSuratJalanSelected.value}&username=$uname');
+        '${kURL_ORIGIN}pengiriman/supir-upload-attachment-task?nomor_order=${ctl.noSuratJalanSelected.value}&username=$uname&=keterangan${keteranganTxt.text}');
 
     var request = http.MultipartRequest('POST', url);
 
