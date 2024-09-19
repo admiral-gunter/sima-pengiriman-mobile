@@ -12,7 +12,6 @@ import 'package:intl/intl.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/screens/maps_view/controllers/maps_view_controller.dart';
-import 'package:sima_pengiriman/screens/maps_view/maps_view.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
 import 'package:sima_pengiriman/screens/universal_scannner/universal_scanner_screen.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
@@ -497,6 +496,22 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
             TextButton(
               child: Text('Submit'),
               onPressed: () async {
+                if (keteranganTxt.text.isEmpty) {
+                  final snackBar = SnackBar(
+                    content: Text('KETERANGAN WAJIB DI ISI!'),
+                    action: SnackBarAction(
+                      label: 'Close',
+                      onPressed: () {
+                        // Code to undo the action
+                      },
+                    ),
+                  );
+
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+                  return;
+                }
+
                 await uploadFile();
                 Navigator.of(context).pop();
               },
@@ -529,12 +544,15 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
 
   Future<void> uploadFile() async {
     String uname = await SharedToken.univGetterString('username');
+    final plat_no = await SharedToken.univGetterString('no_plat');
+
+    LocationData locationData = await location.getLocation();
 
     final TurunBarangOnlineController ctl =
         Get.put(TurunBarangOnlineController());
     ctl.noSuratJalanSelected.value;
     var url = Uri.parse(
-        '${kURL_ORIGIN}pengiriman/supir-upload-attachment-task?nomor_order=${ctl.noSuratJalanSelected.value}&username=$uname&=keterangan${keteranganTxt.text}');
+        '${kURL_ORIGIN}pengiriman/supir-upload-attachment-task?nomor_order=${ctl.noSuratJalanSelected.value}&username=$uname&keterangan=${keteranganTxt.text}&plat_no=$plat_no&lat=${locationData.latitude}&long=${locationData.longitude}');
 
     var request = http.MultipartRequest('POST', url);
 

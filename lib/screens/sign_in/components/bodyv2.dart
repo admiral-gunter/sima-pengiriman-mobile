@@ -182,6 +182,10 @@ class _BodyV2State extends State<BodyV2> {
 
                             Navigator.pushReplacementNamed(
                                 context, LoginSuccessScreen.routeName);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('${val['msg']}')),
+                            );
                           }
                         }
                       },

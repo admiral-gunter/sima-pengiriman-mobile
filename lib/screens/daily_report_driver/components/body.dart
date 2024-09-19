@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
-
+import 'package:geolocator/geolocator.dart';
 import '../../../constants.dart';
 
 class Body extends StatefulWidget {
@@ -145,13 +145,14 @@ class _FormReportDialogState extends State<FormReportDialog> {
   Future<void> uploadFiles() async {
     final username = await SharedToken.univGetterString('username');
     final plat_no = await SharedToken.univGetterString('no_plat');
-    // final noPlat = val['no_plat'] ?? '';
-    // await SharedToken.univSetterString(
-    //     'no_plat', noPlat);
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
     var request = http.MultipartRequest(
         'POST',
         Uri.parse(
-            '${kURL_ORIGIN}pengiriman/supir-upload-report?tipe=$dropdownValue&username=$username&km=${kmTextController.text}&liter=${literTextController.text}&plat_no=${plat_no}&keterangan=${keteranganTextController.text}'));
+            '${kURL_ORIGIN}pengiriman/supir-upload-report?tipe=$dropdownValue&username=$username&km=${kmTextController.text}&liter=${literTextController.text}&plat_no=${plat_no}&keterangan=${keteranganTextController.text}&lat=${position.latitude}&long=${position.longitude}'));
     // for (var file in selectedFiles) {
     //   request.files.add(await http.MultipartFile.fromPath('files', file.path));
     // }

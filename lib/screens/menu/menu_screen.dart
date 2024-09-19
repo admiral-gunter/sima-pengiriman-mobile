@@ -17,6 +17,7 @@ import '../../enums.dart';
 import '../../helper/database_helper.dart';
 import '../../shared_preferences/shared_token.dart';
 import '../../size_config.dart';
+import '../daily_report_driver/daily_report_driver_screen.dart';
 import 'components/body.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -35,6 +36,38 @@ class MenuScreen extends StatefulWidget {
 
 class _MenuScreenState extends State<MenuScreen> {
   final client = http.Client();
+
+  Future _cekAbsensi() async {
+    var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
+    var request = http.Request(
+        'POST', Uri.parse('${kURL_ORIGIN}cek-supir-km-insert-absen'));
+
+    final username = await SharedToken.univGetterString('username');
+    request.bodyFields = {'created_by': username};
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      var resp = await response.stream.bytesToString();
+      // Decode the response body as JSON
+      var jsonResp = jsonDecode(resp);
+
+      // Access the 'msg' field from the JSON
+      // print(jsonResp['msg']);
+
+      if (jsonResp['msg'] == 'SUPIR_BELUM_ABSEN') {
+        await SharedToken.univSetterString('STS_ABSEN', 'BELUM_ABSEN');
+        Navigator.pushReplacementNamed(
+            context, DailyReportDriverScreen.routeName);
+      } else {
+        await SharedToken.univSetterString('STS_ABSEN', '');
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+    } else {
+      print(response.reasonPhrase);
+    }
+  }
 
   Future<void> checkTokenAndNavigate() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -99,12 +132,21 @@ class _MenuScreenState extends State<MenuScreen> {
     super.dispose();
   }
 
+  Future initFunc() async {
+    try {
+      await cekKoneksiAndLogoutIfOnline();
+      await _cekAbsensi();
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     // _backgroundServices();
     _addLokasiFirebaseFromLok('aa', 'aa');
-    cekKoneksiAndLogoutIfOnline();
+    initFunc();
 
     DateTime now = DateTime.now();
     String formattedDate = DateFormat('yyyy-MM-dd').format(now);

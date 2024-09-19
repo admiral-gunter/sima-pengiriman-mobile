@@ -71,38 +71,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     _tabController = TabController(length: 2, vsync: this); // Number of tabs
   }
 
-  Future _cekAbsensi() async {
-    var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
-    var request = http.Request(
-        'POST', Uri.parse('${kURL_ORIGIN}cek-supir-km-insert-absen'));
-
-    final username = await SharedToken.univGetterString('username');
-    request.bodyFields = {'created_by': username};
-    request.headers.addAll(headers);
-
-    http.StreamedResponse response = await request.send();
-
-    if (response.statusCode == 200) {
-      var resp = await response.stream.bytesToString();
-      // Decode the response body as JSON
-      var jsonResp = jsonDecode(resp);
-
-      // Access the 'msg' field from the JSON
-      // print(jsonResp['msg']);
-
-      if (jsonResp['msg'] == 'SUPIR_BELUM_ABSEN') {
-        await SharedToken.univSetterString('STS_ABSEN', 'BELUM_ABSEN');
-        Navigator.pushReplacementNamed(
-            context, DailyReportDriverScreen.routeName);
-      } else {
-        await SharedToken.univSetterString('STS_ABSEN', '');
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      }
-    } else {
-      print(response.reasonPhrase);
-    }
-  }
-
   Future initFunction() async {
     final uname = await SharedToken.univGetterString('username');
     setState(() {
@@ -111,7 +79,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     try {
       final result = await InternetAddress.lookup('example.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        await _cekAbsensi();
         await syncDataTap();
         await getsyncDataTapInsert();
         await getTaskKurir();
