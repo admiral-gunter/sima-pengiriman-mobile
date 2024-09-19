@@ -411,15 +411,15 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Bukti Turun Barang'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Flexible widget to use 30% of the available height
-                SizedBox(
-                  height: 200,
-                  child: Flexible(
-                    flex: 3,
+          content: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Flexible widget to use 30% of the available height
+                  SizedBox(
+                    height: 200,
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
@@ -441,6 +441,23 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                     '${HOST}/uploads/image/${item['file_name']}',
                                     fit: BoxFit
                                         .cover, // Optional: fit the image within the SizedBox
+                                    errorBuilder: (BuildContext context,
+                                        Object exception,
+                                        StackTrace? stackTrace) {
+                                      return Container(
+                                        width: 100,
+                                        height: 100,
+                                        color: Colors.white,
+                                        child: const Center(
+                                          child: Text(
+                                            'Not Found',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                               ),
@@ -449,43 +466,44 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                       ),
                     ),
                   ),
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () async {
-                        setState(() {
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () async {
+                          setState(() {
+                            evidenceTaken = true;
+                          });
+                          await _pickImgFromGallery();
+                        },
+                        child: Text('Galeri'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
                           evidenceTaken = true;
-                        });
-                        await _pickImgFromGallery();
-                      },
-                      child: Text('Galeri'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        evidenceTaken = true;
-                        await _pickImgFromCamera();
-                      },
-                      child: Text('Kamera'),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  controller: keteranganTxt,
-                  decoration: InputDecoration(
-                    labelText: 'Keterangan', // Label for the text area
-                    border: OutlineInputBorder(), // Optional: Add a border
+                          await _pickImgFromCamera();
+                        },
+                        child: Text('Kamera'),
+                      ),
+                    ],
                   ),
-                  maxLines: null, // Allows unlimited lines
-                  keyboardType:
-                      TextInputType.multiline, // Enables multi-line input
-                )
-              ],
-            ),
-          ),
+                  Text('File Selected : $_selectedImgNm'),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    controller: keteranganTxt,
+                    decoration: InputDecoration(
+                      labelText: 'Keterangan', // Label for the text area
+                      border: OutlineInputBorder(), // Optional: Add a border
+                    ),
+                    maxLines: null, // Allows unlimited lines
+                    keyboardType:
+                        TextInputType.multiline, // Enables multi-line input
+                  )
+                ],
+              ),
+            );
+          }),
           actions: <Widget>[
             TextButton(
               child: Text('Cancel'),
@@ -524,12 +542,15 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
 
   File? _selectedImg;
 
+  String _selectedImgNm = 'None';
+
   Future _pickImgFromGallery() async {
     final img = await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (img == null) return;
     setState(() {
       _selectedImg = File(img.path);
+      _selectedImgNm = img.name;
     });
   }
 
@@ -539,6 +560,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     if (img == null) return;
     setState(() {
       _selectedImg = File(img.path);
+      _selectedImgNm = img.name;
     });
   }
 
@@ -836,7 +858,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                             // await getAttachment();
                             // // _launchMapsUrl(ctl.listLoc);
                             // // return;
-                            // _showTakeEvidncDialog(context);
                             Navigator.pushReplacementNamed(
                                 context, BarangTidakMuatScreen.routeName);
                           },
