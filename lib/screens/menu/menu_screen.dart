@@ -187,26 +187,6 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
-// TEST CODE
-  _backgroundServices() async {
-    try {
-      final androidConfig = FlutterBackgroundAndroidConfig(
-        notificationTitle: "flutter_background example app",
-        notificationText:
-            "Background notification for keeping the example app running in the background",
-        notificationImportance: AndroidNotificationImportance.Default,
-        notificationIcon: AndroidResource(
-            name: 'background_icon',
-            defType: 'drawable'), // Default is ic_launcher from folder mipmap
-      );
-      await FlutterBackground.initialize(androidConfig: androidConfig);
-      final eto = await FlutterBackground.enableBackgroundExecution();
-      print('aaa jalan lo ${eto}');
-    } catch (e) {
-      print('error background: ${e}');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);

@@ -16,11 +16,14 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     final String path = join(await getDatabasesPath(), 'my_database.db');
-    return await openDatabase(
-      path,
-      version: 2,
-      onCreate: _createDatabase,
-    );
+    return await openDatabase(path,
+        version: 2, onCreate: _createDatabase, onUpgrade: _onUpgrade);
+  }
+
+  void _onUpgrade(Database db, int oldVersion, int newVersion) {
+    if (oldVersion < newVersion) {
+      db.execute("ALTER TABLE tabEmployee ADD COLUMN newCol TEXT;");
+    }
   }
 
   Future<void> _createDatabase(Database db, int version) async {

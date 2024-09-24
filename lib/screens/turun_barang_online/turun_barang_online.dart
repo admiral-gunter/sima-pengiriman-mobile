@@ -26,6 +26,8 @@ import 'package:flutter_background/flutter_background.dart';
 import '../barang_tidak_muat/barang_tidak_muat_screen.dart';
 import 'controllers/turun_barang_online_controller.dart';
 import 'package:auto_size_text_field/auto_size_text_field.dart';
+import 'package:mime/mime.dart';
+import 'package:http_parser/http_parser.dart';
 
 class TurunBarangOnlineScreen extends StatefulWidget {
   const TurunBarangOnlineScreen({Key? key}) : super(key: key);
@@ -53,6 +55,148 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     distanceFilter: 100,
   );
   String nomorSJOrder = "";
+
+  Future<void> showUploadImageDialog(BuildContext context) async {
+    final username = await SharedToken.univGetterString('username');
+    LocationData locationData = await location.getLocation();
+
+    final TextEditingController _keteranganTxtController =
+        TextEditingController();
+    File? _imageFile;
+    final ImagePicker _picker = ImagePicker();
+    String keteranganGan = '';
+
+    final TurunBarangOnlineController ctl =
+        Get.put(TurunBarangOnlineController());
+    final sj = ctl.noSuratJalanSelected.value.toString().replaceAll(' ', '');
+
+    // Function to pick image from camera or gallery
+    Future<void> _pickImage(ImageSource source) async {
+      final pickedFile = await _picker.pickImage(source: source);
+      if (pickedFile != null) {
+        _imageFile = File(pickedFile.path);
+      }
+    }
+
+    // Function to upload image to API
+    Future<void> _uploadImage(File imageFile) async {
+      final String uploadUrl =
+          '${kURL_ORIGIN}supir-titip-service?no_sj=$sj&keterangan=$keteranganGan&username=$username&lat=${locationData.latitude}&long=${locationData.longitude}';
+      final mimeType = lookupMimeType(imageFile.path);
+      final uri = Uri.parse(uploadUrl);
+      final request = http.MultipartRequest('POST', uri)
+        ..files.add(
+          await http.MultipartFile.fromPath(
+            'image',
+            imageFile.path,
+            contentType: mimeType != null ? MediaType.parse(mimeType) : null,
+          ),
+        );
+
+      final response = await request.send();
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Berhasil di upload',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green, // Change the background color here
+            duration: Duration(
+                seconds: 3), // Optional: Duration to display the snackbar
+          ),
+        );
+
+        print('Image uploaded successfully.');
+      } else {
+        print('Failed to upload image.');
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Gambar gagal di upload',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red, // Change the background color here
+            duration: Duration(
+                seconds: 3), // Optional: Duration to display the snackbar
+          ),
+        );
+      }
+    }
+
+    if (!mounted) return;
+
+    // Show dialog to choose camera or gallery
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // Use StatefulBuilder to create a stateful dialog
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: Text('Upload foto bukti titip service (bila ada)'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextFormField(
+                    onChanged: (value) {
+                      keteranganGan = value;
+                      print(value);
+                    },
+                    controller: _keteranganTxtController,
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null, // Makes the TextFormField auto-expand
+                    minLines: 1, // Minimum number of lines to display
+                    decoration: InputDecoration(
+                      labelText: 'Isi Keterangan Lebih dulu',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton.icon(
+                    icon: Icon(Icons.camera),
+                    label: Text('Camera'),
+                    onPressed: () async {
+                      Navigator.pop(context); // Close the dialog
+                      await _pickImage(ImageSource.camera);
+                      if (_imageFile != null) {
+                        await _uploadImage(_imageFile!);
+                      }
+                    },
+                  ),
+                  ElevatedButton.icon(
+                    icon: Icon(Icons.photo_library),
+                    label: Text('Gallery'),
+                    onPressed: () async {
+                      Navigator.pop(context); // Close the dialog
+                      await _pickImage(ImageSource.gallery);
+                      if (_imageFile != null) {
+                        await _uploadImage(_imageFile!);
+                      }
+                    },
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('Close'),
+                  onPressed: () {
+                    Navigator.of(context).pop(_keteranganTxtController.text);
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     final TurunBarangOnlineController ctl =
@@ -66,6 +210,9 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       });
     }
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showUploadImageDialog(context);
+    });
     _getLocationData();
     _getCountProduct();
     SharedToken.univGetterString('username').then((value) {
@@ -84,9 +231,9 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
             (Position? position) {
       // do what you want to do with the position here
       if (mounted) {
-        setState(() async {
+        setState(() {
           // currentLocation = LatLng(position!.latitude, position!.longitude);
-          await _addLokasiFirebaseFromLok(position!);
+          _addLokasiFirebaseFromLok(position!);
         });
       }
     }, onError: (error) {
@@ -96,11 +243,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     Timer.periodic(Duration(seconds: 3), (Timer timer) async {
       try {
         await _getLocationData();
-        // final DatabaseReference dashboardLive = FirebaseDatabase.instance
-        //     .ref('realtime_supir_dashboard/${username}');
-        // await dashboardLive
-        //     .set({"lat": latitude.toString(), "long": longitude.toString()});
-        // print('aduhai');
       } catch (e) {
         // Handle the exception as per your requirement
         print('Error we: $e');
@@ -134,7 +276,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   Future<void> _postRequestSJDone(String nomorSJ) async {
     nomorSJ = nomorSJ.replaceAll(' ', '');
     final String apiUrl =
-        kURL_ORIGIN + 'sale-wholesale/save-sj-done?no_sj=${nomorSJ}';
+        kURL_ORIGIN + 'sale-wholesale/save-sj-done?no_sj=$nomorSJ';
 
     Map<String, dynamic> data = {
       'key1': 'value1',
@@ -268,24 +410,21 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           DatabaseHelper.instance.insertHistorySuratJalan(data).then((value) =>
               {
                 _postRequestSJDone(element['nomor_order']),
-                SJDalamPengiriman("2")
+                sJDalamPengiriman("2")
               });
         }
       }
     }
   }
 
-  Future SJDalamPengiriman(String statusval) async {
+  Future sJDalamPengiriman(String statusval) async {
     final TurunBarangOnlineController ctl =
         Get.put(TurunBarangOnlineController());
 
     final url =
-        Uri.parse(kURL_ORIGIN + 'pengiriman/update-pengiriman-from-mobile');
+        Uri.parse('${kURL_ORIGIN}pengiriman/update-pengiriman-from-mobile');
     final sj = ctl.noSuratJalanSelected.value.toString().replaceAll(' ', '');
-    Map<String, dynamic> requestBody = {
-      "sj": "'" + sj + "'",
-      "status": statusval
-    };
+    Map<String, dynamic> requestBody = {"sj": "'$sj'", "status": statusval};
 
     try {
       final response = await http.post(
@@ -827,7 +966,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                               onPressed: () async {
                                 if (textController.text.isNotEmpty &&
                                     !sjDibatalkan) {
-                                  SJDalamPengiriman("17");
+                                  sJDalamPengiriman("17");
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(

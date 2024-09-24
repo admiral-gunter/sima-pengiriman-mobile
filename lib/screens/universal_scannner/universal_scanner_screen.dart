@@ -57,7 +57,7 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
   }
 
   Future syncDataTap() async {
-    final url = Uri.parse(kURL_ORIGIN + 'pengiriman/sync-data-pengiriman');
+    final url = Uri.parse('${kURL_ORIGIN}pengiriman/sync-data-pengiriman');
 
     List dataList = await DatabaseHelper.instance.getDataTapForToday();
 

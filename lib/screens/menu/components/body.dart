@@ -79,7 +79,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     try {
       final result = await InternetAddress.lookup('example.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        await syncDataTap();
+        // await syncDataTap();
         await getsyncDataTapInsert();
         await getTaskKurir();
       }
@@ -140,24 +140,24 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     }
   }
 
-  Future syncDataTap() async {
-    try {
-      final timeoutDuration = Duration(seconds: 5);
-      final e = await DatabaseHelper.instance.getRecordTugasDT();
-      for (var i in e) {
-        kumpulanNoSJStr +=
-            "'${i['nomor_order'].toString().replaceAll(' ', '')}',";
-      }
-      kumpulanNoSJStr += "''";
-    } catch (error) {
-      if (mounted) {
-        setState(() {
-          statusSyncData = "ERROR";
-        });
-      }
-      print('Error: $error');
-    }
-  }
+  // Future syncDataTap() async {
+  //   try {
+  //     final timeoutDuration = Duration(seconds: 5);
+  //     final e = await DatabaseHelper.instance.getRecordTugasDT();
+  //     for (var i in e) {
+  //       kumpulanNoSJStr +=
+  //           "'${i['nomor_order'].toString().replaceAll(' ', '')}',";
+  //     }
+  //     kumpulanNoSJStr += "''";
+  //   } catch (error) {
+  //     if (mounted) {
+  //       setState(() {
+  //         statusSyncData = "ERROR";
+  //       });
+  //     }
+  //     print('Error: $error');
+  //   }
+  // }
 
   //LOADING; DONE; ERROR
   String statusSyncData = "LOADING";
@@ -192,17 +192,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         url,
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: dataSend,
-      )
-          //     .timeout(Duration(seconds: 500), onTimeout: () {
-          //   if (mounted) {
-          //     setState(() {
-          //       hasInternet = false;
-          //     });
-          //   }
-
-          //   return http.Response('Err', 500);
-          // });
-          ;
+      );
       if (response.statusCode == 200) {
         final snackBar = SnackBar(
           content: Text('${response.body}'),
@@ -241,8 +231,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
             'tapper': item['creator'],
           };
           if (item['status'] == 'COMPLETED') {
-            final e = await DatabaseHelper.instance
-                .insertHistorySuratJalan((newITem));
+            await DatabaseHelper.instance.insertHistorySuratJalan((newITem));
           } else {
             final Map<String, dynamic> tugasItem = {
               'nomor_order_surat_jalan': item['nomor_order'],
@@ -312,7 +301,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
               for (var el in recordTugas) {
                 if (el['nomor_order'] == element['nomor_order']) {
                   match = true;
-                  // Skip the current iteration of the outer loop
                   continue outerLoop;
                 } else {
                   match = false;
