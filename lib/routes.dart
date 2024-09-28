@@ -21,6 +21,7 @@ import 'screens/looking_for_courier/looking_for_courier.dart';
 import 'screens/map_picker/map_picker.dart';
 import 'screens/maps_view/maps_view.dart';
 import 'screens/order_delivery_screen/order_delivery_screen.dart';
+import 'screens/order_service/order_service_screen.dart';
 import 'screens/out_of_town_cargo/out_of_town_cargo_screen.dart';
 import 'screens/scan_pengiriman/scan_pengiriman_screen.dart';
 import 'screens/scanner_offline/scanner_offline_screen.dart';
@@ -63,5 +64,6 @@ final Map<String, WidgetBuilder> routes = {
   DeliveryPackageByWeightScreen.routeName: (context) =>
       DeliveryPackageByWeightScreen(),
   DailyReportDriverScreen.routeName: (context) => DailyReportDriverScreen(),
-  BarangTidakMuatScreen.routeName: (context) => BarangTidakMuatScreen()
+  BarangTidakMuatScreen.routeName: (context) => BarangTidakMuatScreen(),
+  OrderServiceScreen.routeName: (context) => OrderServiceScreen()
 };

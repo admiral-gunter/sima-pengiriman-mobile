@@ -60,10 +60,10 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     final username = await SharedToken.univGetterString('username');
     LocationData locationData = await location.getLocation();
 
-    final TextEditingController _keteranganTxtController =
+    final TextEditingController keteranganTxtController =
         TextEditingController();
-    File? _imageFile;
-    final ImagePicker _picker = ImagePicker();
+    File? imageFile;
+    final ImagePicker picker = ImagePicker();
     String keteranganGan = '';
 
     final TurunBarangOnlineController ctl =
@@ -71,17 +71,18 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     final sj = ctl.noSuratJalanSelected.value.toString().replaceAll(' ', '');
 
     // Function to pick image from camera or gallery
-    Future<void> _pickImage(ImageSource source) async {
-      final pickedFile = await _picker.pickImage(source: source);
+    Future<void> pickImage(ImageSource source) async {
+      final pickedFile = await picker.pickImage(source: source);
       if (pickedFile != null) {
-        _imageFile = File(pickedFile.path);
+        imageFile = File(pickedFile.path);
       }
     }
 
     // Function to upload image to API
-    Future<void> _uploadImage(File imageFile) async {
+    Future<void> uploadImage(File imageFile) async {
+      final plat_no = await SharedToken.univGetterString('no_plat');
       final String uploadUrl =
-          '${kURL_ORIGIN}supir-titip-service?no_sj=$sj&keterangan=$keteranganGan&username=$username&lat=${locationData.latitude}&long=${locationData.longitude}';
+          '${kURL_ORIGIN}supir-titip-service?no_sj=$sj&keterangan=$keteranganGan&username=$username&lat=${locationData.latitude}&long=${locationData.longitude}&plat_no=${plat_no}';
       final mimeType = lookupMimeType(imageFile.path);
       final uri = Uri.parse(uploadUrl);
       final request = http.MultipartRequest('POST', uri)
@@ -103,9 +104,8 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
               'Berhasil di upload',
               style: TextStyle(color: Colors.white),
             ),
-            backgroundColor: Colors.green, // Change the background color here
-            duration: Duration(
-                seconds: 3), // Optional: Duration to display the snackbar
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
           ),
         );
 
@@ -129,6 +129,40 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       }
     }
 
+    Future submitTitipService(File imageFile) async {
+      final plat_no = await SharedToken.univGetterString('no_plat');
+      final String uploadUrl =
+          '${kURL_ORIGIN}supir-titip-service?no_sj=$sj&keterangan=$keteranganGan&username=$username&lat=${locationData.latitude}&long=${locationData.longitude}&plat_no=${plat_no}';
+      final mimeType = lookupMimeType(imageFile.path);
+      final uri = Uri.parse(uploadUrl);
+      final request = http.MultipartRequest('POST', uri)
+        ..files.add(
+          await http.MultipartFile.fromPath(
+            'image',
+            imageFile.path,
+            contentType: mimeType != null ? MediaType.parse(mimeType) : null,
+          ),
+        );
+
+      final response = await request.send();
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Berhasil di upload',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+
+        print('Image uploaded successfully.');
+      }
+    }
+
     if (!mounted) return;
 
     // Show dialog to choose camera or gallery
@@ -148,7 +182,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                       keteranganGan = value;
                       print(value);
                     },
-                    controller: _keteranganTxtController,
+                    controller: keteranganTxtController,
                     keyboardType: TextInputType.multiline,
                     maxLines: null, // Makes the TextFormField auto-expand
                     minLines: 1, // Minimum number of lines to display
@@ -158,14 +192,15 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                     ),
                   ),
                   SizedBox(height: 10),
+                  Text('Foto SN barang'),
                   ElevatedButton.icon(
                     icon: Icon(Icons.camera),
                     label: Text('Camera'),
                     onPressed: () async {
                       Navigator.pop(context); // Close the dialog
-                      await _pickImage(ImageSource.camera);
-                      if (_imageFile != null) {
-                        await _uploadImage(_imageFile!);
+                      await pickImage(ImageSource.camera);
+                      if (imageFile != null) {
+                        await uploadImage(imageFile!);
                       }
                     },
                   ),
@@ -174,9 +209,9 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                     label: Text('Gallery'),
                     onPressed: () async {
                       Navigator.pop(context); // Close the dialog
-                      await _pickImage(ImageSource.gallery);
-                      if (_imageFile != null) {
-                        await _uploadImage(_imageFile!);
+                      await pickImage(ImageSource.gallery);
+                      if (imageFile != null) {
+                        await uploadImage(imageFile!);
                       }
                     },
                   ),
@@ -186,7 +221,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                 TextButton(
                   child: Text('Close'),
                   onPressed: () {
-                    Navigator.of(context).pop(_keteranganTxtController.text);
+                    Navigator.of(context).pop(keteranganTxtController.text);
                   },
                 ),
               ],
@@ -211,7 +246,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     }
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      showUploadImageDialog(context);
+      // showUploadImageDialog(context);
     });
     _getLocationData();
     _getCountProduct();
@@ -808,7 +843,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   Widget build(BuildContext context) {
     final TurunBarangOnlineController ctl =
         Get.put(TurunBarangOnlineController());
-    TextEditingController _textController = TextEditingController();
+    TextEditingController textController = TextEditingController();
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: PreferredSize(
@@ -950,140 +985,182 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 4.0, vertical: 2.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
-                      SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      textController.text.isNotEmpty &&
-                                              !sjDibatalkan
-                                          ? Colors.blue
-                                          : Colors.blue[200]),
-                              onPressed: () async {
-                                if (textController.text.isNotEmpty &&
-                                    !sjDibatalkan) {
-                                  sJDalamPengiriman("17");
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          UniversalScannerSCreen(
-                                              goBackRouteName:
-                                                  TurunBarangOnlineScreen
-                                                      .routeName),
-                                    ),
-                                  );
-                                }
-                              },
-                              child: textController.text.isNotEmpty
-                                  ? Text(
-                                      'Scan SN dan Identifier',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
-                                    )
-                                  : Text('Getting current location..',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold)))),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            // await getAttachment();
-                            // // _launchMapsUrl(ctl.listLoc);
-                            // // return;
-                            Navigator.pushReplacementNamed(
-                                context, BarangTidakMuatScreen.routeName);
-                          },
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey),
-                          child: Text('Barang tidak muat',
-                              style: TextStyle(color: Colors.black)),
-                        ),
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            await getAttachment();
-                            // _launchMapsUrl(ctl.listLoc);
-                            // return;
-                            _showTakeEvidncDialog(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.purple),
-                          child: Text('Foto Bukti',
-                              style: TextStyle(color: Colors.white)),
-                        ),
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            primary: ctl.barangTap.value == 0
-                                ? Colors.red
-                                : Colors.red[200], // Background color
-                            onPrimary: Colors.white, // Text color
-                            elevation: 5, // Elevation (shadow)
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  25), // Button border radius
-                            ),
-                          ),
-                          onPressed: () {
-                            // Show dialog when the button is pressed
-                            if (ctl.barangTap.value == 0) {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text('SJ Pending Kirim'),
-                                    content: Text(
-                                        'Sebutkan Alasan untuk SJ ${ctl.nomorSJ} Pending'),
-                                    actions: <Widget>[
-                                      TextFormField(
-                                        controller:
-                                            ctl.alasanBataltextController,
-                                        maxLines: 10,
-                                      ),
-                                      TextButton(
+                      // IconButton that expands
+                      ExpansionTile(
+                        leading: Icon(Icons.expand_more), // Icon button
+                        title: Text('Aksi'),
+                        children: [
+                          Container(
+                            // Constraining the max height to half the screen height
+                            constraints: BoxConstraints(
+                                maxHeight:
+                                    MediaQuery.of(context).size.height * 0.5),
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  // Add your content here
+                                  SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor: textController
+                                                          .text.isNotEmpty &&
+                                                      !sjDibatalkan
+                                                  ? Colors.blue
+                                                  : Colors.blue[200]),
                                           onPressed: () async {
-                                            await ctl.SJBatalKirim();
-                                            if (mounted) {
-                                              setState(() {
-                                                sjDibatalkan = true;
-                                              });
+                                            if (textController
+                                                    .text.isNotEmpty &&
+                                                !sjDibatalkan) {
+                                              sJDalamPengiriman("17");
+                                              Navigator.pushReplacement(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      UniversalScannerSCreen(
+                                                          goBackRouteName:
+                                                              TurunBarangOnlineScreen
+                                                                  .routeName),
+                                                ),
+                                              );
                                             }
-                                            Navigator.pop(context);
                                           },
-                                          child: Text('Ok'))
-                                    ],
-                                  );
-                                },
-                              );
-                            }
-                          },
-                          child: Text('Batal/Gagal Kirim'),
-                        ),
+                                          child: textController.text.isNotEmpty
+                                              ? Text(
+                                                  'Scan SN dan Identifier',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )
+                                              : Text(
+                                                  'Getting current location..',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold)))),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        // await getAttachment();
+                                        // // _launchMapsUrl(ctl.listLoc);
+                                        // // return;
+                                        Navigator.pushReplacementNamed(context,
+                                            BarangTidakMuatScreen.routeName);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.grey),
+                                      child: Text('Barang tidak muat',
+                                          style:
+                                              TextStyle(color: Colors.black)),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        await getAttachment();
+                                        // _launchMapsUrl(ctl.listLoc);
+                                        // return;
+                                        _showTakeEvidncDialog(context);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.purple),
+                                      child: Text('Foto Bukti',
+                                          style:
+                                              TextStyle(color: Colors.white)),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        primary: ctl.barangTap.value == 0
+                                            ? Colors.red
+                                            : Colors
+                                                .red[200], // Background color
+                                        onPrimary: Colors.white, // Text color
+                                        elevation: 5, // Elevation (shadow)
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              25), // Button border radius
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        // Show dialog when the button is pressed
+                                        if (ctl.barangTap.value == 0) {
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: Text('SJ Pending Kirim'),
+                                                content: Text(
+                                                    'Sebutkan Alasan untuk SJ ${ctl.nomorSJ} Pending'),
+                                                actions: <Widget>[
+                                                  TextFormField(
+                                                    controller: ctl
+                                                        .alasanBataltextController,
+                                                    maxLines: 10,
+                                                  ),
+                                                  TextButton(
+                                                      onPressed: () async {
+                                                        await ctl
+                                                            .SJBatalKirim();
+                                                        if (mounted) {
+                                                          setState(() {
+                                                            sjDibatalkan = true;
+                                                          });
+                                                        }
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child: Text('Ok'))
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        }
+                                      },
+                                      child: Text('Batal/Gagal Kirim'),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        _launchMapsUrl(ctl.listLoc);
+                                        return;
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green),
+                                      child: Text('Buka Maps',
+                                          style:
+                                              TextStyle(color: Colors.white)),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.pushReplacementNamed(context,
+                                            BarangTidakMuatScreen.routeName);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.orange),
+                                      child: Text('Service Titipan',
+                                          style:
+                                              TextStyle(color: Colors.white)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        ],
                       ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _launchMapsUrl(ctl.listLoc);
-                            return;
-                          },
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green),
-                          child: Text('Buka Maps',
-                              style: TextStyle(color: Colors.white)),
-                        ),
-                      )
                     ],
                   ),
                 ),
