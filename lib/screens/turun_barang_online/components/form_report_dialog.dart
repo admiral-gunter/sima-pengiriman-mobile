@@ -1,123 +1,12 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
-import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:geolocator/geolocator.dart';
-import '../../../constants.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:sima_pengiriman/constants.dart';
 
-class Body extends StatefulWidget {
-  const Body({super.key});
-
-  @override
-  State<Body> createState() => _BodyState();
-}
-
-class _BodyState extends State<Body> {
-  List supirReport = [];
-
-  @override
-  void initState() {
-    getData();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      cekStatusAbsen();
-    });
-
-    super.initState();
-  }
-
-  Future cekStatusAbsen() async {
-    final stsAbsen = await SharedToken.univGetterString('STS_ABSEN');
-
-    if (stsAbsen == 'BELUM_ABSEN') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text(
-            'BUAT LAPORAN KM UNTUK MELANJUTKAN TUGAS',
-            style: TextStyle(color: Colors.white),
-          ),
-          duration: Duration(days: 1),
-        ),
-      );
-    }
-  }
-
-  Future getData() async {
-    final url = Uri.parse('${kURL_ORIGIN}pengiriman/get-supir-upload-report');
-
-    try {
-      final response = await http.post(url);
-      if (response.statusCode == 200) {
-        setState(() {
-          supirReport = jsonDecode(response.body)[0];
-        });
-
-        print('Response data: ${response.body}');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${response.body}')),
-        );
-        print('Request failed with status: ${response.statusCode}.');
-        print('Response body: ${response.body}');
-      }
-    } catch (e) {
-      print('An error occurred: $e');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          flex: 1,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
-            child: Column(
-              children: [
-                TextFormField(
-                  decoration: InputDecoration(hintText: 'Cari...'),
-                  autocorrect: false,
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          formReportDialog(context);
-                        },
-                        child: Text('Tambah'),
-                      ),
-                    ]),
-              ],
-            ),
-          ),
-        ),
-        Flexible(
-          flex: 3,
-          child: ListView.builder(
-            itemCount: supirReport.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text('${supirReport[index]['tipe']}'),
-                subtitle: Text(
-                    'KM : ${supirReport[index]['km']},  Liter : ${supirReport[index]['liter']}'),
-                trailing: Text('${supirReport[index]['created_at']}'),
-              );
-            },
-          ),
-        ),
-        // Another component taking the remaining 25% of the height
-      ],
-    );
-  }
-}
+import '../../../shared_preferences/shared_token.dart';
+import 'package:http/http.dart' as http;
 
 void formReportDialog(BuildContext context) {
   showDialog(
@@ -135,7 +24,7 @@ class FormReportDialog extends StatefulWidget {
 }
 
 class _FormReportDialogState extends State<FormReportDialog> {
-  String dropdownValue = 'LAPORAN_KM';
+  String dropdownValue = '-';
 
   File? _selectedImg;
 
@@ -253,7 +142,7 @@ class _FormReportDialogState extends State<FormReportDialog> {
                 SizedBox(
                   width: double.infinity,
                   child: DropdownButton<String>(
-                    value: 'LAPORAN_KM',
+                    value: dropdownValue,
                     iconSize: 24,
                     elevation: 16,
                     style: TextStyle(color: Colors.deepPurple),
@@ -266,7 +155,7 @@ class _FormReportDialogState extends State<FormReportDialog> {
                         dropdownValue = newValue!;
                       });
                     },
-                    items: <String>['-', 'LAPORAN_KM']
+                    items: <String>['-', 'PENGISIAN_BBM', 'LAPORAN_KM']
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
@@ -557,7 +446,7 @@ class _FormReportDialogState extends State<FormReportDialog> {
               btnDisabled = true;
             });
             await uploadFiles();
-            await _BodyState().getData();
+            // await _BodyState().getData();
             Navigator.pop(context);
             // Handle form submission logic here
           },

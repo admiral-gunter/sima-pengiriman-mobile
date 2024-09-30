@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sima_pengiriman/screens/barang_tidak_muat/components/body.dart';
-
+// import 'package:sima_pengiriman/screens/barang_tidak_muat/components/body.dart';
+import './components/body.dart';
 import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
 

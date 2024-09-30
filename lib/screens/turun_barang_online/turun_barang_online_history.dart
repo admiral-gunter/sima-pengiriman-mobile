@@ -12,6 +12,7 @@ import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
 import 'package:location/location.dart';
 
+import 'components/form_report_dialog.dart';
 import 'controllers/turun_barang_online_controller.dart';
 
 class TurunBarangOnlineHistoryScreen extends StatefulWidget {
@@ -41,6 +42,7 @@ class _TurunBarangOnlineHistoryScreenState
   @override
   void initState() {
     super.initState();
+
     _getLocationData();
     _getCountProduct();
     SharedToken.univGetterString('username').then((value) {
