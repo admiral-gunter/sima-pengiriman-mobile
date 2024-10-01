@@ -1,10 +1,93 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
-class Body extends StatelessWidget {
+class Body extends StatefulWidget {
   const Body({super.key});
 
   @override
+  State<Body> createState() => _BodyState();
+}
+
+class _BodyState extends State<Body> {
+  final ImagePicker _picker = ImagePicker();
+  List<File> _imageList = [];
+
+  // Method to pick image
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageList.add(File(pickedFile.path));
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    double imageSize = MediaQuery.of(context).size.width * 0.10;
+    double imageListHeight =
+        MediaQuery.of(context).size.height * 0.4; // 40% of screen height
+
+    return Scaffold(
+      resizeToAvoidBottomInset:
+          true, // Ensure the layout adjusts for the keyboard
+      body: SafeArea(
+        child: ListView(
+          children: [
+            // Container to constrain the height of the image list
+            SizedBox(
+              height: imageListHeight,
+              child: _imageList.isEmpty
+                  ? Center(child: Text('Pilih Bukti foto.'))
+                  : GridView.builder(
+                      padding: EdgeInsets.all(8),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount:
+                            3, // Adjust this based on the number of columns you want
+                        childAspectRatio: 1,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                      ),
+                      itemCount: _imageList.length,
+                      scrollDirection:
+                          Axis.horizontal, // Enable horizontal scrolling
+                      itemBuilder: (context, index) {
+                        return Image.file(
+                          _imageList[index],
+                          width: imageSize, // 5% of screen width
+                          height: imageSize, // Maintain square aspect ratio
+                          fit: BoxFit.cover,
+                        );
+                      },
+                    ),
+            ),
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.add_a_photo),
+                        onPressed: _pickImage,
+                      ),
+                      ElevatedButton(onPressed: () {}, child: Text('Scan SN'))
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 20), // Add some space between elements
+            // Multiple text fields
+            TextFormField(
+              decoration: InputDecoration(labelText: "First Field"),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
