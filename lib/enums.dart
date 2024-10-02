@@ -1,1 +1,9 @@
-enum MenuState { home, favourite, message, profile, orderDelivery, dailyReport }
+enum MenuState {
+  home,
+  favourite,
+  message,
+  profile,
+  orderDelivery,
+  dailyReport,
+  orderService
+}

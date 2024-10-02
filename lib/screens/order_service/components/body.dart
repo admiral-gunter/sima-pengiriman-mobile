@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sima_pengiriman/screens/order_service/components/order_service_scanner_sn.dart';
+import '../components/product_select_component.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -11,7 +13,7 @@ class Body extends StatefulWidget {
 
 class _BodyState extends State<Body> {
   final ImagePicker _picker = ImagePicker();
-  List<File> _imageList = [];
+  final List<File> _imageList = [];
 
   // Method to pick image
   Future<void> _pickImage() async {
@@ -39,10 +41,11 @@ class _BodyState extends State<Body> {
             SizedBox(
               height: imageListHeight,
               child: _imageList.isEmpty
-                  ? Center(child: Text('Pilih Bukti foto.'))
+                  ? const Center(child: Text('Pilih Bukti foto.'))
                   : GridView.builder(
-                      padding: EdgeInsets.all(8),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      padding: const EdgeInsets.all(8),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount:
                             3, // Adjust this based on the number of columns you want
                         childAspectRatio: 1,
@@ -70,21 +73,35 @@ class _BodyState extends State<Body> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.add_a_photo),
+                        icon: const Icon(Icons.add_a_photo),
                         onPressed: _pickImage,
                       ),
-                      ElevatedButton(onPressed: () {}, child: Text('Scan SN'))
+                      ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushNamed(
+                                context, OrderServiceScannerSnScreen.routeName);
+                          },
+                          child: const Text('Scan SN'))
                     ],
                   ),
                 ],
               ),
             ),
-
-            SizedBox(height: 20), // Add some space between elements
+            SizedBox(
+                width: MediaQuery.of(context).size.width * 0.7,
+                child: ProductSelectComponent()),
+            const SizedBox(height: 20), // Add some space between elements
             // Multiple text fields
             TextFormField(
-              decoration: InputDecoration(labelText: "First Field"),
+              decoration: const InputDecoration(
+                labelText: "Keterangan",
+              ),
+              keyboardType: TextInputType.multiline,
+              maxLines: null, // Makes it auto-expand
+              minLines: 1, // Starts with a single line
             ),
+            const SizedBox(height: 20),
+            ElevatedButton(onPressed: () {}, child: const Text('Submit'))
           ],
         ),
       ),

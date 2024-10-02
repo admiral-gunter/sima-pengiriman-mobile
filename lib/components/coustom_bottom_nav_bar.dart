@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sima_pengiriman/screens/daily_report_driver/daily_report_driver_screen.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
+import 'package:sima_pengiriman/screens/order_service/order_service_screen.dart';
 import 'package:sima_pengiriman/screens/profile/profile_screen.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 
@@ -78,6 +79,22 @@ class CustomBottomNavBar extends StatelessWidget {
                     if (currentRoute != DailyReportDriverScreen.routeName) {
                       Navigator.pushNamed(
                           context, DailyReportDriverScreen.routeName);
+                    }
+                  }),
+              IconButton(
+                  icon: Icon(
+                    Icons.add_box_rounded,
+                    color: MenuState.orderService == selectedMenu
+                        ? kPrimaryColor
+                        : inActiveIconColor,
+                  ),
+                  onPressed: () {
+                    String? currentRoute =
+                        ModalRoute.of(context)?.settings.name;
+
+                    if (currentRoute != OrderServiceScreen.routeName) {
+                      Navigator.pushNamed(
+                          context, OrderServiceScreen.routeName);
                     }
                   }),
               IconButton(

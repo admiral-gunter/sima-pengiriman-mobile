@@ -135,7 +135,7 @@ class FormReportDialog extends StatefulWidget {
 }
 
 class _FormReportDialogState extends State<FormReportDialog> {
-  String dropdownValue = 'LAPORAN_KM';
+  String dropdownValue = '-';
 
   File? _selectedImg;
 
@@ -253,7 +253,7 @@ class _FormReportDialogState extends State<FormReportDialog> {
                 SizedBox(
                   width: double.infinity,
                   child: DropdownButton<String>(
-                    value: 'LAPORAN_KM',
+                    value: dropdownValue,
                     iconSize: 24,
                     elevation: 16,
                     style: TextStyle(color: Colors.deepPurple),
@@ -266,7 +266,7 @@ class _FormReportDialogState extends State<FormReportDialog> {
                         dropdownValue = newValue!;
                       });
                     },
-                    items: <String>['-', 'LAPORAN_KM']
+                    items: <String>['-', 'PENGISIAN_BBM', 'LAPORAN_KM']
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,

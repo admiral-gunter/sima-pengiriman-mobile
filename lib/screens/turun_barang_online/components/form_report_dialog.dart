@@ -24,7 +24,7 @@ class FormReportDialog extends StatefulWidget {
 }
 
 class _FormReportDialogState extends State<FormReportDialog> {
-  String dropdownValue = '-';
+  String dropdownValue = 'LAPORAN_KM';
 
   File? _selectedImg;
 
