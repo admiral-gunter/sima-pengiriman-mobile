@@ -1,30 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:sima_pengiriman/constants.dart';
 import 'dart:convert';
 import 'dart:io';
+import '../controll.ers/order_service_controller.dart';
 import '../model/product_select_modal.dart';
 
-class MenuItem {
+class ProductModel {
   final int id;
-  final String label;
-  final IconData icon;
+  final String text;
 
-  MenuItem(this.id, this.label, this.icon);
+  ProductModel(this.id, this.text);
 }
-
-List<MenuItem> menuItems = [
-  MenuItem(1, 'Home', Icons.home),
-  MenuItem(2, 'Profile', Icons.person),
-  MenuItem(3, 'Settings', Icons.settings),
-  MenuItem(4, 'Favorites', Icons.favorite),
-  MenuItem(5, 'Notifications', Icons.notifications),
-  MenuItem(6, 'Messages', Icons.message),
-  MenuItem(7, 'Explore', Icons.explore),
-  MenuItem(8, 'Search', Icons.search),
-  MenuItem(9, 'Chat', Icons.chat),
-  MenuItem(10, 'Calendar', Icons.calendar_today),
-];
 
 class ProductSelectComponent extends StatefulWidget {
   const ProductSelectComponent({super.key});
@@ -39,20 +28,80 @@ class _ProductSelectComponentState extends State<ProductSelectComponent> {
   String? selectedOption; // Variable to store selected value
   final TextEditingController searchController =
       TextEditingController(); // Controller for search input
+  final TextEditingController menuController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    menuController.addListener(_onFilterChanged);
     // fetchOptionsFromAPI(); // Fetch data when screen loads
+  }
+
+  List<ProductModel> menuItems = [
+    ProductModel(1, 'Home'),
+    ProductModel(2, 'Profile'),
+    ProductModel(3, 'Settings'),
+  ];
+
+  Future<void> fetchOptionsFromAPI() async {
+    final url = Uri.parse(
+        '${kURL_ORIGIN}supir-get-product-product?keyword=${menuController.text}'); // Replace with your API URL
+
+    // Define your request body (if needed)
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Successful response
+        final data = jsonDecode(response.body);
+
+        if (data['response'] is List) {
+          setState(() {
+            // Clear existing items if needed
+            menuItems.clear();
+
+            // Convert each item in the list to a ProductModel
+            for (var item in data['response']) {
+              menuItems.add(ProductModel(int.parse(item['id']), item['text']));
+            }
+          });
+
+          print('Response data: $data');
+        } else {
+          print('Expected a list but got: ${data['response']}');
+        }
+      } else {
+        // Handle error response
+        print('Error: ${response.statusCode}, ${response.body}');
+      }
+    } catch (e) {
+      // Handle exceptions (e.g., network errors)
+      print('An error occurred: $e');
+    }
+  }
+
+  void _onFilterChanged() {
+    fetchOptionsFromAPI();
+    print('im changing');
+    // final query = _filterController.text.toLowerCase();
+    setState(() {
+      // filteredItems = menuItems.where((item) {
+      //   return item.text.toLowerCase().contains(query);
+      // }).toList();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width - 16.0;
-    final TextEditingController menuController = TextEditingController();
-    MenuItem? selectedMenu;
+    int selectedMenu;
 
-    return DropdownMenu<MenuItem>(
+    return DropdownMenu<ProductModel>(
       //initialSelection: menuItems.first,
       controller: menuController,
       width: width,
@@ -65,14 +114,20 @@ class _ProductSelectComponentState extends State<ProductSelectComponent> {
       ),
 
       label: const Text('Pilih Product'),
-      onSelected: (MenuItem? menu) {
-        setState(() {
-          selectedMenu = menu;
-        });
+      onSelected: (ProductModel? menu) {
+        final OrderServiceController ctl = Get.put(OrderServiceController());
+        if (menu != null) {
+          if (!mounted) return;
+
+          setState(() {
+            ctl.productIdSelected.value = menu.id;
+            selectedMenu = menu.id;
+          });
+        }
       },
       dropdownMenuEntries:
-          menuItems.map<DropdownMenuEntry<MenuItem>>((MenuItem menu) {
-        return DropdownMenuEntry<MenuItem>(value: menu, label: menu.label);
+          menuItems.map<DropdownMenuEntry<ProductModel>>((ProductModel menu) {
+        return DropdownMenuEntry<ProductModel>(value: menu, label: menu.text);
       }).toList(),
     );
   }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:sima_pengiriman/screens/order_service/components/product_select_component.dart';
+
+import '../controll.ers/order_service_controller.dart';
 
 class OrderServiceScannerSnScreen extends StatefulWidget {
   const OrderServiceScannerSnScreen({super.key});
@@ -19,18 +22,23 @@ class _OrderServiceScannerSnScreenState
   void initState() {
     super.initState();
     controller.start();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   showCustomDialog(context);
+    // });
   }
 
+  String sn = '';
   String inputText = '';
 
   void showCustomDialog(BuildContext context) {
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text('Custom Dialog'),
+              title: Text('SN TERDETEKSI'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -45,12 +53,16 @@ class _OrderServiceScannerSnScreenState
                   SizedBox(height: 20),
                   ProductSelectComponent(),
                   SizedBox(height: 20),
-                  Text('You entered: $inputText'),
+                  Text('NO SN: $sn'),
                 ],
               ),
               actions: [
                 TextButton(
                   onPressed: () {
+                    final OrderServiceController ctl =
+                        Get.put(OrderServiceController());
+                    ctl.listSnProduct
+                        .add({'sn': sn, 'product_id': ctl.productIdSelected});
                     controller.start();
                     Navigator.of(context).pop();
                   },
@@ -93,6 +105,11 @@ class _OrderServiceScannerSnScreenState
         controller: controller,
         onDetect: (barcode) async {
           barcode.barcodes[0].rawValue!;
+          if (barcode.barcodes.isNotEmpty) {
+            setState(() {
+              sn = barcode.barcodes[0].rawValue!;
+            });
+          }
 
           controller.stop();
           showCustomDialog(context);

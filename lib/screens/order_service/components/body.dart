@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sima_pengiriman/screens/order_service/components/order_service_scanner_sn.dart';
 import '../components/product_select_component.dart';
+import '../controll.ers/order_service_controller.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -14,6 +16,7 @@ class Body extends StatefulWidget {
 class _BodyState extends State<Body> {
   final ImagePicker _picker = ImagePicker();
   final List<File> _imageList = [];
+  final TextEditingController keteranganTxtController = TextEditingController();
 
   // Method to pick image
   Future<void> _pickImage() async {
@@ -26,10 +29,17 @@ class _BodyState extends State<Body> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    final OrderServiceController ctl = Get.put(OrderServiceController());
+    ctl.listSnProduct.clear();
+  }
+
+  @override
   Widget build(BuildContext context) {
     double imageSize = MediaQuery.of(context).size.width * 0.10;
-    double imageListHeight =
-        MediaQuery.of(context).size.height * 0.4; // 40% of screen height
+    double imageListHeight = MediaQuery.of(context).size.height * 0.4;
+    final OrderServiceController ctl = Get.put(OrderServiceController());
 
     return Scaffold(
       resizeToAvoidBottomInset:
@@ -87,12 +97,11 @@ class _BodyState extends State<Body> {
                 ],
               ),
             ),
-            SizedBox(
-                width: MediaQuery.of(context).size.width * 0.7,
-                child: ProductSelectComponent()),
+
             const SizedBox(height: 20), // Add some space between elements
             // Multiple text fields
             TextFormField(
+              controller: keteranganTxtController,
               decoration: const InputDecoration(
                 labelText: "Keterangan",
               ),
@@ -101,7 +110,13 @@ class _BodyState extends State<Body> {
               minLines: 1, // Starts with a single line
             ),
             const SizedBox(height: 20),
-            ElevatedButton(onPressed: () {}, child: const Text('Submit'))
+            ElevatedButton(
+                onPressed: () async {
+                  ctl.listSnProduct;
+
+                  ctl.uploadImagesAndFormData(_imageList, {'': ''}, '');
+                },
+                child: const Text('Submit'))
           ],
         ),
       ),
