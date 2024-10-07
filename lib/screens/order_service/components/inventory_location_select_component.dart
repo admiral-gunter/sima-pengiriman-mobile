@@ -15,14 +15,16 @@ class ProductModel {
   ProductModel(this.id, this.text);
 }
 
-class ProductSelectComponent extends StatefulWidget {
-  const ProductSelectComponent({super.key});
+class InventoryLocationSelectComponent extends StatefulWidget {
+  const InventoryLocationSelectComponent({super.key});
 
   @override
-  State<ProductSelectComponent> createState() => _ProductSelectComponentState();
+  State<InventoryLocationSelectComponent> createState() =>
+      _InventoryLocationSelectComponentState();
 }
 
-class _ProductSelectComponentState extends State<ProductSelectComponent> {
+class _InventoryLocationSelectComponentState
+    extends State<InventoryLocationSelectComponent> {
   List<dynamic> options = []; // List to store API data
   List<dynamic> filteredOptions = []; // List for displaying filtered options
   String? selectedOption; // Variable to store selected value
@@ -38,14 +40,12 @@ class _ProductSelectComponentState extends State<ProductSelectComponent> {
   }
 
   List<ProductModel> menuItems = [
-    ProductModel(1, 'Home'),
-    ProductModel(2, 'Profile'),
-    ProductModel(3, 'Settings'),
+    ProductModel(1, 'loading..'),
   ];
 
   Future<void> fetchOptionsFromAPI() async {
     final url = Uri.parse(
-        '${kURL_ORIGIN}supir-get-product-product?keyword=${menuController.text}'); // Replace with your API URL
+        '${kURL_ORIGIN}supir-get-lokasi?keyword=${menuController.text}'); // Replace with your API URL
 
     // Define your request body (if needed)
     try {
@@ -87,7 +87,6 @@ class _ProductSelectComponentState extends State<ProductSelectComponent> {
 
   void _onFilterChanged() {
     fetchOptionsFromAPI();
-    print('im changing');
     // final query = _filterController.text.toLowerCase();
     setState(() {
       // filteredItems = menuItems.where((item) {
@@ -98,13 +97,14 @@ class _ProductSelectComponentState extends State<ProductSelectComponent> {
 
   @override
   Widget build(BuildContext context) {
-    // double width = MediaQuery.of(context).size.width;
+    double width = MediaQuery.of(context).size.width - 16.0;
     int selectedMenu;
 
     return DropdownMenu<ProductModel>(
       //initialSelection: menuItems.first,
       controller: menuController,
-      hintText: "Pilih Product",
+      width: width,
+      hintText: "Pilih Lokasi",
       requestFocusOnTap: true,
       enableFilter: true,
       menuStyle: MenuStyle(
@@ -112,14 +112,14 @@ class _ProductSelectComponentState extends State<ProductSelectComponent> {
             MaterialStateProperty.all<Color>(Colors.lightBlue.shade50),
       ),
 
-      label: const Text('Pilih Product'),
+      label: const Text('Pilih Lokasi'),
       onSelected: (ProductModel? menu) {
         final OrderServiceController ctl = Get.put(OrderServiceController());
         if (menu != null) {
           if (!mounted) return;
 
           setState(() {
-            ctl.productIdSelected.value = menu.id;
+            ctl.inventoryLocationIdSelected.value = menu.id;
             selectedMenu = menu.id;
           });
         }

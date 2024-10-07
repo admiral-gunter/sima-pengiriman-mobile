@@ -11,18 +11,21 @@ import '../model/product_select_modal.dart';
 class ProductModel {
   final int id;
   final String text;
+  final String address;
 
-  ProductModel(this.id, this.text);
+  ProductModel(this.id, this.text, this.address);
 }
 
-class ProductSelectComponent extends StatefulWidget {
-  const ProductSelectComponent({super.key});
+class SelectSaleWholesaleCustomerComponent extends StatefulWidget {
+  const SelectSaleWholesaleCustomerComponent({super.key});
 
   @override
-  State<ProductSelectComponent> createState() => _ProductSelectComponentState();
+  State<SelectSaleWholesaleCustomerComponent> createState() =>
+      _SelectSaleWholesaleCustomerComponentState();
 }
 
-class _ProductSelectComponentState extends State<ProductSelectComponent> {
+class _SelectSaleWholesaleCustomerComponentState
+    extends State<SelectSaleWholesaleCustomerComponent> {
   List<dynamic> options = []; // List to store API data
   List<dynamic> filteredOptions = []; // List for displaying filtered options
   String? selectedOption; // Variable to store selected value
@@ -38,14 +41,12 @@ class _ProductSelectComponentState extends State<ProductSelectComponent> {
   }
 
   List<ProductModel> menuItems = [
-    ProductModel(1, 'Home'),
-    ProductModel(2, 'Profile'),
-    ProductModel(3, 'Settings'),
+    ProductModel(1, '....', 'Adress'),
   ];
 
   Future<void> fetchOptionsFromAPI() async {
     final url = Uri.parse(
-        '${kURL_ORIGIN}supir-get-product-product?keyword=${menuController.text}'); // Replace with your API URL
+        '${kURL_ORIGIN}supir-get-sale-wholesale-customer?keyword=${menuController.text}'); // Replace with your API URL
 
     // Define your request body (if needed)
     try {
@@ -67,7 +68,8 @@ class _ProductSelectComponentState extends State<ProductSelectComponent> {
 
             // Convert each item in the list to a ProductModel
             for (var item in data['response']) {
-              menuItems.add(ProductModel(int.parse(item['id']), item['text']));
+              menuItems.add(ProductModel(
+                  int.parse(item['id']), item['text'], item['address']));
             }
           });
 
@@ -98,13 +100,14 @@ class _ProductSelectComponentState extends State<ProductSelectComponent> {
 
   @override
   Widget build(BuildContext context) {
-    // double width = MediaQuery.of(context).size.width;
+    double width = MediaQuery.of(context).size.width - 16.0;
     int selectedMenu;
 
     return DropdownMenu<ProductModel>(
       //initialSelection: menuItems.first,
       controller: menuController,
-      hintText: "Pilih Product",
+      width: width,
+      hintText: "Pilih Customer",
       requestFocusOnTap: true,
       enableFilter: true,
       menuStyle: MenuStyle(
@@ -112,14 +115,17 @@ class _ProductSelectComponentState extends State<ProductSelectComponent> {
             MaterialStateProperty.all<Color>(Colors.lightBlue.shade50),
       ),
 
-      label: const Text('Pilih Product'),
+      label: const Text('Pilih Customer'),
       onSelected: (ProductModel? menu) {
         final OrderServiceController ctl = Get.put(OrderServiceController());
         if (menu != null) {
           if (!mounted) return;
 
           setState(() {
-            ctl.productIdSelected.value = menu.id;
+            ctl.saleWholesaleCustomerIdSelected.value = menu.id;
+            ctl.saleWholesaleCustomerNamenAddress['address'] = menu.address;
+            ctl.saleWholesaleCustomerNamenAddress['customer_name'] = menu.text;
+
             selectedMenu = menu.id;
           });
         }

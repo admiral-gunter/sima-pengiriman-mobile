@@ -104,6 +104,8 @@ class _OrderServiceScannerSnScreenState
       body: MobileScanner(
         controller: controller,
         onDetect: (barcode) async {
+          controller.stop();
+
           barcode.barcodes[0].rawValue!;
           if (barcode.barcodes.isNotEmpty) {
             setState(() {
@@ -111,7 +113,6 @@ class _OrderServiceScannerSnScreenState
             });
           }
 
-          controller.stop();
           showCustomDialog(context);
           // var barcode = barcodes[0].rawValue;
           // if (barcode.rawValue == null) {

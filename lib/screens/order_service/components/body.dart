@@ -1,10 +1,16 @@
+import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/screens/order_service/components/order_service_scanner_sn.dart';
+import '../../../shared_preferences/shared_token.dart';
 import '../components/product_select_component.dart';
 import '../controll.ers/order_service_controller.dart';
+import 'inventory_location_select_component.dart';
+import 'select_sale_wholesale_customer_component.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -110,13 +116,138 @@ class _BodyState extends State<Body> {
               minLines: 1, // Starts with a single line
             ),
             const SizedBox(height: 20),
+            InventoryLocationSelectComponent(),
+            const SizedBox(height: 20),
+            SelectSaleWholesaleCustomerComponent(),
+            const SizedBox(height: 20),
             ElevatedButton(
-                onPressed: () async {
-                  ctl.listSnProduct;
+              onPressed: () async {
+                if (keteranganTxtController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Keterangan tidak boleh kosong!'),
+                      duration: Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: 'Close',
+                        onPressed: () {
+                          // Code to execute when the user presses the button
+                        },
+                      ),
+                    ),
+                  );
+                  return;
+                }
 
-                  ctl.uploadImagesAndFormData(_imageList, {'': ''}, '');
-                },
-                child: const Text('Submit'))
+                if (_imageList.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Foto tidak boleh kosong!'),
+                      duration: Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: 'Close',
+                        onPressed: () {
+                          // Code to execute when the user presses the button
+                        },
+                      ),
+                    ),
+                  );
+                  return;
+                }
+
+                if (ctl.inventoryLocationIdSelected.value == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Lokasi boleh kosong!'),
+                      duration: Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: 'Close',
+                        onPressed: () {
+                          // Code to execute when the user presses the button
+                        },
+                      ),
+                    ),
+                  );
+                  return;
+                }
+
+                print('test');
+
+                try {
+                  final username =
+                      await SharedToken.univGetterString('username');
+
+                  final apiUrl =
+                      '${kURL_ORIGIN}supir-titip-service?keterangan=${keteranganTxtController.text}&username=$username&location_id=${ctl.inventoryLocationIdSelected.value}';
+
+                  print(ctl.listSnProduct);
+
+                  final dataToSend = ctl.listSnProduct.map((item) {
+                    return {
+                      'sn': item['sn'],
+                      'product_id': item['product_id']
+                          .value, // Use .value to get the int value from RxInt
+                    };
+                  }).toList();
+                  final dataSend = jsonEncode(dataToSend);
+
+                  print(apiUrl);
+
+                  await ctl.uploadImagesAndFormData(
+                      _imageList, {'data_send': dataSend}, apiUrl);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: Colors.green,
+                      content: Text('Upload berhasil!'),
+                      duration: Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: 'Close',
+                        onPressed: () {
+                          // Code to execute when the user presses the button
+                        },
+                      ),
+                    ),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: Colors.red,
+                      content: Text('Error uploading: $e!'),
+                      duration: Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: 'Close',
+                        onPressed: () {
+                          // Code to execute when the user presses the button
+                        },
+                      ),
+                    ),
+                  );
+                  print('Error uploading: $e');
+                }
+
+                // ctl.uploadImagesAndFormData(
+                //     _imageList, {'data_send': dataSend}, apiUrl);
+
+                // try {
+
+                // } catch (error) {
+                //   ScaffoldMessenger.of(context).showSnackBar(
+                //     SnackBar(
+                //       backgroundColor: Colors.red,
+                //       content: Text('Error uploading: $error!'),
+                //       duration: Duration(seconds: 2),
+                //       action: SnackBarAction(
+                //         label: 'Close',
+                //         onPressed: () {
+                //           // Code to execute when the user presses the button
+                //         },
+                //       ),
+                //     ),
+                //   );
+                //   print('Error uploading: $error');
+                // }
+              },
+              child: const Text('Submit'),
+            )
           ],
         ),
       ),
