@@ -194,19 +194,36 @@ class _BodyState extends State<Body> {
 
                   await ctl.uploadImagesAndFormData(
                       _imageList, {'data_send': dataSend}, apiUrl);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      backgroundColor: Colors.green,
-                      content: Text('Upload berhasil!'),
-                      duration: Duration(seconds: 2),
-                      action: SnackBarAction(
-                        label: 'Close',
-                        onPressed: () {
-                          // Code to execute when the user presses the button
-                        },
+
+                  if (ctl.uploadsukses.value) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: Colors.green,
+                        content: Text('Upload berhasil!'),
+                        duration: Duration(seconds: 2),
+                        action: SnackBarAction(
+                          label: 'Close',
+                          onPressed: () {
+                            // Code to execute when the user presses the button
+                          },
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: Colors.green,
+                        content: Text('Upload Gagal!'),
+                        duration: Duration(seconds: 2),
+                        action: SnackBarAction(
+                          label: 'Close',
+                          onPressed: () {
+                            // Code to execute when the user presses the button
+                          },
+                        ),
+                      ),
+                    );
+                  }
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

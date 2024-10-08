@@ -98,12 +98,13 @@ class _ProductSelectComponentState extends State<ProductSelectComponent> {
 
   @override
   Widget build(BuildContext context) {
-    // double width = MediaQuery.of(context).size.width;
+    double width = MediaQuery.of(context).size.width;
     int selectedMenu;
 
     return DropdownMenu<ProductModel>(
       //initialSelection: menuItems.first,
       controller: menuController,
+      width: width,
       hintText: "Pilih Product",
       requestFocusOnTap: true,
       enableFilter: true,

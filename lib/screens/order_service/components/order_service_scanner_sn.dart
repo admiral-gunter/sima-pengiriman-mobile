@@ -42,14 +42,6 @@ class _OrderServiceScannerSnScreenState
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(
-                    onChanged: (value) {
-                      setState(() {
-                        inputText = value;
-                      });
-                    },
-                    decoration: InputDecoration(labelText: 'Enter something'),
-                  ),
                   SizedBox(height: 20),
                   ProductSelectComponent(),
                   SizedBox(height: 20),

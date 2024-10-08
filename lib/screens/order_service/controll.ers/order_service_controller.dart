@@ -15,6 +15,8 @@ class OrderServiceController extends GetxController {
   var saleWholesaleCustomerNamenAddress =
       {'address': '', 'customer_name': ''}.obs;
 
+  RxBool uploadsukses = false.obs;
+
   Future<void> uploadImagesAndFormData(
       List<File> images, Map<String, String> formData, String uploadUrl) async {
     var uri = Uri.parse(uploadUrl);
