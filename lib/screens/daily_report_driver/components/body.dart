@@ -75,7 +75,7 @@ class _BodyState extends State<Body> {
         Expanded(
           flex: 1,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            // padding: EdgeInsets.symmetric(horizontal: 1.0),
             child: Column(
               children: [
                 TextFormField(
@@ -100,7 +100,7 @@ class _BodyState extends State<Body> {
           ),
         ),
         Flexible(
-          flex: 3,
+          flex: 5,
           child: ListView.builder(
             itemCount: supirReport.length,
             itemBuilder: (context, index) {

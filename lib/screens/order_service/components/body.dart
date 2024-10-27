@@ -118,7 +118,8 @@ class _BodyState extends State<Body> {
             const SizedBox(height: 20),
             InventoryLocationSelectComponent(),
             const SizedBox(height: 20),
-            SelectSaleWholesaleCustomerComponent(),
+            // SelectSaleWholesaleCustomerComponent(),
+            Text(ctl.saleWholesaleCustomerNamenAddress['customer_name'] ?? ''),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
@@ -175,9 +176,10 @@ class _BodyState extends State<Body> {
                 try {
                   final username =
                       await SharedToken.univGetterString('username');
-
+                  final platNo = await SharedToken.univGetterString('no_plat');
                   final apiUrl =
-                      '${kURL_ORIGIN}supir-titip-service?keterangan=${keteranganTxtController.text}&username=$username&location_id=${ctl.inventoryLocationIdSelected.value}';
+                      // ignore: unnecessary_brace_in_string_interps
+                      '${kURL_ORIGIN}supir-titip-service?keterangan=${keteranganTxtController.text}&username=$username&location_id=${ctl.inventoryLocationIdSelected.value}&plat_no=${platNo}';
 
                   print(ctl.listSnProduct);
 
@@ -212,7 +214,7 @@ class _BodyState extends State<Body> {
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        backgroundColor: Colors.green,
+                        backgroundColor: Colors.red,
                         content: Text('Upload Gagal!'),
                         duration: Duration(seconds: 2),
                         action: SnackBarAction(

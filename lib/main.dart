@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:sima_pengiriman/helper/firebase_api.dart';
 import 'package:sima_pengiriman/routes.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
+import 'package:sima_pengiriman/screens/menu_select_customer/menu_select_customer.dart';
 import 'package:sima_pengiriman/theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'constants.dart';
@@ -120,7 +121,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: theme(),
-      initialRoute: MenuScreen.routeName,
+      initialRoute: MenuSelectCustomer.routeName,
       routes: routes,
     );
   }

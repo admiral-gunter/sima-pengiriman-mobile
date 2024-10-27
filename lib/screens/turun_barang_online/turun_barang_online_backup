@@ -709,8 +709,6 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                 }
 
                 await uploadFile();
-
-                if (!mounted) return;
                 Navigator.of(context).pop();
               },
             ),
@@ -891,7 +889,11 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
               label: 'Ya',
               onPressed: () {
                 ctl.listInv.clear();
-                Navigator.pop(context);
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MenuScreen(),
+                    ));
               },
             ),
           );
@@ -1160,123 +1162,96 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                               TextStyle(color: Colors.white)),
                                     ),
                                   ),
-                                  // SizedBox(
-                                  //   width: double.infinity,
-                                  //   child: ElevatedButton(
-                                  //     onPressed: () async {
-                                  //       var request = http.Request(
-                                  //           'POST',
-                                  //           Uri.parse(
-                                  //               '${kURL_ORIGIN}supir-get-toko-from-sj?nomer_surat_jalan=SJ-24-03-26-0007'));
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        var request = http.Request(
+                                            'POST',
+                                            Uri.parse(
+                                                '${kURL_ORIGIN}supir-get-toko-from-sj?nomer_surat_jalan=SJ-24-03-26-0007'));
 
-                                  //       http.StreamedResponse response =
-                                  //           await request.send();
+                                        http.StreamedResponse response =
+                                            await request.send();
 
-                                  //       if (response.statusCode == 200) {
-                                  //         var resp = await response.stream
-                                  //             .bytesToString();
+                                        if (response.statusCode == 200) {
+                                          var resp = await response.stream
+                                              .bytesToString();
 
-                                  //         var jsonResponse = jsonDecode(resp);
+                                          var jsonResponse = jsonDecode(resp);
 
-                                  //         if (!jsonResponse['success']) {
-                                  //           SnackBar(
-                                  //             content: Text(
-                                  //                 '${jsonResponse['msg']}'),
-                                  //             action: SnackBarAction(
-                                  //               label: 'Undo',
-                                  //               onPressed: () {
-                                  //                 // Code to execute when "Undo" is pressed
-                                  //                 print('Undo action pressed!');
-                                  //               },
-                                  //             ),
-                                  //           );
+                                          if (!mounted) return;
 
-                                  //           return;
-                                  //         }
+                                          showDialog(
+                                            barrierDismissible: false,
+                                            context: context,
+                                            builder: (context) {
+                                              return StatefulBuilder(
+                                                builder: (context, setState) {
+                                                  return AlertDialog(
+                                                    title: Text('TOKO'),
+                                                    content: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        for (var item
+                                                            in jsonResponse[
+                                                                'result'])
+                                                          ElevatedButton(
+                                                              onPressed: () {
+                                                                final OrderServiceController
+                                                                    ctl =
+                                                                    Get.put(
+                                                                        OrderServiceController());
 
-                                  //         if (!mounted) return;
+                                                                ctl.saleWholesaleCustomerIdSelected
+                                                                        .value =
+                                                                    int.parse(item[
+                                                                        'swc_id']);
 
-                                  //         showDialog(
-                                  //           barrierDismissible: false,
-                                  //           context: context,
-                                  //           builder: (context) {
-                                  //             return StatefulBuilder(
-                                  //               builder: (context, setState) {
-                                  //                 return AlertDialog(
-                                  //                   title: Text('TOKO'),
-                                  //                   content: Column(
-                                  //                     mainAxisSize:
-                                  //                         MainAxisSize.min,
-                                  //                     children: [
-                                  //                       for (var item
-                                  //                           in jsonResponse[
-                                  //                               'result'])
-                                  //                         ElevatedButton(
-                                  //                             onPressed: () {
-                                  //                               final OrderServiceController
-                                  //                                   ctl =
-                                  //                                   Get.put(
-                                  //                                       OrderServiceController());
+                                                                ctl.saleWholesaleCustomerNamenAddress[
+                                                                        'address'] =
+                                                                    item[
+                                                                        'swc_address'];
 
-                                  //                               ctl.saleWholesaleCustomerIdSelected
-                                  //                                       .value =
-                                  //                                   int.parse(item[
-                                  //                                       'swc_id']);
+                                                                ctl.saleWholesaleCustomerNamenAddress[
+                                                                        'customer_name'] =
+                                                                    '${item['swc_shop_name']} (${item['swc_fullname']})';
 
-                                  //                               ctl.saleWholesaleCustomerNamenAddress[
-                                  //                                       'address'] =
-                                  //                                   item[
-                                  //                                       'swc_address'];
-
-                                  //                               ctl.saleWholesaleCustomerNamenAddress[
-                                  //                                       'customer_name'] =
-                                  //                                   '${item['swc_shop_name']} (${item['swc_fullname']})';
-
-                                  //                               Navigator.pushReplacementNamed(
-                                  //                                   context,
-                                  //                                   OrderServiceScreen
-                                  //                                       .routeName);
-                                  //                             },
-                                  //                             child: Text(
-                                  //                                 '${item['swc_shop_name']} (${item['swc_fullname']})'))
-                                  //                     ],
-                                  //                   ),
-                                  //                   actions: [
-                                  //                     TextButton(
-                                  //                       onPressed: () {
-                                  //                         Navigator.of(context)
-                                  //                             .pop();
-                                  //                       },
-                                  //                       child: Text('Close'),
-                                  //                     ),
-                                  //                   ],
-                                  //                 );
-                                  //               },
-                                  //             );
-                                  //           },
-                                  //         );
-                                  //       } else {
-                                  //         print(response.reasonPhrase);
-                                  //         SnackBar(
-                                  //           content: Text(
-                                  //               '${response.reasonPhrase}'),
-                                  //           action: SnackBarAction(
-                                  //             label: 'Undo',
-                                  //             onPressed: () {
-                                  //               // Code to execute when "Undo" is pressed
-                                  //               print('Undo action pressed!');
-                                  //             },
-                                  //           ),
-                                  //         );
-                                  //       }
-                                  //     },
-                                  //     style: ElevatedButton.styleFrom(
-                                  //         backgroundColor: Colors.orange),
-                                  //     child: Text('Service Titipan',
-                                  //         style:
-                                  //             TextStyle(color: Colors.white)),
-                                  //   ),
-                                  // ),
+                                                                Navigator.pushReplacementNamed(
+                                                                    context,
+                                                                    OrderServiceScreen
+                                                                        .routeName);
+                                                              },
+                                                              child: Text(
+                                                                  '${item['swc_shop_name']} (${item['swc_fullname']})'))
+                                                      ],
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child: Text('Close'),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            },
+                                          );
+                                        } else {
+                                          print(response.reasonPhrase);
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.orange),
+                                      child: Text('Service Titipan',
+                                          style:
+                                              TextStyle(color: Colors.white)),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),

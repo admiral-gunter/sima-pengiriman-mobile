@@ -423,11 +423,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     try {
       final assignedCourier = await SharedToken.univGetterString('username');
       final userId = await SharedToken.univGetterString('user_id');
-      final tokoId = await SharedToken.univGetterString('toko_id');
-
       final response = await http.post(
         Uri.parse(
-            '${kURL_ORIGIN}pengiriman/kurir/get-supir-task?courier_id=$userId&assigned_courier=$assignedCourier&toko_id=${tokoId}'),
+            '${kURL_ORIGIN}pengiriman/kurir/get-supir-task?courier_id=$userId&assigned_courier=$assignedCourier'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },

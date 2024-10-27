@@ -3,9 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_background/flutter_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sima_pengiriman/screens/delivery_order_menu/delivery_order_menu.dart';
 import 'package:sima_pengiriman/screens/sign_in/sign_in_screen.dart';
@@ -18,12 +16,11 @@ import '../../helper/database_helper.dart';
 import '../../shared_preferences/shared_token.dart';
 import '../../size_config.dart';
 import '../daily_report_driver/daily_report_driver_screen.dart';
-import 'components/body.dart';
 import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+
+import 'components/body.dart';
+import 'components/body_select_customer.dart';
 
 class MenuScreen extends StatefulWidget {
   static var routeName = '/menu';
@@ -58,10 +55,14 @@ class _MenuScreenState extends State<MenuScreen> {
 
       if (jsonResp['msg'] == 'SUPIR_BELUM_ABSEN') {
         await SharedToken.univSetterString('STS_ABSEN', 'BELUM_ABSEN');
+
+        if (!mounted) return;
         Navigator.pushReplacementNamed(
             context, DailyReportDriverScreen.routeName);
       } else {
         await SharedToken.univSetterString('STS_ABSEN', '');
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
     } else {
@@ -73,10 +74,12 @@ class _MenuScreenState extends State<MenuScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final uRole = await SharedToken.univGetterString('USER_ROLE');
     String? token = prefs.getString('token');
+    if (!mounted) return;
+
     String? currentRoute = ModalRoute.of(context)?.settings.name;
 
     if (token != null && uRole == 'USER_SENDER') {
-      print('retard');
+      // print('retard');
       Navigator.pushReplacementNamed(context, DeliverOrderMenu.routeName);
       return;
     }
@@ -87,6 +90,8 @@ class _MenuScreenState extends State<MenuScreen> {
       await DatabaseHelper.instance.emptyAllTables();
 
       await SharedToken.tokenRemover();
+      if (!mounted) return;
+
       Navigator.pushReplacementNamed(context, SignInScreen.routeName);
     }
   }
@@ -108,7 +113,7 @@ class _MenuScreenState extends State<MenuScreen> {
       if (status.isPermanentlyDenied) {
         //When the user previously rejected the permission and select never ask again
         //Open the screen of settings
-        bool res = await openAppSettings();
+        // bool res = await openAppSettings();
       }
     } else {
       //In use is available, check the always in use
@@ -137,7 +142,7 @@ class _MenuScreenState extends State<MenuScreen> {
       await cekKoneksiAndLogoutIfOnline();
       await _cekAbsensi();
     } catch (e) {
-      print(e);
+      // print(e);
     }
   }
 
@@ -174,16 +179,16 @@ class _MenuScreenState extends State<MenuScreen> {
   Future<void> _addLokasiFirebaseFromLok(String name, String email) async {
     final username = await SharedToken.univGetterString('username');
     final DatabaseReference dblokRef =
-        FirebaseDatabase.instance.ref('sima-pengiriman/${username}');
+        FirebaseDatabase.instance.ref('sima-pengiriman/$username');
     try {
       await dblokRef.push().set({
         'name': name,
         'email': email,
       });
 
-      print('data added');
+      // print('data added');
     } catch (e) {
-      print('Error adding user: $e');
+      // print('Error adding user: $e');
     }
   }
 
@@ -193,6 +198,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
     return Scaffold(
       body: Body(),
+      // body: BodySelectCustomer(),
       bottomNavigationBar: CustomBottomNavBar(selectedMenu: MenuState.home),
     );
   }

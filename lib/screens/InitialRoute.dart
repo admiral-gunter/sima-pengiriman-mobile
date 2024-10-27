@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'menu/menu_screen.dart';
+import 'menu_select_customer/menu_select_customer.dart';
 import 'sign_in/sign_in_screen.dart';
 
 class MyApp extends StatefulWidget {
@@ -26,7 +27,7 @@ class _MyAppState extends State<MyApp> {
           } else if (snapshot.hasData) {
             // If token exists in shared preferences, return MenuScreen
             if (snapshot.data!.containsKey('token')) {
-              return MenuScreen();
+              return MenuSelectCustomer();
             } else {
               // Otherwise, return SignInScreen
               return SignInScreen();

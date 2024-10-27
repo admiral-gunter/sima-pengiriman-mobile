@@ -20,6 +20,8 @@ import 'screens/history_turun_barang/history_turun_barang.dart';
 import 'screens/looking_for_courier/looking_for_courier.dart';
 import 'screens/map_picker/map_picker.dart';
 import 'screens/maps_view/maps_view.dart';
+import 'screens/menu_select_customer/menu_select_customer.dart';
+import 'screens/menu_sj_customer/menu_sj_customer_screen.dart';
 import 'screens/order_delivery_screen/order_delivery_screen.dart';
 import 'screens/order_service/components/order_service_scanner_sn.dart';
 import 'screens/order_service/order_service_screen.dart';
@@ -40,33 +42,38 @@ final Map<String, WidgetBuilder> routes = {
   SignUpScreen.routeName: (context) => SignUpScreen(),
   CompleteProfileScreen.routeName: (context) => CompleteProfileScreen(),
   ProfileScreen.routeName: (context) => ProfileScreen(),
-  MenuScreen.routeName: (context) => MenuScreen(),
+  MenuScreen.routeName: (context) => const MenuScreen(),
   ListBarcodesScreen.routeName: (context) => ListBarcodesScreen(),
   ScannerOfflineScreen.routeName: (context) => ScannerOfflineScreen(),
-  TurunBarangOfflineScreen.routeName: (context) => TurunBarangOfflineScreen(),
-  TurunBarangOnlineScreen.routeName: (context) => TurunBarangOnlineScreen(),
-  ScanPengirimanScreen.routeName: (context) => ScanPengirimanScreen(),
-  HistoryBarangScreen.routeName: (context) => HistoryBarangScreen(),
+  TurunBarangOfflineScreen.routeName: (context) =>
+      const TurunBarangOfflineScreen(),
+  TurunBarangOnlineScreen.routeName: (context) =>
+      const TurunBarangOnlineScreen(),
+  ScanPengirimanScreen.routeName: (context) => const ScanPengirimanScreen(),
+  HistoryBarangScreen.routeName: (context) => const HistoryBarangScreen(),
   TurunBarangOnlineHistoryScreen.routeName: (context) =>
-      TurunBarangOnlineHistoryScreen(),
-  MapsView.routeName: (context) => MapsView(),
+      const TurunBarangOnlineHistoryScreen(),
+  MapsView.routeName: (context) => const MapsView(),
   DeliverOrderMenu.routeName: (context) => DeliverOrderMenu(),
-  DeliveryInstantScreen.routeName: (context) => DeliveryInstantScreen(),
-  MapPicker.routeName: (context) => MapPicker(
+  DeliveryInstantScreen.routeName: (context) => const DeliveryInstantScreen(),
+  MapPicker.routeName: (context) => const MapPicker(
         title: 'Map Picker',
       ),
-  LookingForCourier.routeName: (context) => LookingForCourier(),
-  OrderDeliveryScreen.routeName: (context) => OrderDeliveryScreen(),
-  HistoryOrderScreen.routeName: (context) => HistoryOrderScreen(),
+  LookingForCourier.routeName: (context) => const LookingForCourier(),
+  OrderDeliveryScreen.routeName: (context) => const OrderDeliveryScreen(),
+  HistoryOrderScreen.routeName: (context) => const HistoryOrderScreen(),
   SummaryOrderScreen.routeName: (context) => SummaryOrderScreen(),
-  DeliveryTaskDetail.routeName: (context) => DeliveryTaskDetail(),
-  CourierScannerScreen.routeName: (context) => CourierScannerScreen(),
-  OutOfTownCargoScreen.routeName: (context) => OutOfTownCargoScreen(),
+  DeliveryTaskDetail.routeName: (context) => const DeliveryTaskDetail(),
+  CourierScannerScreen.routeName: (context) => const CourierScannerScreen(),
+  OutOfTownCargoScreen.routeName: (context) => const OutOfTownCargoScreen(),
   DeliveryPackageByWeightScreen.routeName: (context) =>
-      DeliveryPackageByWeightScreen(),
-  DailyReportDriverScreen.routeName: (context) => DailyReportDriverScreen(),
-  BarangTidakMuatScreen.routeName: (context) => BarangTidakMuatScreen(),
-  OrderServiceScreen.routeName: (context) => OrderServiceScreen(),
+      const DeliveryPackageByWeightScreen(),
+  DailyReportDriverScreen.routeName: (context) =>
+      const DailyReportDriverScreen(),
+  BarangTidakMuatScreen.routeName: (context) => const BarangTidakMuatScreen(),
+  OrderServiceScreen.routeName: (context) => const OrderServiceScreen(),
   OrderServiceScannerSnScreen.routeName: (context) =>
-      OrderServiceScannerSnScreen()
+      const OrderServiceScannerSnScreen(),
+  MenuSelectCustomer.routeName: (context) => const MenuSelectCustomer(),
+  MenuSJCustomerScreen.routeName: (context) => const MenuSJCustomerScreen()
 };

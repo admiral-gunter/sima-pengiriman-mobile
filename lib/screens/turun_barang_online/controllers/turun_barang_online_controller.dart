@@ -225,6 +225,156 @@ class TurunBarangOnlineController extends GetxController {
     }
   }
 
+  Future<void> getItemsByNoSJStr(dynamic noSj) async {
+    // print(listNoSJ);
+    listSJ.clear();
+    // String noSj = ;
+
+    // for (var element in listNoSJ) {
+    //   // long: 107.5895573, lat: -6.8256386,
+    //   latlongSJ['lat_sj'] = element['lat'];
+    //   latlongSJ['long_sj'] = element['long'];
+
+    //   nomorSJ.value = element['nomor_order'];
+    //   final item = {
+    //     'nomor_order': element['nomor_order'],
+    //     'toko': element['customer_nama']
+    //   };
+    //   listSJ.add(item);
+    // }
+    noSuratJalanSelected.value = noSj;
+
+    // for (var element in listNoSJ) {
+    //   final item = jsonEncode(element['nomor_order']);
+    //   noSj += item + ',';
+    // }
+    var urli = '${kURL_ORIGIN}sale-wholesale/get-print-sj-data?no_sj=$noSj';
+
+    urli = urli.replaceFirst(RegExp(r',\s*$'), '');
+
+    urli = urli.replaceAll(' ', '');
+
+    var url = Uri.parse(urli);
+
+    var requestBody = {
+      'key1': 'value1',
+      'key2': 'value2',
+    };
+
+    var bodyJson = jsonEncode(requestBody);
+
+    try {
+      var response = await http.post(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: bodyJson,
+      );
+
+      if (response.statusCode == 200) {
+        var resp = jsonDecode(response.body);
+        listInv.addAll(resp['content']);
+
+        final cntmusTap = resp['content'] as List;
+        final cntTapped = resp['content2'] as List;
+
+        barangHarusTap.value = cntmusTap.length;
+        barangTap.value = cntTapped.length;
+
+        final barangPriorias = resp['barang_prioritas'] as List;
+        if (barangPriorias.isNotEmpty) {
+          hasPriority.value = true;
+          listBarangPrioritas.addAll(barangPriorias);
+        }
+
+        for (var element in resp['content2']) {
+          await DatabaseHelper.instance.insertBarangTurun(element);
+        }
+        Set<Map<String, dynamic>> uniqueLocations = Set<Map<String, dynamic>>();
+
+        for (var item in resp['content']) {
+          Map<String, dynamic> locationMap = {
+            "dest_loc_name": item['dest_loc_name'],
+            "dest_loc_latitude": item['dest_loc_latitude'],
+            "dest_loc_longitude": item['dest_loc_longitude'],
+          };
+
+          uniqueLocations.add(locationMap);
+        }
+
+        // Convert uniqueLocations set back to a list if needed
+        List<Map<String, dynamic>> uniqueLocationsList =
+            uniqueLocations.toList();
+        listLoc.clear();
+        // Print the unique combinations
+        uniqueLocationsList.forEach((location) {
+          bool push = true;
+          for (var it in listLoc) {
+            if (location['dest_loc_name'] == it['dest_loc_name']) {
+              push = false;
+              // skip this iteraton
+              break;
+            } else {
+              push = true;
+            }
+          }
+          if (push) {
+            if (location['dest_loc_name'] != null ||
+                location['dest_loc_latitude'] != null ||
+                location['dest_loc_longitude'] != null) {
+              Map<String, String> locationMap = {
+                "dest_loc_name": location['dest_loc_name'].toString(),
+                "dest_loc_latitude": location['dest_loc_latitude'].toString(),
+                "dest_loc_longitude": location['dest_loc_longitude'].toString(),
+              };
+              listLoc.add(locationMap);
+            }
+          }
+        });
+
+        Position position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high);
+
+        double cur_latitude = position.latitude;
+        double cur_longitude = position.longitude;
+
+        // setState((){
+
+        //   });
+
+        for (int i = 0; i < listLoc.length; i++) {
+          var item = listLoc[i];
+          // double dest_latitude = double.parse(item['dest_loc_latitude']);
+          // double dest_longitude = double.parse(item['dest_loc_longitude']);
+          double dest_latitude =
+              double.tryParse(item['dest_loc_latitude'] ?? '') ?? 0.0;
+          double dest_longitude =
+              double.tryParse(item['dest_loc_longitude'] ?? '') ?? 0.0;
+          final distanceKm = haversine(
+              cur_latitude, cur_longitude, dest_latitude, dest_longitude);
+          listLoc[i]['dest_calc'] = distanceKm.toStringAsFixed(2);
+
+          listLoc[i]['lat_sj'] = latlongSJ['lat_sj'];
+          listLoc[i]['long_sj'] = latlongSJ['long_sj'];
+        }
+        // listLoc.sort((a, b) =>
+        //     (a['dest_calc'] as double).compareTo(b['dest_calc'] as double));
+
+        listLoc.sort((a, b) {
+          double aDestCalc = double.tryParse(a['dest_calc'] ?? '') ?? 0.0;
+          double bDestCalc = double.tryParse(b['dest_calc'] ?? '') ?? 0.0;
+          return aDestCalc.compareTo(bDestCalc);
+        });
+        print(listLoc);
+      } else {
+        print('POST request failed with status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error get item by no SJ: $e');
+    }
+  }
+
   Future SJDalamPengiriman() async {
     final url =
         Uri.parse(kURL_ORIGIN + 'pengiriman/update-pengiriman-from-mobile');

@@ -9,6 +9,7 @@ import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import '../constants.dart';
 import '../enums.dart';
 import '../screens/delivery_order_menu/delivery_order_menu.dart';
+import '../screens/menu_select_customer/menu_select_customer.dart';
 import '../screens/order_delivery_screen/order_delivery_screen.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
@@ -61,7 +62,9 @@ class CustomBottomNavBar extends StatelessWidget {
                         Navigator.pushNamed(
                             context, DeliverOrderMenu.routeName);
                       } else {
-                        Navigator.pushNamed(context, MenuScreen.routeName);
+                        Navigator.pushNamed(
+                            context, MenuSelectCustomer.routeName);
+                        // Navigator.pushNamed(context, MenuScreen.routeName);
                       }
                     }
                   }),

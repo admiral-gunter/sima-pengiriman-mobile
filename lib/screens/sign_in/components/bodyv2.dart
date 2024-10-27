@@ -37,12 +37,12 @@ class _BodyV2State extends State<BodyV2> {
       body: Form(
         key: _formKey,
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 32.0),
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 32.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               RichText(
-                text: TextSpan(
+                text: const TextSpan(
                   children: [
                     TextSpan(
                       text: 'SIMA',
@@ -79,7 +79,7 @@ class _BodyV2State extends State<BodyV2> {
                       onChanged: (value) {
                         _ctl.chgCredential(':username', value);
                       },
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         suffixIcon: Icon(Icons.person, color: kPrimaryColor),
                         labelText: 'Username/Gmail',
                         labelStyle: TextStyle(
@@ -87,7 +87,7 @@ class _BodyV2State extends State<BodyV2> {
                           fontSize: 17,
                         ),
                       ),
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.black87,
                         fontSize: 17,
                       ),
@@ -98,7 +98,7 @@ class _BodyV2State extends State<BodyV2> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 50),
+                    const SizedBox(height: 50),
                     TextFormField(
                       onChanged: (value) {
                         _ctl.chgCredential(':password', value);
@@ -121,12 +121,12 @@ class _BodyV2State extends State<BodyV2> {
                           },
                         ),
                         labelText: 'Password',
-                        labelStyle: TextStyle(
+                        labelStyle: const TextStyle(
                           color: Colors.black87,
                           fontSize: 17,
                         ),
                       ),
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.black87,
                         fontSize: 17,
                       ),
@@ -137,7 +137,7 @@ class _BodyV2State extends State<BodyV2> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 50),
+                    const SizedBox(height: 50),
                     DefaultButton(
                       text: "Sign In",
                       press: () async {
@@ -146,7 +146,7 @@ class _BodyV2State extends State<BodyV2> {
                         if (_formKey.currentState!.validate()) {
                           final resp = await _ctl.loging();
                           final val = jsonDecode(resp);
-
+                          if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('${val['msg']}')),
                           );
@@ -178,11 +178,16 @@ class _BodyV2State extends State<BodyV2> {
                             await SharedToken.univSetterString(
                                 'last_login_dt', formattedDate);
                             // _formKey.currentState!.save();
+
+                            if (!mounted) return;
+
                             KeyboardUtil.hideKeyboard(context);
 
                             Navigator.pushReplacementNamed(
                                 context, LoginSuccessScreen.routeName);
                           } else {
+                            if (!mounted) return;
+
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('${val['msg']}')),
                             );
