@@ -30,6 +30,7 @@ import 'screens/scan_pengiriman/scan_pengiriman_screen.dart';
 import 'screens/scanner_offline/scanner_offline_screen.dart';
 import 'screens/sign_up/sign_up_screen.dart';
 import 'screens/summary_order/summary_order_screen.dart';
+import 'screens/turun_barang_offline_scanner/turun_barang_offline_scanner.dart';
 import 'screens/turun_barang_online/turun_barang_online.dart';
 import 'screens/turun_barang_online/turun_barang_online_history.dart';
 
@@ -75,5 +76,7 @@ final Map<String, WidgetBuilder> routes = {
   OrderServiceScannerSnScreen.routeName: (context) =>
       const OrderServiceScannerSnScreen(),
   MenuSelectCustomer.routeName: (context) => const MenuSelectCustomer(),
-  MenuSJCustomerScreen.routeName: (context) => const MenuSJCustomerScreen()
+  MenuSJCustomerScreen.routeName: (context) => const MenuSJCustomerScreen(),
+  TurunBarangOfflineScanner.routeName: (context) =>
+      const TurunBarangOfflineScanner()
 };

@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:sima_pengiriman/constants.dart';
+import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 
+import '../../menu_select_customer/controllers/menu_select_customer_controller.dart';
 import '../../order_service/controll.ers/order_service_controller.dart';
 import '../../order_service/order_service_screen.dart';
 import '../../turun_barang_online/controllers/turun_barang_online_controller.dart';
@@ -37,26 +39,48 @@ class _BodyState extends State<Body> {
       // print(await response.stream.bytesToString());
       String responseBody = await response.stream.bytesToString();
       var jsonResponse = jsonDecode(responseBody);
-      var result = jsonResponse['result'];
+      List result = jsonResponse['result'];
 
-      // print(result.msg);
-      // for (var suratJalan in result.result) {
-      //   print('suratJalan ID: ${suratJalan.id}, Name: ${suratJalan.fullname}');
-      // }
+      final customerId = await SharedToken.univGetterString('customer_id');
+
+      for (var value in result) {
+        try {
+          String res = await DatabaseHelper.instance
+              .insertNomorSj(int.parse(customerId), value['nomer_surat_jalan']);
+          print('wow');
+          if (res != 'SUKSES') {
+            showErrorSnackbar(res);
+          }
+        } catch (e) {
+          // print(
+          //     'Error inserting nomor_sj for customerId: $customerId, error: $e');
+          showErrorSnackbar(
+              'Error inserting nomor_sj for customerId: $customerId, error: $e');
+        }
+      }
 
       setState(() {
         suratJalanList.addAll(result);
       });
     } else {
-      // print(response.reasonPhrase);
+      print(response.reasonPhrase);
       showErrorSnackbar(response.reasonPhrase);
     }
   }
 
   @override
   void initState() {
-    SharedToken.univGetterString('customer_id')
-        .then((value) => {print(value), getsuratJalanBySupir(value)});
+    SharedToken.univGetterString('customer_id').then((value) {
+      MenuSelectCustomerController ctl =
+          Get.put(MenuSelectCustomerController());
+
+      if (ctl.internetConnected.value) {
+        getsuratJalanBySupir(value);
+      } else {
+        print('niggas offline');
+        getSjOffline();
+      }
+    });
 
     super.initState();
   }
@@ -67,6 +91,27 @@ class _BodyState extends State<Body> {
       backgroundColor: Colors.red,
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  Future<void> getSjOffline() async {
+    try {
+      var customerId = await SharedToken.univGetterString('customer_id');
+      customerId = int.parse(customerId);
+
+      print('id toko : $customerId');
+
+      final result =
+          await DatabaseHelper.instance.getNomorSjByIdToko(customerId);
+      print('sj offline result : ');
+      print(result);
+      setState(() {
+        suratJalanList.addAll(result);
+      });
+    } catch (e) {
+      showErrorSnackbar('Error fetching nomor_sj: $e');
+      // print('Error fetching nomor_sj: $e');
+      // Optionally, you can handle errors further, like showing an error message in the UI
+    }
   }
 
   @override
@@ -114,10 +159,11 @@ class _BodyState extends State<Body> {
                     // ];
                     ctl.barangTap.value = 0;
                     ctl.barangHarusTap.value = 0;
-                    await ctl.getItemsByNoSJStr(
-                        suratJalanList[index]['nomer_surat_jalan']);
-                    Navigator.pushNamed(
-                        context, TurunBarangOnlineScreen.routeName);
+                    await ctl
+                        .getItemsByNoSJStr(
+                            suratJalanList[index]['nomer_surat_jalan'])
+                        .then((value) => Navigator.pushNamed(
+                            context, TurunBarangOnlineScreen.routeName));
                     // SharedToken.univSetterString('suratJalan_id', suratJalanList[index].id)
                     //     .then((value) => {
                     //           Navigator.pushReplacementNamed(
@@ -129,6 +175,7 @@ class _BodyState extends State<Body> {
                   },
                 );
               }
+              return null;
             },
           ),
         ),
@@ -193,130 +240,23 @@ class _BodyState extends State<Body> {
 
                   if (!mounted) return;
 
-                  // Navigate to OrderServiceScreen
                   Navigator.pushReplacementNamed(
                       context, OrderServiceScreen.routeName);
                 } else {
-                  print('Error: ${response.statusCode}');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            'An error occurred. ERROR : ${response.statusCode}')),
+                  );
                 }
               } catch (e) {
                 // Catch and handle any exceptions that occur
-                print('An error occurred: $e');
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text('An error occurred. Please try again.')),
+                  SnackBar(content: Text('An error occurred. ERROR : $e')),
                 );
               }
 
               return;
-              var request = http.Request(
-                  'POST', Uri.parse('${kURL_ORIGIN}supir-get-toko-by-id'));
-
-              http.StreamedResponse response = await request.send();
-
-              if (response.statusCode == 200) {
-                var resp = await response.stream.bytesToString();
-
-                var jsonResponse = jsonDecode(resp);
-
-                if (!jsonResponse['success']) {
-                  SnackBar(
-                    content: Text('${jsonResponse['msg']}'),
-                    action: SnackBarAction(
-                      label: 'Undo',
-                      onPressed: () {
-                        // Code to execute when "Undo" is pressed
-                        print('Undo action pressed!');
-                      },
-                    ),
-                  );
-
-                  return;
-                }
-
-                var item = jsonResponse['result'];
-
-                final OrderServiceController ctl =
-                    Get.put(OrderServiceController());
-
-                ctl.saleWholesaleCustomerIdSelected.value =
-                    int.parse(item['swc_id']);
-
-                ctl.saleWholesaleCustomerNamenAddress['address'] =
-                    item['swc_address'];
-
-                ctl.saleWholesaleCustomerNamenAddress['customer_name'] =
-                    '${item['swc_shop_name']} (${item['swc_fullname']})';
-
-                if (!mounted) return;
-
-                Navigator.pushReplacementNamed(
-                    context, OrderServiceScreen.routeName);
-
-                return;
-
-                if (!mounted) return;
-
-                showDialog(
-                  barrierDismissible: false,
-                  context: context,
-                  builder: (context) {
-                    return StatefulBuilder(
-                      builder: (context, setState) {
-                        return AlertDialog(
-                          title: Text('TOKO'),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              for (var item in jsonResponse['result'])
-                                ElevatedButton(
-                                    onPressed: () {
-                                      final OrderServiceController ctl =
-                                          Get.put(OrderServiceController());
-
-                                      ctl.saleWholesaleCustomerIdSelected
-                                          .value = int.parse(item['swc_id']);
-
-                                      ctl.saleWholesaleCustomerNamenAddress[
-                                          'address'] = item['swc_address'];
-
-                                      ctl.saleWholesaleCustomerNamenAddress[
-                                              'customer_name'] =
-                                          '${item['swc_shop_name']} (${item['swc_fullname']})';
-
-                                      Navigator.pushReplacementNamed(context,
-                                          OrderServiceScreen.routeName);
-                                    },
-                                    child: Text(
-                                        '${item['swc_shop_name']} (${item['swc_fullname']})'))
-                            ],
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text('Close'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                );
-              } else {
-                print(response.reasonPhrase);
-                SnackBar(
-                  content: Text('${response.reasonPhrase}'),
-                  action: SnackBarAction(
-                    label: 'Undo',
-                    onPressed: () {
-                      // Code to execute when "Undo" is pressed
-                      print('Undo action pressed!');
-                    },
-                  ),
-                );
-              }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
             child:

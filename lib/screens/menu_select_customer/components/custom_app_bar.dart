@@ -47,6 +47,7 @@ class CustomAppBarState extends State<CustomAppBar> {
 
   Future<void> checkInternetConnection() async {
     bool previousStatus = hasInternet;
+    MenuSelectCustomerController ctl = Get.put(MenuSelectCustomerController());
     try {
       final result = await InternetAddress.lookup('example.com');
 
@@ -54,6 +55,7 @@ class CustomAppBarState extends State<CustomAppBar> {
         if (!previousStatus && mounted) {
           setState(() {
             hasInternet = true;
+            ctl.internetConnected.value = true;
           });
         }
       }
@@ -61,6 +63,7 @@ class CustomAppBarState extends State<CustomAppBar> {
       if (previousStatus && mounted) {
         setState(() {
           hasInternet = false;
+          ctl.internetConnected.value = false;
         });
       }
     }

@@ -259,9 +259,10 @@ class DatabaseHelper {
     ''');
   }
 
-  Future<String> insertNomorSj(
-      Database db, String idToko, String nomorSj) async {
+  Future<String> insertNomorSj(int idToko, String nomorSj) async {
     try {
+      final Database db = await instance.database;
+
       await db.insert(
         'nomor_sj',
         {
@@ -271,10 +272,21 @@ class DatabaseHelper {
         conflictAlgorithm:
             ConflictAlgorithm.ignore, // Ignore if there's a duplicate
       );
-      return 'Insert successful';
+      return 'SUKSES';
     } catch (e) {
       return 'Error: $e';
     }
+  }
+
+  Future<List<Map<String, dynamic>>> getNomorSjByIdToko(int idToko) async {
+    final Database db = await instance.database;
+
+    return await db.query(
+      'nomor_sj', // Table name
+      columns: ['nomor_sj AS nomer_surat_jalan, id_toko'],
+      where: 'id_toko = ?', // WHERE clause
+      whereArgs: [idToko], // Arguments to prevent SQL injection
+    );
   }
 
   Future<String> insertAssignedCustomer(String fullname, String shopName,
@@ -304,7 +316,7 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> maps = await db.query('assigned_customer');
     return List.generate(maps.length, (i) {
       return Customer(
-        id: maps[i]['id'].toString(),
+        id: maps[i]['sale_wholesale_customer_id'].toString(),
         fullname: maps[i]['fullname'],
         shopName: maps[i]['shop_name'],
         saleWholesaleCustomerId:
@@ -336,7 +348,7 @@ class DatabaseHelper {
           conflictAlgorithm: ConflictAlgorithm.ignore);
       return {'result': true, 'message': 'Data inserted successfully.'};
     } catch (e) {
-      print('Failed to insert data: $e');
+      // print('Failed to insert data: $e');
       return {'result': false, 'message': 'Failed to insert data: $e'};
     }
   }

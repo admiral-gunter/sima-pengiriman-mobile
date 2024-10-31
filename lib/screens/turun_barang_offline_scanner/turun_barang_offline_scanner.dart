@@ -4,15 +4,17 @@ import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
 import 'components/body.dart';
 
-class MenuSJCustomerScreen extends StatelessWidget {
-  const MenuSJCustomerScreen({super.key});
+class TurunBarangOfflineScanner extends StatelessWidget {
+  const TurunBarangOfflineScanner({super.key});
 
-  static String routeName = '/menu-sj-customer-screen';
+  static String routeName = '/turun-barang-offline-scanner';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: const Text('Scanner Offline'),
+      ),
       body: const Body(),
       bottomNavigationBar:
           const CustomBottomNavBar(selectedMenu: MenuState.home),

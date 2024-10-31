@@ -24,7 +24,9 @@ import '../../enums.dart';
 import 'package:location/location.dart';
 import 'package:flutter_background/flutter_background.dart';
 import '../barang_tidak_muat/barang_tidak_muat_screen.dart';
+import '../menu_select_customer/controllers/menu_select_customer_controller.dart';
 import '../order_service/controll.ers/order_service_controller.dart';
+import '../turun_barang_offline_scanner/turun_barang_offline_scanner.dart';
 import 'components/form_report_dialog.dart';
 import '../order_service/order_service_screen.dart';
 import 'controllers/turun_barang_online_controller.dart';
@@ -54,7 +56,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   String username = '';
   int totalBarangHarusDiTap = 0;
 
-  final LocationSettings locationSettings = LocationSettings(
+  final LocationSettings locationSettings = const LocationSettings(
     distanceFilter: 100,
   );
   String nomorSJOrder = "";
@@ -176,7 +178,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
-              title: Text('Upload foto bukti titip service (bila ada)'),
+              title: const Text('Upload foto bukti titip service (bila ada)'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -189,16 +191,16 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                     keyboardType: TextInputType.multiline,
                     maxLines: null, // Makes the TextFormField auto-expand
                     minLines: 1, // Minimum number of lines to display
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Isi Keterangan Lebih dulu',
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  SizedBox(height: 10),
-                  Text('Foto SN barang'),
+                  const SizedBox(height: 10),
+                  const Text('Foto SN barang'),
                   ElevatedButton.icon(
-                    icon: Icon(Icons.camera),
-                    label: Text('Camera'),
+                    icon: const Icon(Icons.camera),
+                    label: const Text('Camera'),
                     onPressed: () async {
                       Navigator.pop(context); // Close the dialog
                       await pickImage(ImageSource.camera);
@@ -208,8 +210,8 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                     },
                   ),
                   ElevatedButton.icon(
-                    icon: Icon(Icons.photo_library),
-                    label: Text('Gallery'),
+                    icon: const Icon(Icons.photo_library),
+                    label: const Text('Gallery'),
                     onPressed: () async {
                       Navigator.pop(context); // Close the dialog
                       await pickImage(ImageSource.gallery);
@@ -222,7 +224,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
               ),
               actions: <Widget>[
                 TextButton(
-                  child: Text('Close'),
+                  child: const Text('Close'),
                   onPressed: () {
                     Navigator.of(context).pop(keteranganTxtController.text);
                   },
@@ -279,7 +281,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       print("Error getting location: $error");
       // Handle error appropriately
     });
-    Timer.periodic(Duration(seconds: 3), (Timer timer) async {
+    Timer.periodic(const Duration(seconds: 3), (Timer timer) async {
       try {
         await _getLocationData();
       } catch (e) {
@@ -533,7 +535,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
 
     String curTimeStamp = DateFormat('dd/MM/yyyy HH:mm:ss').format(timestamp);
 
-    var uuid = Uuid();
+    var uuid = const Uuid();
     String username = await SharedToken.univGetterString('username');
     username = username.replaceAll(' ', '_');
     String timestampLink = DateFormat('dd-MM-yyyy').format(timestamp);
@@ -588,7 +590,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Bukti Turun Barang'),
+          title: const Text('Bukti Turun Barang'),
           content: StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
             return SingleChildScrollView(
@@ -644,7 +646,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -655,22 +657,22 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                           });
                           await _pickImgFromGallery();
                         },
-                        child: Text('Galeri'),
+                        child: const Text('Galeri'),
                       ),
                       ElevatedButton(
                         onPressed: () async {
                           evidenceTaken = true;
                           await _pickImgFromCamera();
                         },
-                        child: Text('Kamera'),
+                        child: const Text('Kamera'),
                       ),
                     ],
                   ),
                   Text('File Selected : $_selectedImgNm'),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   TextFormField(
                     controller: keteranganTxt,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Keterangan', // Label for the text area
                       border: OutlineInputBorder(), // Optional: Add a border
                     ),
@@ -684,17 +686,17 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           }),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('Submit'),
+              child: const Text('Submit'),
               onPressed: () async {
                 if (keteranganTxt.text.isEmpty) {
                   final snackBar = SnackBar(
-                    content: Text('KETERANGAN WAJIB DI ISI!'),
+                    content: const Text('KETERANGAN WAJIB DI ISI!'),
                     action: SnackBarAction(
                       label: 'Close',
                       onPressed: () {
@@ -774,7 +776,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     // Handle the response
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('File uploaded successfully!')),
+        const SnackBar(content: Text('File uploaded successfully!')),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -814,7 +816,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       barrierDismissible: true, // user can tap outside the dialog to dismiss it
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Item Prioritas'),
+          title: const Text('Item Prioritas'),
           content: Container(
             width: double.maxFinite,
             child: ListView.builder(
@@ -826,7 +828,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                     title: Text(items[index]['product_name']),
                     subtitle: items[index]['inventory_id'] != null
                         ? Text(items[index]['inventory_id'])
-                        : Text('Belum di out'),
+                        : const Text('Belum di out'),
                   );
                 }
               },
@@ -834,7 +836,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Close'),
+              child: const Text('Close'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -851,16 +853,18 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   Widget build(BuildContext context) {
     final TurunBarangOnlineController ctl =
         Get.put(TurunBarangOnlineController());
+
+    MenuSelectCustomerController ctr = Get.put(MenuSelectCustomerController());
     TextEditingController textController = TextEditingController();
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(50.0),
+        preferredSize: const Size.fromHeight(50.0),
         child: AppBar(
             title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
+            const Text(
               "Turun Barang (Online)",
               style: TextStyle(
                 color: Colors.black,
@@ -871,11 +875,11 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                     color: Colors.red,
                     onPressed: () {
                       List<Map<String, dynamic>> listBarangPrioritas =
-                          new List<Map<String, dynamic>>.from(
+                          List<Map<String, dynamic>>.from(
                               ctl.listBarangPrioritas);
                       showBarangPrioritas(context, listBarangPrioritas);
                     },
-                    icon: Icon(Icons.warning_amber_outlined))
+                    icon: const Icon(Icons.warning_amber_outlined))
                 : Container())
           ],
         )),
@@ -884,7 +888,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
         onWillPop: () async {
           final snackBarWarnYetTakeEvidnc = SnackBar(
             backgroundColor: Colors.red,
-            content: Text(
+            content: const Text(
                 'Anda belum mengambil bukti barang turun, tetap ke menu?',
                 style: TextStyle(color: Colors.white)),
             action: SnackBarAction(
@@ -907,14 +911,14 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => MenuScreen(),
+                builder: (context) => const MenuScreen(),
               ));
           return false;
         },
         child: DefaultTabController(
           length: 2,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
             child: Column(
               children: [
                 TextFormField(
@@ -923,26 +927,26 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                   onChanged: (value) {
                     ctl.tapper.value = value;
                   },
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Tapper',
                     labelStyle: TextStyle(
                       color: Colors.black87,
                       fontSize: 17,
                     ),
                   ),
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.black87,
                     fontSize: 17,
                   ),
                 ),
-                TabBar(
+                const TabBar(
                   labelColor: Colors.black,
                   tabs: [
                     Tab(text: 'List'),
                     Tab(text: 'Hasil Tap'),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Expanded(
                   child: TabBarView(
                     children: [
@@ -954,11 +958,11 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                               return ListTile(
                                 title: Text(
                                   '${output[index]['product_name']}',
-                                  style: TextStyle(color: Colors.green),
+                                  style: const TextStyle(color: Colors.green),
                                 ),
                                 trailing: Text(
                                   '${output[index]['qty_tap']}/${output[index]['qty']}',
-                                  style: TextStyle(color: Colors.green),
+                                  style: const TextStyle(color: Colors.green),
                                 ),
                               );
                             }
@@ -1009,8 +1013,8 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
 
                       // IconButton that expands
                       ExpansionTile(
-                        leading: Icon(Icons.expand_more), // Icon button
-                        title: Text('Klik untuk buka '),
+                        leading: const Icon(Icons.expand_more), // Icon button
+                        title: const Text('Klik untuk buka '),
                         children: [
                           Container(
                             // Constraining the max height to half the screen height
@@ -1020,47 +1024,65 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                             child: SingleChildScrollView(
                               child: Column(
                                 children: [
-                                  // Add your content here
-                                  SizedBox(
-                                      width: double.infinity,
-                                      child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor: textController
-                                                          .text.isNotEmpty &&
-                                                      !sjDibatalkan
-                                                  ? Colors.blue
-                                                  : Colors.blue[200]),
-                                          onPressed: () async {
-                                            if (textController
-                                                    .text.isNotEmpty &&
-                                                !sjDibatalkan) {
-                                              sJDalamPengiriman("17");
-                                              Navigator.pushReplacement(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      UniversalScannerSCreen(
-                                                          goBackRouteName:
-                                                              TurunBarangOnlineScreen
-                                                                  .routeName),
-                                                ),
-                                              );
-                                            }
-                                          },
-                                          child: textController.text.isNotEmpty
-                                              ? Text(
-                                                  'Scan SN dan Identifier',
-                                                  style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                )
-                                              : Text(
-                                                  'Getting current location..',
-                                                  style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold)))),
+                                  ctr.internetConnected == true
+                                      ? SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      textController.text
+                                                                  .isNotEmpty &&
+                                                              !sjDibatalkan
+                                                          ? Colors.blue
+                                                          : Colors.blue[200]),
+                                              onPressed: () async {
+                                                if (textController
+                                                        .text.isNotEmpty &&
+                                                    !sjDibatalkan) {
+                                                  sJDalamPengiriman("17");
+                                                  Navigator.pushReplacement(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          UniversalScannerSCreen(
+                                                              goBackRouteName:
+                                                                  TurunBarangOnlineScreen
+                                                                      .routeName),
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                              child: textController
+                                                      .text.isNotEmpty
+                                                  ? const Text(
+                                                      'Scan SN dan Identifier',
+                                                      style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    )
+                                                  : const Text(
+                                                      'Getting current location..',
+                                                      style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight: FontWeight
+                                                              .bold))))
+                                      : SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.blue),
+                                            onPressed: () {
+                                              Navigator.pushNamed(
+                                                  context,
+                                                  TurunBarangOfflineScanner
+                                                      .routeName);
+                                            },
+                                            child: Text('Scan SN',
+                                                style: TextStyle(
+                                                    color: Colors.white)),
+                                          ),
+                                        ),
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton(
@@ -1073,7 +1095,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                       },
                                       style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.grey),
-                                      child: Text('Barang tidak muat',
+                                      child: const Text('Barang tidak muat',
                                           style:
                                               TextStyle(color: Colors.black)),
                                     ),
@@ -1089,7 +1111,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                       },
                                       style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.purple),
-                                      child: Text('Foto Bukti',
+                                      child: const Text('Foto Bukti',
                                           style:
                                               TextStyle(color: Colors.white)),
                                     ),
@@ -1116,7 +1138,8 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                             context: context,
                                             builder: (BuildContext context) {
                                               return AlertDialog(
-                                                title: Text('SJ Pending Kirim'),
+                                                title: const Text(
+                                                    'SJ Pending Kirim'),
                                                 content: Text(
                                                     'Sebutkan Alasan untuk SJ ${ctl.nomorSJ} Pending'),
                                                 actions: <Widget>[
@@ -1136,14 +1159,14 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                                         }
                                                         Navigator.pop(context);
                                                       },
-                                                      child: Text('Ok'))
+                                                      child: const Text('Ok'))
                                                 ],
                                               );
                                             },
                                           );
                                         }
                                       },
-                                      child: Text('Batal/Gagal Kirim'),
+                                      child: const Text('Batal/Gagal Kirim'),
                                     ),
                                   ),
                                   SizedBox(
@@ -1155,7 +1178,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                       },
                                       style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.green),
-                                      child: Text('Buka Maps',
+                                      child: const Text('Buka Maps',
                                           style:
                                               TextStyle(color: Colors.white)),
                                     ),
@@ -1291,7 +1314,8 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar(selectedMenu: MenuState.home),
+      bottomNavigationBar:
+          const CustomBottomNavBar(selectedMenu: MenuState.home),
     );
   }
 }
