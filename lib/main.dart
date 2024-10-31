@@ -19,6 +19,7 @@ import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:http/http.dart' as http;
 
+import 'helper/database_helper.dart';
 import 'helper/dependency_injection.dart';
 
 void onStart(ServiceInstance serviceInstance) async {
@@ -92,6 +93,8 @@ Future<void> initializeService() async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await DatabaseHelper.instance.database;
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -110,11 +113,13 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(MyApp());
+  runApp(const MyApp());
   DependencyInjection.init();
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(

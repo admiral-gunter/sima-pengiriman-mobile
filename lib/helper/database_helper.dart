@@ -2,6 +2,8 @@ import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+import '../screens/menu_select_customer/models/customer_model.dart';
+
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
   static Database? _database;
@@ -16,14 +18,7 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     final String path = join(await getDatabasesPath(), 'my_database.db');
-    return await openDatabase(path,
-        version: 2, onCreate: _createDatabase, onUpgrade: _onUpgrade);
-  }
-
-  void _onUpgrade(Database db, int oldVersion, int newVersion) {
-    if (oldVersion < newVersion) {
-      db.execute("ALTER TABLE tabEmployee ADD COLUMN newCol TEXT;");
-    }
+    return await openDatabase(path, version: 2, onCreate: _createDatabase);
   }
 
   Future<void> _createDatabase(Database db, int version) async {
@@ -245,6 +240,79 @@ class DatabaseHelper {
         tapper TEXT
     )
     ''');
+
+    await db.execute('''CREATE TABLE assigned_customer (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      fullname TEXT,
+      shop_name TEXT UNIQUE,
+      sale_wholesale_customer_id INTEGER,
+      supir_id INTEGER,
+      nama_supir TEXT
+    )
+    ''');
+
+    await db.execute('''CREATE TABLE nomor_sj (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_toko INTEGER,
+        nomor_sj TEXT UNIQUE
+    )
+    ''');
+  }
+
+  Future<String> insertNomorSj(
+      Database db, String idToko, String nomorSj) async {
+    try {
+      await db.insert(
+        'nomor_sj',
+        {
+          'id_toko': idToko,
+          'nomor_sj': nomorSj,
+        },
+        conflictAlgorithm:
+            ConflictAlgorithm.ignore, // Ignore if there's a duplicate
+      );
+      return 'Insert successful';
+    } catch (e) {
+      return 'Error: $e';
+    }
+  }
+
+  Future<String> insertAssignedCustomer(String fullname, String shopName,
+      int saleWholesaleCustomerId, int supirId, String namaSupir) async {
+    try {
+      final Database db = await instance.database;
+
+      await db.insert(
+        'assigned_customer',
+        {
+          'fullname': fullname,
+          'shop_name': shopName,
+          'sale_wholesale_customer_id': saleWholesaleCustomerId,
+          'supir_id': supirId,
+          'nama_supir': namaSupir,
+        },
+        conflictAlgorithm: ConflictAlgorithm.ignore, // Ignore duplicates
+      );
+      return 'SUKSES';
+    } catch (e) {
+      return 'Error: $e';
+    }
+  }
+
+  Future<List<Customer>> getAssignedCustomers() async {
+    final Database db = await instance.database;
+    final List<Map<String, dynamic>> maps = await db.query('assigned_customer');
+    return List.generate(maps.length, (i) {
+      return Customer(
+        id: maps[i]['id'].toString(),
+        fullname: maps[i]['fullname'],
+        shopName: maps[i]['shop_name'],
+        saleWholesaleCustomerId:
+            maps[i]['sale_wholesale_customer_id'].toString(),
+        supirId: maps[i]['supir_id'].toString(),
+        namaSupir: maps[i]['nama_supir'],
+      );
+    });
   }
 
   Future<List<dynamic>> getDataTapForToday() async {

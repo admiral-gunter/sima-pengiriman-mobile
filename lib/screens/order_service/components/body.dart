@@ -20,6 +20,8 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
+  bool tidakMuatIsChecked = false;
+
   final ImagePicker _picker = ImagePicker();
   final List<File> _imageList = [];
   final TextEditingController keteranganTxtController = TextEditingController();
@@ -116,8 +118,26 @@ class _BodyState extends State<Body> {
               minLines: 1, // Starts with a single line
             ),
             const SizedBox(height: 20),
-            InventoryLocationSelectComponent(),
+            const InventoryLocationSelectComponent(),
             const SizedBox(height: 20),
+            Wrap(
+              crossAxisAlignment:
+                  WrapCrossAlignment.center, // Center vertically
+              children: [
+                Checkbox(
+                  value: tidakMuatIsChecked,
+                  onChanged: (bool? newValue) {
+                    setState(() {
+                      tidakMuatIsChecked = newValue ??
+                          false; // Update the state when checkbox changes
+                    });
+                  },
+                ),
+                const Text('Barang tidak muat ')
+              ],
+            ),
+            const SizedBox(height: 20),
+
             // SelectSaleWholesaleCustomerComponent(),
             Text(ctl.saleWholesaleCustomerNamenAddress['customer_name'] ?? ''),
             const SizedBox(height: 20),
@@ -126,8 +146,8 @@ class _BodyState extends State<Body> {
                 if (keteranganTxtController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Keterangan tidak boleh kosong!'),
-                      duration: Duration(seconds: 2),
+                      content: const Text('Keterangan tidak boleh kosong!'),
+                      duration: const Duration(seconds: 2),
                       action: SnackBarAction(
                         label: 'Close',
                         onPressed: () {
@@ -142,8 +162,8 @@ class _BodyState extends State<Body> {
                 if (_imageList.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Foto tidak boleh kosong!'),
-                      duration: Duration(seconds: 2),
+                      content: const Text('Foto tidak boleh kosong!'),
+                      duration: const Duration(seconds: 2),
                       action: SnackBarAction(
                         label: 'Close',
                         onPressed: () {
@@ -158,8 +178,8 @@ class _BodyState extends State<Body> {
                 if (ctl.inventoryLocationIdSelected.value == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Lokasi boleh kosong!'),
-                      duration: Duration(seconds: 2),
+                      content: const Text('Lokasi boleh kosong!'),
+                      duration: const Duration(seconds: 2),
                       action: SnackBarAction(
                         label: 'Close',
                         onPressed: () {
@@ -179,7 +199,7 @@ class _BodyState extends State<Body> {
                   final platNo = await SharedToken.univGetterString('no_plat');
                   final apiUrl =
                       // ignore: unnecessary_brace_in_string_interps
-                      '${kURL_ORIGIN}supir-titip-service?keterangan=${keteranganTxtController.text}&username=$username&location_id=${ctl.inventoryLocationIdSelected.value}&plat_no=${platNo}';
+                      '${kURL_ORIGIN}supir-titip-service?keterangan=${keteranganTxtController.text}&username=$username&location_id=${ctl.inventoryLocationIdSelected.value}&plat_no=${platNo}&barang_tidak_muat=${tidakMuatIsChecked}';
 
                   print(ctl.listSnProduct);
 
@@ -201,8 +221,8 @@ class _BodyState extends State<Body> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         backgroundColor: Colors.green,
-                        content: Text('Upload berhasil!'),
-                        duration: Duration(seconds: 2),
+                        content: const Text('Upload berhasil!'),
+                        duration: const Duration(seconds: 2),
                         action: SnackBarAction(
                           label: 'Close',
                           onPressed: () {
@@ -215,8 +235,8 @@ class _BodyState extends State<Body> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         backgroundColor: Colors.red,
-                        content: Text('Upload Gagal!'),
-                        duration: Duration(seconds: 2),
+                        content: const Text('Upload Gagal!'),
+                        duration: const Duration(seconds: 2),
                         action: SnackBarAction(
                           label: 'Close',
                           onPressed: () {
@@ -231,7 +251,7 @@ class _BodyState extends State<Body> {
                     SnackBar(
                       backgroundColor: Colors.red,
                       content: Text('Error uploading: $e!'),
-                      duration: Duration(seconds: 2),
+                      duration: const Duration(seconds: 2),
                       action: SnackBarAction(
                         label: 'Close',
                         onPressed: () {

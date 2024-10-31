@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
-import '../models/customer_model.dart';
+import '../../menu_select_customer/models/customer_model.dart';
 
 class BodySelectCustomer extends StatefulWidget {
   const BodySelectCustomer({super.key});

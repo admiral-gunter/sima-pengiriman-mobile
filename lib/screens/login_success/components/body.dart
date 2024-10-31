@@ -36,8 +36,10 @@ class Body extends StatelessWidget {
             press: () async {
               String uRoLe = await SharedToken.univGetterString('USER_ROLE');
               if (uRoLe == 'USER_SENDER') {
+                // Navigator.pushReplacementNamed(
+                //     context, DeliverOrderMenu.routeName);
                 Navigator.pushReplacementNamed(
-                    context, DeliverOrderMenu.routeName);
+                    context, MenuSelectCustomer.routeName);
               } else {
                 Navigator.pushReplacementNamed(
                     context, MenuSelectCustomer.routeName);

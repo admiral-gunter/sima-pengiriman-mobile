@@ -12,13 +12,12 @@ class OrderServiceScreen extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text("Order Service"),
+        title: const Text("Order Service"),
       ),
-      body: Padding(padding: EdgeInsets.all(10), child: Body()),
+      body: const Padding(padding: EdgeInsets.all(10), child: Body()),
       bottomNavigationBar:
-          CustomBottomNavBar(selectedMenu: MenuState.orderDelivery),
+          const CustomBottomNavBar(selectedMenu: MenuState.orderDelivery),
     );
-    ;
   }
   // Widget build(BuildContext context) {
   //   return Scaffold(

@@ -4,6 +4,7 @@ import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
 import '../../size_config.dart';
 import 'components/body.dart';
+import 'components/custom_app_bar.dart';
 
 class MenuSelectCustomer extends StatelessWidget {
   static String routeName = '/menu-select-customer';
@@ -14,6 +15,7 @@ class MenuSelectCustomer extends StatelessWidget {
     SizeConfig().init(context);
 
     return const Scaffold(
+      appBar: CustomAppBar(),
       body: Body(),
       bottomNavigationBar: CustomBottomNavBar(selectedMenu: MenuState.home),
     );

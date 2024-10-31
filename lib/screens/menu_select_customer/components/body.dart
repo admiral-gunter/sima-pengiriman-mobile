@@ -1,12 +1,20 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
+import 'package:sima_pengiriman/screens/menu_select_customer/menu_select_customer.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
+import '../../../helper/database_helper.dart';
+import '../../daily_report_driver/daily_report_driver_screen.dart';
+import '../../delivery_order_menu/delivery_order_menu.dart';
 import '../../menu_sj_customer/menu_sj_customer_screen.dart';
 import '../../scan_pengiriman/scan_pengiriman_screen.dart';
+import '../../sign_in/sign_in_screen.dart';
 import '../models/customer_model.dart';
 
 class Body extends StatefulWidget {
@@ -34,10 +42,19 @@ class _BodyState extends State<Body> {
       var jsonResponse = jsonDecode(responseBody);
       var result = GetCustomerBySupirResponse.fromJson(jsonResponse);
 
-      // print(result.msg);
-      // for (var customer in result.result) {
-      //   print('Customer ID: ${customer.id}, Name: ${customer.fullname}');
-      // }
+      for (var value in result.result) {
+        String res = await DatabaseHelper.instance.insertAssignedCustomer(
+            value.fullname,
+            value.shopName,
+            int.parse(value.saleWholesaleCustomerId),
+            int.parse(value.supirId),
+            value.namaSupir);
+
+        if (res != 'SUKSES') {
+          showErrorSnackbar(res);
+          return;
+        }
+      }
 
       setState(() {
         customerList.addAll(result.result);
@@ -50,11 +67,103 @@ class _BodyState extends State<Body> {
 
   @override
   void initState() {
-    SharedToken.univGetterString('user_id').then(((value) {
+    checkTokenAndNavigate().then((value) {
+      _cekAbsensi();
+    });
+    SharedToken.univGetterString('user_id').then(((value) async {
       int val = int.parse(value);
-      getCustomerBySupir(val);
+
+      try {
+        final result = await InternetAddress.lookup('example.com');
+
+        if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+          getCustomerBySupir(val);
+        }
+      } on SocketException catch (_) {
+        print('nointe');
+        getCustomersOffline();
+      }
+
+      // final MenuSelectCustomerController ctl =
+      //     Get.put(MenuSelectCustomerController());
+      // if (ctl.internetConnected.value) {
+      //   getCustomerBySupir(val);
+      // } else {
+      //   getCustomersOffline();
+      // }
     }));
     super.initState();
+  }
+
+  Future<void> getCustomersOffline() async {
+    List<Customer> customers =
+        (await DatabaseHelper.instance.getAssignedCustomers()).cast<Customer>();
+    print(customerList);
+    setState(() {
+      customerList.addAll(customers);
+    });
+  }
+
+  Future<void> checkTokenAndNavigate() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final uRole = await SharedToken.univGetterString('USER_ROLE');
+    String? token = prefs.getString('token');
+    if (!mounted) return;
+
+    String? currentRoute = ModalRoute.of(context)?.settings.name;
+
+    if (token != null && uRole == 'USER_SENDER') {
+      // print('retard');
+      Navigator.pushReplacementNamed(context, DeliverOrderMenu.routeName);
+      return;
+    }
+
+    if (token != null && currentRoute != MenuSelectCustomer.routeName) {
+      Navigator.pushReplacementNamed(context, MenuSelectCustomer.routeName);
+    } else if (token == null && currentRoute != SignInScreen.routeName) {
+      await DatabaseHelper.instance.emptyAllTables();
+
+      await SharedToken.tokenRemover();
+      if (!mounted) return;
+
+      Navigator.pushReplacementNamed(context, SignInScreen.routeName);
+    }
+  }
+
+  Future _cekAbsensi() async {
+    var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
+    var request = http.Request(
+        'POST', Uri.parse('${kURL_ORIGIN}cek-supir-km-insert-absen'));
+
+    final username = await SharedToken.univGetterString('username');
+    request.bodyFields = {'created_by': username};
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      var resp = await response.stream.bytesToString();
+      // Decode the response body as JSON
+      var jsonResp = jsonDecode(resp);
+
+      // Access the 'msg' field from the JSON
+      // print(jsonResp['msg']);
+
+      if (jsonResp['msg'] == 'SUPIR_BELUM_ABSEN') {
+        await SharedToken.univSetterString('STS_ABSEN', 'BELUM_ABSEN');
+
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(
+            context, DailyReportDriverScreen.routeName);
+      } else {
+        await SharedToken.univSetterString('STS_ABSEN', '');
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+    } else {
+      print(response.reasonPhrase);
+    }
   }
 
   void showErrorSnackbar(String? message) {
