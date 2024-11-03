@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:sima_pengiriman/helper/database_helper.dart';
 
 class Body extends StatefulWidget {
   const Body({Key? key}) : super(key: key);
@@ -19,7 +20,7 @@ class _BodyState extends State<Body> {
       controller: cameraController,
       onDetect: (barcode) {
         cameraController.stop();
-        var code = barcode.barcodes[0].rawValue;
+        var code = barcode.barcodes[0].rawValue.toString();
 
         showDialog(
           context: context,
@@ -30,6 +31,7 @@ class _BodyState extends State<Body> {
               actions: <Widget>[
                 TextButton(
                   onPressed: () {
+                    DatabaseHelper.instance.insertSN(code);
                     cameraController.start();
                     Navigator.of(context).pop();
                   },

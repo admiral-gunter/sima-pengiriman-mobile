@@ -257,6 +257,51 @@ class DatabaseHelper {
         nomor_sj TEXT UNIQUE
     )
     ''');
+
+    await db.execute('''CREATE TABLE scanned_sn (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sn TEXT UNIQUE
+    )
+    ''');
+  }
+
+  Future<List<Map>> getLastScannedSn() async {
+    final Database db = await instance.database;
+
+    return await db
+        .rawQuery('SELECT * FROM scanned_sn ORDER BY id DESC LIMIT 5');
+  }
+
+  Future<String> insertSN(String sn) async {
+    try {
+      final Database db = await instance.database;
+
+      await db.insert(
+        'scanned_sn', // Table name
+        {'sn': sn}, // Data to insert (as a map with column names and values)
+        conflictAlgorithm:
+            ConflictAlgorithm.ignore, // Handle conflicts for unique `sn`
+      );
+
+      return 'SUKSES';
+    } catch (e) {
+      return 'Error: $e';
+    }
+  }
+
+  Future<String> deleteScannedSn(String sn) async {
+    try {
+      final Database db = await instance.database;
+
+      await db.delete(
+        'scanned_sn',
+        where: 'sn = ?',
+        whereArgs: [sn],
+      );
+      return 'SUKSES';
+    } catch (e) {
+      return 'Error: $e';
+    }
   }
 
   Future<String> insertNomorSj(int idToko, String nomorSj) async {
