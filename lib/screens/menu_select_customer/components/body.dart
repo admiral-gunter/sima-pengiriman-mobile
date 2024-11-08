@@ -15,6 +15,7 @@ import '../../delivery_order_menu/delivery_order_menu.dart';
 import '../../menu_sj_customer/menu_sj_customer_screen.dart';
 import '../../scan_pengiriman/scan_pengiriman_screen.dart';
 import '../../sign_in/sign_in_screen.dart';
+import '../controllers/menu_select_customer_controller.dart';
 import '../models/customer_model.dart';
 
 class Body extends StatefulWidget {
@@ -80,17 +81,8 @@ class _BodyState extends State<Body> {
           getCustomerBySupir(val);
         }
       } on SocketException catch (_) {
-        print('nointe');
         getCustomersOffline();
       }
-
-      // final MenuSelectCustomerController ctl =
-      //     Get.put(MenuSelectCustomerController());
-      // if (ctl.internetConnected.value) {
-      //   getCustomerBySupir(val);
-      // } else {
-      //   getCustomersOffline();
-      // }
     }));
     super.initState();
   }
@@ -98,7 +90,6 @@ class _BodyState extends State<Body> {
   Future<void> getCustomersOffline() async {
     List<Customer> customers =
         (await DatabaseHelper.instance.getAssignedCustomers()).cast<Customer>();
-    print(customerList);
     setState(() {
       customerList.addAll(customers);
     });
@@ -146,9 +137,6 @@ class _BodyState extends State<Body> {
       // Decode the response body as JSON
       var jsonResp = jsonDecode(resp);
 
-      // Access the 'msg' field from the JSON
-      // print(jsonResp['msg']);
-
       if (jsonResp['msg'] == 'SUPIR_BELUM_ABSEN') {
         await SharedToken.univSetterString('STS_ABSEN', 'BELUM_ABSEN');
 
@@ -162,7 +150,7 @@ class _BodyState extends State<Body> {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
     } else {
-      print(response.reasonPhrase);
+      showErrorSnackbar(response.reasonPhrase);
     }
   }
 
@@ -190,8 +178,7 @@ class _BodyState extends State<Body> {
               return ListTile(
                 leading: const Icon(Icons.home),
                 title: Text(customerList[index].shopName),
-                // ignore: unnecessary_string_interpolations
-                subtitle: Text('${customerList[index].fullname}'),
+                subtitle: Text(customerList[index].fullname),
                 trailing: const Icon(Icons.arrow_forward),
                 onTap: () {
                   SharedToken.univSetterString(
@@ -200,9 +187,6 @@ class _BodyState extends State<Body> {
                             Navigator.pushNamed(
                                 context, MenuSJCustomerScreen.routeName)
                           });
-                  // ScaffoldMessenger.of(context).showSnackBar(
-                  //   SnackBar(content: Text('Tapped on ')),
-                  // );
                 },
               );
             },

@@ -2,11 +2,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:sqflite/sqflite.dart';
 import '../../../constants.dart';
+import '../../menu_select_customer/controllers/menu_select_customer_controller.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -143,16 +147,37 @@ class _FormReportDialogState extends State<FormReportDialog> {
   Map<String, String> _listImgsNm = {};
 
   Future<void> uploadFiles() async {
+    final MenuSelectCustomerController ctl =
+        Get.put(MenuSelectCustomerController());
     final username = await SharedToken.univGetterString('username');
-    final plat_no = await SharedToken.univGetterString('no_plat');
+    final platNo = await SharedToken.univGetterString('no_plat');
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
 
+    if (!ctl.internetConnected.value) {
+      _listImgs.forEach((key, value) async {
+        // print('$key: $value');
+        await DatabaseHelper.instance.insertDailyReportSupir(
+            int.parse(literTextController.text),
+            int.parse(kmTextController.text),
+            dropdownValue,
+            value,
+            key,
+            keteranganTextController.text,
+            username,
+            platNo,
+            position.latitude.toString(),
+            position.longitude.toString());
+      });
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      return;
+    }
+
     var request = http.MultipartRequest(
         'POST',
         Uri.parse(
-            '${kURL_ORIGIN}pengiriman/supir-upload-report?tipe=$dropdownValue&username=$username&km=${kmTextController.text}&liter=${literTextController.text}&plat_no=${plat_no}&keterangan=${keteranganTextController.text}&lat=${position.latitude}&long=${position.longitude}'));
+            '${kURL_ORIGIN}pengiriman/supir-upload-report?tipe=$dropdownValue&username=$username&km=${kmTextController.text}&liter=${literTextController.text}&plat_no=${platNo}&keterangan=${keteranganTextController.text}&lat=${position.latitude}&long=${position.longitude}'));
     // for (var file in selectedFiles) {
     //   request.files.add(await http.MultipartFile.fromPath('files', file.path));
     // }

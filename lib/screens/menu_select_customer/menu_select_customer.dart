@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:overlay_kit/overlay_kit.dart';
 
 import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
@@ -14,10 +15,12 @@ class MenuSelectCustomer extends StatelessWidget {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
 
-    return const Scaffold(
-      appBar: CustomAppBar(),
-      body: Body(),
-      bottomNavigationBar: CustomBottomNavBar(selectedMenu: MenuState.home),
+    return OverlayKit(
+      child: const Scaffold(
+        appBar: CustomAppBar(),
+        body: Body(),
+        bottomNavigationBar: CustomBottomNavBar(selectedMenu: MenuState.home),
+      ),
     );
   }
 }

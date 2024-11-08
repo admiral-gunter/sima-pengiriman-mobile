@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:overlay_kit/overlay_kit.dart';
 
 import '../../../shared_preferences/shared_token.dart';
 import '../controllers/menu_select_customer_controller.dart';
@@ -81,6 +82,17 @@ class CustomAppBarState extends State<CustomAppBar> {
           setState(() {});
         },
       ),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.refresh), // Example icon for the opposite side
+          onPressed: () {
+            final MenuSelectCustomerController ctl =
+                Get.put(MenuSelectCustomerController());
+
+            ctl.syncApp(context);
+          },
+        ),
+      ],
     );
   }
 }

@@ -263,6 +263,21 @@ class DatabaseHelper {
         sn TEXT UNIQUE
     )
     ''');
+
+    await db.execute('''CREATE TABLE daily_report_supir (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        liter INTEGER
+        km INTEGER 
+        tipe TEXT
+        attachment TEXT
+        tipe_attachment TEXT
+        keterangan TEXT
+        username TEXT
+        plat_no TEXT
+        latitude TEXT
+        longitude TEXT
+    )
+    ''');
   }
 
   Future<List<Map>> getLastScannedSn() async {
@@ -270,6 +285,57 @@ class DatabaseHelper {
 
     return await db
         .rawQuery('SELECT * FROM scanned_sn ORDER BY id DESC LIMIT 5');
+  }
+
+  Future<String> insertDailyReportSupir(
+      int liter,
+      int km,
+      String tipe,
+      String attachment,
+      String tipeAttachment,
+      String keterangan,
+      String username,
+      String platNo,
+      String latitude,
+      String longitude) async {
+    try {
+      final Database db = await instance.database;
+
+      await db.insert(
+        'daily_report_supir',
+        {
+          'liter': liter,
+          'km': km,
+          'tipe': tipe,
+          'attachment': attachment,
+          'tipe_attachment': tipeAttachment,
+          'keterangan': keterangan,
+          'username': username,
+          'plat_no': platNo,
+          'latitude': latitude,
+          'longitude': longitude,
+        },
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+      return 'SUKSES';
+    } catch (e) {
+      return 'Error: $e';
+    }
+  }
+
+  Future<String> removeScannedSn(String snValue) async {
+    try {
+      final Database db = await instance.database;
+
+      await db.delete(
+        'scanned_sn',
+        where: 'sn = ?',
+        whereArgs: [snValue],
+      );
+      return 'SUKSES';
+    } catch (e) {
+      return 'Error: $e';
+    }
   }
 
   Future<String> insertSN(String sn) async {
