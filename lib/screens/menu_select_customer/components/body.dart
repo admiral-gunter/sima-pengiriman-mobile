@@ -78,7 +78,8 @@ class _BodyState extends State<Body> {
         final result = await InternetAddress.lookup('example.com');
 
         if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-          getCustomerBySupir(val);
+          await getCustomerBySupir(val);
+          await DatabaseHelper.instance.getLastDailyReportSupir();
         }
       } on SocketException catch (_) {
         getCustomersOffline();
@@ -122,6 +123,20 @@ class _BodyState extends State<Body> {
   }
 
   Future _cekAbsensi() async {
+    final MenuSelectCustomerController ctl =
+        Get.put(MenuSelectCustomerController());
+    if (!ctl.internetConnected.value) {
+      List<Map> res = await DatabaseHelper.instance.getDailyReportSupirToday();
+
+      if (res.isEmpty) {
+        await SharedToken.univSetterString('STS_ABSEN', 'BELUM_ABSEN');
+
+        Navigator.pushReplacementNamed(
+            context, DailyReportDriverScreen.routeName);
+      }
+      return;
+    }
+
     var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
     var request = http.Request(
         'POST', Uri.parse('${kURL_ORIGIN}cek-supir-km-insert-absen'));

@@ -2,11 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sima_pengiriman/constants.dart';
 
+import '../../../helper/database_helper.dart';
 import '../../../shared_preferences/shared_token.dart';
 import 'package:http/http.dart' as http;
+
+import '../../menu_select_customer/controllers/menu_select_customer_controller.dart';
 
 void formReportDialog(BuildContext context) {
   showDialog(
@@ -37,6 +41,40 @@ class _FormReportDialogState extends State<FormReportDialog> {
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
+
+    final MenuSelectCustomerController ctl =
+        Get.put(MenuSelectCustomerController());
+
+    if (!ctl.internetConnected.value) {
+      _listImgs.forEach((key, value) async {
+        // print('$key: $value');
+        int liter = 0;
+        if (literTextController.text.isNotEmpty) {
+          int.parse(literTextController.text);
+        }
+        final resp = await DatabaseHelper.instance.insertDailyReportSupir(
+            literTextController.text,
+            kmTextController.text,
+            dropdownValue,
+            value,
+            key,
+            keteranganTextController.text,
+            username,
+            plat_no,
+            position.latitude.toString(),
+            position.longitude.toString());
+
+        print(resp);
+      });
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Laporan berhasil dicatat!')),
+      );
+      return;
+    }
 
     var request = http.MultipartRequest(
         'POST',

@@ -147,20 +147,25 @@ class _FormReportDialogState extends State<FormReportDialog> {
   Map<String, String> _listImgsNm = {};
 
   Future<void> uploadFiles() async {
-    final MenuSelectCustomerController ctl =
-        Get.put(MenuSelectCustomerController());
     final username = await SharedToken.univGetterString('username');
     final platNo = await SharedToken.univGetterString('no_plat');
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
 
+    final MenuSelectCustomerController ctl =
+        Get.put(MenuSelectCustomerController());
+
     if (!ctl.internetConnected.value) {
       _listImgs.forEach((key, value) async {
         // print('$key: $value');
-        await DatabaseHelper.instance.insertDailyReportSupir(
-            int.parse(literTextController.text),
-            int.parse(kmTextController.text),
+        int liter = 0;
+        if (literTextController.text.isNotEmpty) {
+          int.parse(literTextController.text);
+        }
+        final resp = await DatabaseHelper.instance.insertDailyReportSupir(
+            literTextController.text,
+            kmTextController.text,
             dropdownValue,
             value,
             key,
@@ -169,15 +174,23 @@ class _FormReportDialogState extends State<FormReportDialog> {
             platNo,
             position.latitude.toString(),
             position.longitude.toString());
+
+        print(resp);
       });
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Laporan berhasil dicatat!')),
+      );
       return;
     }
 
     var request = http.MultipartRequest(
         'POST',
         Uri.parse(
-            '${kURL_ORIGIN}pengiriman/supir-upload-report?tipe=$dropdownValue&username=$username&km=${kmTextController.text}&liter=${literTextController.text}&plat_no=${platNo}&keterangan=${keteranganTextController.text}&lat=${position.latitude}&long=${position.longitude}'));
+            '${kURL_ORIGIN}pengiriman/supir-upload-report?tipe=$dropdownValue&username=$username&km=${kmTextController.text}&liter=${literTextController.text}&plat_no=$platNo&keterangan=${keteranganTextController.text}&lat=${position.latitude}&long=${position.longitude}'));
     // for (var file in selectedFiles) {
     //   request.files.add(await http.MultipartFile.fromPath('files', file.path));
     // }
@@ -198,6 +211,8 @@ class _FormReportDialogState extends State<FormReportDialog> {
     try {
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       setState(() {
         btnDisabled = false;
@@ -214,6 +229,8 @@ class _FormReportDialogState extends State<FormReportDialog> {
         );
       }
     } catch (e) {
+      if (!mounted) return;
+
       print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),

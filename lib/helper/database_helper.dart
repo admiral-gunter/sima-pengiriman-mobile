@@ -266,8 +266,8 @@ class DatabaseHelper {
 
     await db.execute('''CREATE TABLE daily_report_supir (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        liter INTEGER
-        km INTEGER 
+        liter TEXT
+        km TEXT 
         tipe TEXT
         attachment TEXT
         tipe_attachment TEXT
@@ -276,8 +276,91 @@ class DatabaseHelper {
         plat_no TEXT
         latitude TEXT
         longitude TEXT
+        date_added TEXT 
     )
     ''');
+  }
+
+  updateTb() async {
+    try {
+      final Database db = await instance.database;
+      print('jir kunaon');
+
+      // Add each column one by one
+      await db.execute('ALTER TABLE daily_report_supir ADD COLUMN liter TEXT');
+      await db.execute('ALTER TABLE daily_report_supir ADD COLUMN km TEXT');
+      await db.execute('ALTER TABLE daily_report_supir ADD COLUMN tipe TEXT');
+      await db
+          .execute('ALTER TABLE daily_report_supir ADD COLUMN attachment TEXT');
+      await db.execute(
+          'ALTER TABLE daily_report_supir ADD COLUMN tipe_attachment TEXT');
+      await db
+          .execute('ALTER TABLE daily_report_supir ADD COLUMN keterangan TEXT');
+      await db
+          .execute('ALTER TABLE daily_report_supir ADD COLUMN username TEXT');
+      await db
+          .execute('ALTER TABLE daily_report_supir ADD COLUMN plat_no TEXT');
+      await db
+          .execute('ALTER TABLE daily_report_supir ADD COLUMN latitude TEXT');
+      await db
+          .execute('ALTER TABLE daily_report_supir ADD COLUMN longitude TEXT');
+      await db
+          .execute('ALTER TABLE daily_report_supir ADD COLUMN date_added TEXT');
+
+      print('sukses');
+    } catch (e) {
+      print('err bang $e');
+    }
+  }
+
+  Future<List<Map>> getDailyReportSupirToday() async {
+    final Database db = await instance.database;
+    DateTime now = DateTime.now();
+    String formattedDate =
+        "${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+    List<Map> result = await db.rawQuery('''
+    SELECT * FROM daily_report_supir
+    WHERE date_added = ?
+  ''', [formattedDate]);
+
+    return result;
+  }
+
+  Future<List<Map>> getLastDailyReportSupir() async {
+    final Database db = await instance.database;
+
+    return await db
+        .rawQuery('SELECT * FROM daily_report_supir ORDER BY id DESC LIMIT 5');
+  }
+
+  Future<String> deleteDailyReportById(int id) async {
+    try {
+      final Database db = await instance.database;
+
+      await db.delete(
+        'daily_report_supir', // Table name
+        where: 'id = ?', // WHERE clause
+        whereArgs: [id], // Arguments for the WHERE clause
+      );
+
+      return 'SUKSES';
+    } catch (e) {
+      return 'Error: $e';
+    }
+  }
+
+  Future<void> checkTableInfo() async {
+    final Database db = await instance.database;
+
+    // Run the PRAGMA command to get information about the columns in the table
+    List<Map<String, dynamic>> result =
+        await db.rawQuery('PRAGMA table_info(daily_report_supir)');
+
+    // Print the results to see the table structure
+    result.forEach((row) {
+      print(row);
+    });
   }
 
   Future<List<Map>> getLastScannedSn() async {
@@ -288,8 +371,8 @@ class DatabaseHelper {
   }
 
   Future<String> insertDailyReportSupir(
-      int liter,
-      int km,
+      String liter,
+      String km,
       String tipe,
       String attachment,
       String tipeAttachment,
@@ -300,12 +383,14 @@ class DatabaseHelper {
       String longitude) async {
     try {
       final Database db = await instance.database;
-
+      DateTime now = DateTime.now();
+      String formattedDate =
+          "${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
       await db.insert(
         'daily_report_supir',
         {
           'liter': liter,
-          'km': km,
+          'km': km.toString(),
           'tipe': tipe,
           'attachment': attachment,
           'tipe_attachment': tipeAttachment,
@@ -314,6 +399,7 @@ class DatabaseHelper {
           'plat_no': platNo,
           'latitude': latitude,
           'longitude': longitude,
+          'date_added': formattedDate
         },
         conflictAlgorithm: ConflictAlgorithm.ignore,
       );

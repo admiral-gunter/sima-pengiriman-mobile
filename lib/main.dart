@@ -104,7 +104,7 @@ void main() async {
     }
   });
 
-  await FirebaseApi().initNotifications();
+  // await FirebaseApi().initNotifications();
 
   // await initializeService();
   // Lock orientation to portrait

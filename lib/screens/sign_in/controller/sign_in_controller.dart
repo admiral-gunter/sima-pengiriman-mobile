@@ -14,7 +14,7 @@ class SignInController {
   Future<dynamic> loging() async {
     try {
       final timeoutDuration = Duration(seconds: 20);
-      var url = Uri.parse(kURL_ORIGIN2 + 'pengiriman/master-supir-login');
+      var url = Uri.parse('${kURL_ORIGIN2}pengiriman/master-supir-login');
       var response =
           await http.post(url, body: loginCredential).timeout(timeoutDuration);
 

@@ -45,15 +45,15 @@ class _BodyState extends State<Body> {
 
       for (var value in result) {
         try {
+          if (value['nomer_surat_jalan'] == null) {
+            continue;
+          }
           String res = await DatabaseHelper.instance
               .insertNomorSj(int.parse(customerId), value['nomer_surat_jalan']);
-          print('wow');
           if (res != 'SUKSES') {
             showErrorSnackbar(res);
           }
         } catch (e) {
-          // print(
-          //     'Error inserting nomor_sj for customerId: $customerId, error: $e');
           showErrorSnackbar(
               'Error inserting nomor_sj for customerId: $customerId, error: $e');
         }

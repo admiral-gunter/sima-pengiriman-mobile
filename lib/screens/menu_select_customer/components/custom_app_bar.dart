@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:overlay_kit/overlay_kit.dart';
+import 'package:sima_pengiriman/helper/database_helper.dart';
 
 import '../../../shared_preferences/shared_token.dart';
 import '../controllers/menu_select_customer_controller.dart';
@@ -72,12 +73,16 @@ class CustomAppBarState extends State<CustomAppBar> {
 
   @override
   Widget build(BuildContext context) {
+    MenuSelectCustomerController ctl = Get.put(MenuSelectCustomerController());
+
     return AppBar(
       centerTitle: true,
       title: Text('Hi $username'), // Access the widget properties with `widget`
       leading: IconButton(
-        icon:
-            Icon(Icons.circle, color: hasInternet ? Colors.green : Colors.red),
+        icon: Obx(
+          () => Icon(Icons.circle,
+              color: ctl.internetConnected.value ? Colors.green : Colors.red),
+        ),
         onPressed: () {
           setState(() {});
         },
@@ -85,9 +90,13 @@ class CustomAppBarState extends State<CustomAppBar> {
       actions: [
         IconButton(
           icon: Icon(Icons.refresh), // Example icon for the opposite side
-          onPressed: () {
+          onPressed: () async {
+            // await DatabaseHelper.instance.updateTb();
+
             final MenuSelectCustomerController ctl =
                 Get.put(MenuSelectCustomerController());
+
+            if (!mounted) return;
 
             ctl.syncApp(context);
           },
