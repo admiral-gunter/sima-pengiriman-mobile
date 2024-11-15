@@ -60,6 +60,8 @@ class _BodyState extends State<Body> {
       }
 
       setState(() {
+        _isLoading = false;
+
         suratJalanList.addAll(result);
       });
     } else {
@@ -105,6 +107,7 @@ class _BodyState extends State<Body> {
       print('sj offline result : ');
       print(result);
       setState(() {
+        _isLoading = false;
         suratJalanList.addAll(result);
       });
     } catch (e) {
@@ -114,8 +117,16 @@ class _BodyState extends State<Body> {
     }
   }
 
+  bool _isLoading = true;
+
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     return Column(
       children: [
         Expanded(
@@ -184,6 +195,15 @@ class _BodyState extends State<Body> {
           child: ElevatedButton(
             onPressed: () async {
               try {
+                MenuSelectCustomerController ctl =
+                    Get.put(MenuSelectCustomerController());
+
+                if (!ctl.internetConnected.value) {
+                  Navigator.pushReplacementNamed(
+                      context, OrderServiceScreen.routeName);
+
+                  return;
+                }
                 final tokoId =
                     await SharedToken.univGetterString('customer_id');
                 var request = http.Request(

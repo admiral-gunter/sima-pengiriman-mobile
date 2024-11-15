@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:sima_pengiriman/screens/order_service/components/product_select_component.dart';
 
+import '../../menu_select_customer/controllers/menu_select_customer_controller.dart';
 import '../controll.ers/order_service_controller.dart';
 
 class OrderServiceScannerSnScreen extends StatefulWidget {
@@ -31,6 +32,8 @@ class _OrderServiceScannerSnScreenState
   String inputText = '';
 
   void showCustomDialog(BuildContext context) {
+    final MenuSelectCustomerController ctk =
+        Get.put(MenuSelectCustomerController());
     showDialog(
       barrierDismissible: false,
       context: context,
@@ -43,7 +46,7 @@ class _OrderServiceScannerSnScreenState
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(height: 20),
-                  ProductSelectComponent(),
+                  if (ctk.internetConnected.value) ProductSelectComponent(),
                   SizedBox(height: 20),
                   Text('NO SN: $sn'),
                 ],
@@ -53,8 +56,13 @@ class _OrderServiceScannerSnScreenState
                   onPressed: () {
                     final OrderServiceController ctl =
                         Get.put(OrderServiceController());
-                    ctl.listSnProduct
-                        .add({'sn': sn, 'product_id': ctl.productIdSelected});
+                    if (!ctk.internetConnected.value) {
+                      ctl.listSnProduct.add({'sn': sn, 'product_id': 0});
+                    } else {
+                      ctl.listSnProduct
+                          .add({'sn': sn, 'product_id': ctl.productIdSelected});
+                    }
+
                     controller.start();
                     Navigator.of(context).pop();
                   },

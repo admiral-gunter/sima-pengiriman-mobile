@@ -4,9 +4,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:sima_pengiriman/constants.dart';
+import 'package:sima_pengiriman/helper/database_helper.dart';
+import 'package:sima_pengiriman/screens/menu_select_customer/menu_select_customer.dart';
 import 'package:sima_pengiriman/screens/order_service/components/order_service_scanner_sn.dart';
 import '../../../shared_preferences/shared_token.dart';
+import '../../menu_select_customer/controllers/menu_select_customer_controller.dart';
 import '../components/product_select_component.dart';
 import '../controll.ers/order_service_controller.dart';
 import 'inventory_location_select_component.dart';
@@ -24,12 +28,15 @@ class _BodyState extends State<Body> {
 
   final ImagePicker _picker = ImagePicker();
   final List<File> _imageList = [];
+  final List<String> _imageListStr = [];
+
   final TextEditingController keteranganTxtController = TextEditingController();
 
   // Method to pick image
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
+      _imageListStr.add(pickedFile.path);
       setState(() {
         _imageList.add(File(pickedFile.path));
       });
@@ -48,7 +55,8 @@ class _BodyState extends State<Body> {
     double imageSize = MediaQuery.of(context).size.width * 0.10;
     double imageListHeight = MediaQuery.of(context).size.height * 0.4;
     final OrderServiceController ctl = Get.put(OrderServiceController());
-
+    final MenuSelectCustomerController ctk =
+        Get.put(MenuSelectCustomerController());
     return Scaffold(
       resizeToAvoidBottomInset:
           true, // Ensure the layout adjusts for the keyboard
@@ -118,7 +126,10 @@ class _BodyState extends State<Body> {
               minLines: 1, // Starts with a single line
             ),
             const SizedBox(height: 20),
-            const InventoryLocationSelectComponent(),
+
+            ctk.internetConnected.value
+                ? const InventoryLocationSelectComponent()
+                : SizedBox.shrink(),
             const SizedBox(height: 20),
             Wrap(
               crossAxisAlignment:
@@ -143,6 +154,62 @@ class _BodyState extends State<Body> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
+                final MenuSelectCustomerController kty =
+                    Get.put(MenuSelectCustomerController());
+                final username = await SharedToken.univGetterString('username');
+                final platNo = await SharedToken.univGetterString('no_plat');
+                if (!kty.internetConnected.value) {
+                  //              String file,
+                  // String platNo,
+                  // String nomorOrder,
+                  // String username,
+                  // String keterangan,
+                  // String latitude,
+                  // String longitude
+                  DateTime now = DateTime.now();
+                  String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+                  var insertDataOrderService = {
+                    'keterangan': keteranganTxtController.text,
+                    'username': username,
+                    'location_id': '0',
+                    'plat_no': platNo,
+                    'date_added': formattedDate
+                  };
+
+                  int insertedId = await DatabaseHelper.instance
+                      .insertOrderService(insertDataOrderService);
+                  ctl.listSnProduct.map((item) async {
+                    await DatabaseHelper.instance.insertOrderServicesOfflineSn(
+                        item['sn'], '0', insertedId);
+                    // return {
+                    //   'sn': item['sn'],
+                    //   'product_id': item['product_id']
+                    //       .value, // Use .value to get the int value from RxInt
+                    // };
+                  });
+
+                  for (var i = 0; i < _imageListStr.length; i++) {
+                    await DatabaseHelper.instance
+                        .insertOrderServicesOfflineAttachment(
+                            _imageListStr[i], insertedId);
+                  }
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: Colors.green,
+                      content: const Text('Upload berhasil!'),
+                      duration: const Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: 'Close',
+                        onPressed: () {
+                          // Code to execute when the user presses the button
+                        },
+                      ),
+                    ),
+                  );
+                  return;
+                }
+
                 if (keteranganTxtController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -194,9 +261,6 @@ class _BodyState extends State<Body> {
                 print('test');
 
                 try {
-                  final username =
-                      await SharedToken.univGetterString('username');
-                  final platNo = await SharedToken.univGetterString('no_plat');
                   final apiUrl =
                       // ignore: unnecessary_brace_in_string_interps
                       '${kURL_ORIGIN}supir-titip-service?keterangan=${keteranganTxtController.text}&username=$username&location_id=${ctl.inventoryLocationIdSelected.value}&plat_no=${platNo}&barang_tidak_muat=${tidakMuatIsChecked}';

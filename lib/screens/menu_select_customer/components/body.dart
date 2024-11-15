@@ -58,16 +58,26 @@ class _BodyState extends State<Body> {
       }
 
       setState(() {
+        _isLoading = false;
         customerList.addAll(result.result);
       });
     } else {
-      // print(response.reasonPhrase);
       showErrorSnackbar(response.reasonPhrase);
+    }
+  }
+
+  initReportTable() async {
+    final tbSetted = await SharedToken.univGetterString('tb_setted');
+    if (tbSetted == 'yes') {
+      await DatabaseHelper.instance.updateTb();
+      await SharedToken.univSetterString('tb_setted', 'yes');
     }
   }
 
   @override
   void initState() {
+    initReportTable();
+
     checkTokenAndNavigate().then((value) {
       _cekAbsensi();
     });
@@ -92,6 +102,7 @@ class _BodyState extends State<Body> {
     List<Customer> customers =
         (await DatabaseHelper.instance.getAssignedCustomers()).cast<Customer>();
     setState(() {
+      _isLoading = false;
       customerList.addAll(customers);
     });
   }
@@ -177,9 +188,17 @@ class _BodyState extends State<Body> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  bool _isLoading = true;
+
   @override
   Widget build(BuildContext context) {
-    if (customerList.isEmpty) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (customerList.isEmpty && !_isLoading) {
       return const Center(
         child: Text('Surat Jalan belum dibuat'),
       );

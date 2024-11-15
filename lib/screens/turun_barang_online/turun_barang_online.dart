@@ -725,6 +725,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   File? _selectedImg;
 
   String _selectedImgNm = 'None';
+  String _selectedImgpath = '';
 
   Future _pickImgFromGallery() async {
     final img = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -732,6 +733,8 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     if (img == null) return;
     setState(() {
       _selectedImg = File(img.path);
+      _selectedImgpath = img.path;
+
       _selectedImgNm = img.name;
     });
   }
@@ -742,21 +745,49 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     if (img == null) return;
     setState(() {
       _selectedImg = File(img.path);
+      _selectedImgpath = img.path;
+
       _selectedImgNm = img.name;
     });
   }
 
   Future<void> uploadFile() async {
     String uname = await SharedToken.univGetterString('username');
-    final plat_no = await SharedToken.univGetterString('no_plat');
+    final platNo = await SharedToken.univGetterString('no_plat');
 
     LocationData locationData = await location.getLocation();
 
+    final MenuSelectCustomerController ctk =
+        Get.put(MenuSelectCustomerController());
+
     final TurunBarangOnlineController ctl =
         Get.put(TurunBarangOnlineController());
+
+    if (!ctk.internetConnected.value) {
+      Map<String, dynamic> insertData = {
+        'file': _selectedImgpath,
+        'nomor_order': ctl.noSuratJalanSelected.value,
+        'username': uname,
+        'keterangan': keteranganTxt.text,
+        'plat_no': platNo,
+        'latitude': locationData.latitude.toString(),
+        'longitude': locationData.longitude.toString(),
+      };
+      try {
+        await DatabaseHelper.instance
+            .insertSupirUploadAttachmentTask(insertData);
+        return;
+      } catch (err) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('File upload failed: $err')),
+        );
+        return;
+      }
+    }
+
     ctl.noSuratJalanSelected.value;
     var url = Uri.parse(
-        '${kURL_ORIGIN}pengiriman/supir-upload-attachment-task?nomor_order=${ctl.noSuratJalanSelected.value}&username=$uname&keterangan=${keteranganTxt.text}&plat_no=$plat_no&lat=${locationData.latitude}&long=${locationData.longitude}');
+        '${kURL_ORIGIN}pengiriman/supir-upload-attachment-task?nomor_order=${ctl.noSuratJalanSelected.value}&username=$uname&keterangan=${keteranganTxt.text}&plat_no=$platNo&lat=${locationData.latitude}&long=${locationData.longitude}');
 
     var request = http.MultipartRequest('POST', url);
 
@@ -788,6 +819,14 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   }
 
   Future getAttachment() async {
+    final MenuSelectCustomerController ctk =
+        Get.put(MenuSelectCustomerController());
+
+    ;
+
+    if (!ctk.internetConnected.value) {
+      return;
+    }
     final TurunBarangOnlineController ctl =
         Get.put(TurunBarangOnlineController());
     var url = Uri.parse(

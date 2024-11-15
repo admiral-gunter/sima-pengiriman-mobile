@@ -15,12 +15,11 @@ class SignInController {
     try {
       final timeoutDuration = Duration(seconds: 20);
       var url = Uri.parse('${kURL_ORIGIN2}pengiriman/master-supir-login');
-      var response =
-          await http.post(url, body: loginCredential).timeout(timeoutDuration);
+      var response = await http.post(url, body: loginCredential);
 
       return response.body;
-    } on TimeoutException catch (e) {
-      return {'success': false, 'msg': 'Request timed out: $e'};
+      // } on TimeoutException catch (e) {
+      //   return {'success': false, 'msg': 'Request timed out: $e'};
     } catch (e) {
       print('Error sending POST request: $e');
       return {'success': false, 'msg': 'Error sending POST request: $e'};

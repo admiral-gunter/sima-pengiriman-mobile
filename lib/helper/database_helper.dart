@@ -279,38 +279,198 @@ class DatabaseHelper {
         date_added TEXT 
     )
     ''');
+
+    await db.execute('''
+      CREATE TABLE order_services (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        keterangan TEXT, 
+        username TEXT, 
+        location_id TEXT, 
+        plat_no TEXT, 
+        date_added TEXT
+      )
+    ''');
+
+    await db.execute('''
+    CREATE TABLE  order_services_offline_attachment 
+      (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        path TEXT,
+        order_services_id INTEGER
+      )''');
+
+    await db.execute('''
+    CREATE TABLE  order_services_offline_sn 
+      (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_services_offline_sn TEXT,
+        product_id TEXT,
+        order_services_id INTEGER
+      )''');
+  }
+
+  // Insert a record into the order_services table
+  Future<int> insertOrderService(Map<String, dynamic> orderService) async {
+    final Database db = await instance.database;
+
+    return await db.insert('order_services', orderService);
+  }
+
+  // Delete a record from the order_services table by id
+  Future<int> deleteOrderService(int id) async {
+    final Database db = await instance.database;
+
+    return await db.delete('order_services', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Insert function
+  Future<void> insertOrderServicesOfflineAttachment(
+      String path, int insertedId) async {
+    final Database db = await instance.database;
+
+    await db.insert(
+      'order_services_offline_attachment',
+      {
+        'path': path,
+        'order_services_id': insertedId,
+      },
+    );
+  }
+
+// Delete function
+  Future<void> deleteOrderServicesOfflineAttachmentById(int id) async {
+    final Database db = await instance.database;
+
+    await db.delete(
+      'order_services_offline_attachment',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // Insert function
+  Future<void> insertOrderServicesOfflineSn(
+      String orderServicesOfflineSn, String productId, int insertedId) async {
+    final Database db = await instance.database;
+
+    await db.insert(
+      'order_services_offline_sn',
+      {
+        'order_services_offline_sn': orderServicesOfflineSn,
+        'product_id': productId,
+        'order_services_id': insertedId,
+      },
+    );
+  }
+
+// Delete function
+  Future<void> deleteOrderServicesOfflineSnById(int id) async {
+    final Database db = await instance.database;
+
+    await db.delete(
+      'order_services_offline_sn',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   updateTb() async {
     try {
-      final Database db = await instance.database;
-      print('jir kunaon');
-
-      // Add each column one by one
-      await db.execute('ALTER TABLE daily_report_supir ADD COLUMN liter TEXT');
-      await db.execute('ALTER TABLE daily_report_supir ADD COLUMN km TEXT');
-      await db.execute('ALTER TABLE daily_report_supir ADD COLUMN tipe TEXT');
-      await db
-          .execute('ALTER TABLE daily_report_supir ADD COLUMN attachment TEXT');
-      await db.execute(
-          'ALTER TABLE daily_report_supir ADD COLUMN tipe_attachment TEXT');
-      await db
-          .execute('ALTER TABLE daily_report_supir ADD COLUMN keterangan TEXT');
-      await db
-          .execute('ALTER TABLE daily_report_supir ADD COLUMN username TEXT');
-      await db
-          .execute('ALTER TABLE daily_report_supir ADD COLUMN plat_no TEXT');
-      await db
-          .execute('ALTER TABLE daily_report_supir ADD COLUMN latitude TEXT');
-      await db
-          .execute('ALTER TABLE daily_report_supir ADD COLUMN longitude TEXT');
-      await db
-          .execute('ALTER TABLE daily_report_supir ADD COLUMN date_added TEXT');
-
-      print('sukses');
+      await addColumnsIfNotExist();
     } catch (e) {
       print('err bang $e');
     }
+  }
+
+  Future<void> addColumnsIfNotExist() async {
+    final Database db = await instance.database;
+    List<String> alterTableQueries = [
+      'ALTER TABLE daily_report_supir ADD COLUMN liter TEXT',
+      'ALTER TABLE daily_report_supir ADD COLUMN km TEXT',
+      'ALTER TABLE daily_report_supir ADD COLUMN tipe TEXT',
+      'ALTER TABLE daily_report_supir ADD COLUMN attachment TEXT',
+      'ALTER TABLE daily_report_supir ADD COLUMN tipe_attachment TEXT',
+      'ALTER TABLE daily_report_supir ADD COLUMN keterangan TEXT',
+      'ALTER TABLE daily_report_supir ADD COLUMN username TEXT',
+      'ALTER TABLE daily_report_supir ADD COLUMN plat_no TEXT',
+      'ALTER TABLE daily_report_supir ADD COLUMN latitude TEXT',
+      'ALTER TABLE daily_report_supir ADD COLUMN longitude TEXT',
+      'ALTER TABLE daily_report_supir ADD COLUMN date_added TEXT',
+    ];
+
+    for (String query in alterTableQueries) {
+      try {
+        await db.execute(query);
+      } catch (e) {
+        // Ignore the error if it's related to the column already existing
+        if (e.toString().contains('already exists')) {
+          print('Column already exists, skipping: $query');
+        } else {
+          print('Error executing query: $query');
+          print('Error: $e');
+        }
+      }
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getSupirUploadAttachmentTask() async {
+    final Database db = await instance.database;
+
+    List<Map<String, dynamic>> result = await db.rawQuery('''
+    SELECT * FROM supir_upload_attachment_task_offline
+    ORDER BY id DESC LIMIT 5
+  ''');
+
+    return result;
+  }
+
+  Future<int> insertSupirUploadAttachmentTask(
+      Map<String, dynamic> insertData) async {
+    // Get the database instance
+    final Database db = await instance.database;
+
+    // Insert the data into the supir_upload_attachment_task table
+    int insertedId = await db.insert(
+      'supir_upload_attachment_task_offline', // Table name
+      insertData, // The data to insert
+      conflictAlgorithm: ConflictAlgorithm
+          .ignore, // Optional: handles conflicts (replace, ignore, etc.)
+    );
+
+    return insertedId; // Return the ID of the inserted row
+  }
+
+  Future<List<Map>> getOrderServices() async {
+    final Database db = await instance.database;
+
+    List<Map> result = await db.rawQuery('''
+    SELECT * FROM order_services_offline
+    ORDER BY id DESC LIMIT 5
+  ''');
+
+    return result;
+  }
+
+  Future<List<Map>> getOrderServicesAttachment(String id) async {
+    final Database db = await instance.database;
+
+    List<Map> result = await db.rawQuery(
+      'SELECT * FROM order_services_offline_attachment WHERE order_services_offline_id = ?',
+      [id],
+    );
+
+    return result;
+  }
+
+  Future<List<Map>> getOrderServicesSN(String id) async {
+    final Database db = await instance.database;
+
+    List<Map> result = await db.rawQuery(
+      'SELECT * FROM order_services_offline_sn WHERE order_services_offline_id = ?',
+      [id],
+    );
+
+    return result;
   }
 
   Future<List<Map>> getDailyReportSupirToday() async {
@@ -344,6 +504,21 @@ class DatabaseHelper {
         whereArgs: [id], // Arguments for the WHERE clause
       );
 
+      return 'SUKSES';
+    } catch (e) {
+      return 'Error: $e';
+    }
+  }
+
+  Future<String> deleteSupirAttachmentById(int id) async {
+    final Database db = await instance.database;
+
+    try {
+      await db.delete(
+        'supir_upload_attachment_task_offline',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
       return 'SUKSES';
     } catch (e) {
       return 'Error: $e';
