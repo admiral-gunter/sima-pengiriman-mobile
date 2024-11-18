@@ -260,9 +260,14 @@ class DatabaseHelper {
 
     await db.execute('''CREATE TABLE scanned_sn (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        sn TEXT UNIQUE
+        sn TEXT UNIQUE,
+        latitude TEXT,
+        longitude TEXT,
+        username TEXT, 
+        date_added TEXT,
+        plat_no TEXT
     )
-    ''');
+    '''); // date_added YYYY-MM-DD HH:mm:ss
 
     await db.execute('''CREATE TABLE daily_report_supir (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -287,9 +292,11 @@ class DatabaseHelper {
         username TEXT, 
         location_id TEXT, 
         plat_no TEXT, 
-        date_added TEXT
+        date_added TEXT,
+        barang_tidak_muat TEXT,
+        customer_id INTEGER
       )
-    ''');
+    '''); // barang_tidak_muat TEXT YES OR NO
 
     await db.execute('''
     CREATE TABLE  order_services_offline_attachment 
@@ -444,29 +451,41 @@ class DatabaseHelper {
     final Database db = await instance.database;
 
     List<Map> result = await db.rawQuery('''
-    SELECT * FROM order_services_offline
+    SELECT * FROM order_services
     ORDER BY id DESC LIMIT 5
   ''');
 
     return result;
   }
 
-  Future<List<Map>> getOrderServicesAttachment(String id) async {
+  Future<List<Map>> getOrderServicesAttachment(int id) async {
     final Database db = await instance.database;
 
     List<Map> result = await db.rawQuery(
-      'SELECT * FROM order_services_offline_attachment WHERE order_services_offline_id = ?',
+      'SELECT * FROM order_services_offline_attachment WHERE order_services_id = ?',
       [id],
     );
 
     return result;
   }
 
-  Future<List<Map>> getOrderServicesSN(String id) async {
+  Future<int> deleteOrderServiceById(int id) async {
+    final Database db = await instance.database;
+
+    int result = await db.delete(
+      'order_services',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    return result;
+  }
+
+  Future<List<Map>> getOrderServicesSN(int id) async {
     final Database db = await instance.database;
 
     List<Map> result = await db.rawQuery(
-      'SELECT * FROM order_services_offline_sn WHERE order_services_offline_id = ?',
+      'SELECT * FROM order_services_offline_sn WHERE order_services_id = ?',
       [id],
     );
 
@@ -599,13 +618,21 @@ class DatabaseHelper {
     }
   }
 
-  Future<String> insertSN(String sn) async {
+  Future<String> insertSN(String sn, String latitude, String longitude,
+      String username, String dateAdded, String platNo) async {
     try {
       final Database db = await instance.database;
 
       await db.insert(
         'scanned_sn', // Table name
-        {'sn': sn}, // Data to insert (as a map with column names and values)
+        {
+          'sn': sn,
+          'latitude': latitude,
+          'longitude': longitude,
+          'username': username,
+          'date_added': dateAdded,
+          'plat_no': platNo
+        }, // Data to insert (as a map with column names and values)
         conflictAlgorithm:
             ConflictAlgorithm.ignore, // Handle conflicts for unique `sn`
       );

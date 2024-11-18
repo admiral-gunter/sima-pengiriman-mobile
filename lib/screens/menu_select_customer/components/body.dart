@@ -57,6 +57,8 @@ class _BodyState extends State<Body> {
         }
       }
 
+      if (!mounted) return;
+
       setState(() {
         _isLoading = false;
         customerList.addAll(result.result);
@@ -68,7 +70,7 @@ class _BodyState extends State<Body> {
 
   initReportTable() async {
     final tbSetted = await SharedToken.univGetterString('tb_setted');
-    if (tbSetted == 'yes') {
+    if (tbSetted == null) {
       await DatabaseHelper.instance.updateTb();
       await SharedToken.univSetterString('tb_setted', 'yes');
     }
@@ -76,8 +78,6 @@ class _BodyState extends State<Body> {
 
   @override
   void initState() {
-    initReportTable();
-
     checkTokenAndNavigate().then((value) {
       _cekAbsensi();
     });
@@ -90,6 +90,13 @@ class _BodyState extends State<Body> {
         if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
           await getCustomerBySupir(val);
           await DatabaseHelper.instance.getLastDailyReportSupir();
+
+          final MenuSelectCustomerController ctl =
+              Get.put(MenuSelectCustomerController());
+
+          if (!mounted) return;
+
+          ctl.syncApp(context);
         }
       } on SocketException catch (_) {
         getCustomersOffline();
@@ -111,6 +118,7 @@ class _BodyState extends State<Body> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final uRole = await SharedToken.univGetterString('USER_ROLE');
     String? token = prefs.getString('token');
+    await initReportTable();
     if (!mounted) return;
 
     String? currentRoute = ModalRoute.of(context)?.settings.name;

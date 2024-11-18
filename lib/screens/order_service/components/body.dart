@@ -158,6 +158,8 @@ class _BodyState extends State<Body> {
                     Get.put(MenuSelectCustomerController());
                 final username = await SharedToken.univGetterString('username');
                 final platNo = await SharedToken.univGetterString('no_plat');
+                final customerId =
+                    await SharedToken.univGetterString('customer_id');
                 if (!kty.internetConnected.value) {
                   //              String file,
                   // String platNo,
@@ -173,9 +175,12 @@ class _BodyState extends State<Body> {
                     'username': username,
                     'location_id': '0',
                     'plat_no': platNo,
-                    'date_added': formattedDate
+                    'date_added': formattedDate,
+                    'customer_id': customerId
                   };
 
+                  // print(insertDataOrderService);
+                  // return;
                   int insertedId = await DatabaseHelper.instance
                       .insertOrderService(insertDataOrderService);
                   ctl.listSnProduct.map((item) async {
@@ -263,7 +268,7 @@ class _BodyState extends State<Body> {
                 try {
                   final apiUrl =
                       // ignore: unnecessary_brace_in_string_interps
-                      '${kURL_ORIGIN}supir-titip-service?keterangan=${keteranganTxtController.text}&username=$username&location_id=${ctl.inventoryLocationIdSelected.value}&plat_no=${platNo}&barang_tidak_muat=${tidakMuatIsChecked}';
+                      '${kURL_ORIGIN}supir-titip-service?keterangan=${keteranganTxtController.text}&username=$username&location_id=${ctl.inventoryLocationIdSelected.value}&plat_no=${platNo}&barang_tidak_muat=${tidakMuatIsChecked}&customer_id=${customerId}';
 
                   print(ctl.listSnProduct);
 

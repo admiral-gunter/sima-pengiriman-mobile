@@ -19,81 +19,92 @@ class MenuSelectCustomerController extends GetxController {
   var isLoading = true.obs;
 
   void syncApp(BuildContext context) async {
-    isLoading.value = true;
+    try {
+      isLoading.value = true;
 
-    OverlayLoadingProgress.start(
-        widget: Container(
-            color: Colors.white,
-            height: 100,
-            width: 100,
-            child: Builder(
-              builder: (context) {
-                return Center(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 20),
-                      const CircularProgressIndicator(),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Fetching...',
-                        style: Theme.of(context).textTheme.bodyText1?.copyWith(
-                              fontSize: 16, // Adjust the font size if needed
-                              fontWeight:
-                                  FontWeight.bold, // Make it bold for emphasis
-                              color:
-                                  Colors.black, // You can customize the color
-                              decoration:
-                                  TextDecoration.none, // Remove underline
-                            ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            )));
+      OverlayLoadingProgress.start(
+          widget: Container(
+              color: Colors.white,
+              height: 100,
+              width: 100,
+              child: Builder(
+                builder: (context) {
+                  return Center(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 20),
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Fetching...',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyText1
+                              ?.copyWith(
+                                fontSize: 16, // Adjust the font size if needed
+                                fontWeight: FontWeight
+                                    .bold, // Make it bold for emphasis
+                                color:
+                                    Colors.black, // You can customize the color
+                                decoration:
+                                    TextDecoration.none, // Remove underline
+                              ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              )));
 
-    if (internetConnected.value) {
-      final dailyReport =
-          await DatabaseHelper.instance.getDailyReportSupirToday();
+      if (internetConnected.value) {
+        await syncOrderTitipan(context);
 
-      //  [{id: 1, liter: , km: 10, tipe: LAPORAN_KM, attachment: /data/user/0/com.example.sima_pengiriman/cache/1cd8d8d4-9f66-4b5e-bda6-1f58e8739a9c/1000000138.png, tipe_attachment: indikator_bensin, keterangan: aaa, username: Faisal Supir, plat_no: D FGH, latitude: -6.9484183, longitude: 107.63315, date_added: 2024-11-10}]
+        final dailyReport =
+            await DatabaseHelper.instance.getDailyReportSupirToday();
 
-      for (var i = 0; i < dailyReport.length; i++) {
-        var item = dailyReport[i];
-        Map<String, String> listImgs = {
-          item['tipe_attachment']: item['attachment']
-        };
+        //  [{id: 1, liter: , km: 10, tipe: LAPORAN_KM, attachment: /data/user/0/com.example.sima_pengiriman/cache/1cd8d8d4-9f66-4b5e-bda6-1f58e8739a9c/1000000138.png, tipe_attachment: indikator_bensin, keterangan: aaa, username: Faisal Supir, plat_no: D FGH, latitude: -6.9484183, longitude: 107.63315, date_added: 2024-11-10}]
 
-        if (!context.mounted) return;
+        for (var i = 0; i < dailyReport.length; i++) {
+          var item = dailyReport[i];
+          Map<String, String> listImgs = {
+            item['tipe_attachment']: item['attachment']
+          };
 
-        await uploadReport(
-          context: context,
-          dropdownValue: item['tipe'],
-          listImgs: listImgs,
-          username: item['username'],
-          keteranganTextController: item['keterangan'],
-          kmTextController: item['km'],
-          literTextController: item['liter'],
-          platNo: item['plat_no'],
-          latitude: item['latitude'],
-          longitude: item['longitude'],
-        );
+          if (!context.mounted) return;
 
-        await DatabaseHelper.instance.deleteDailyReportById(item['id']);
+          await uploadReport(
+            context: context,
+            dropdownValue: item['tipe'],
+            listImgs: listImgs,
+            username: item['username'],
+            keteranganTextController: item['keterangan'],
+            kmTextController: item['km'],
+            literTextController: item['liter'],
+            platNo: item['plat_no'],
+            latitude: item['latitude'],
+            longitude: item['longitude'],
+          );
+
+          await DatabaseHelper.instance.deleteDailyReportById(item['id']);
+        }
       }
       if (!context.mounted) return;
 
-      await syncSupirUploadAttachmentTask(context);
-    }
+      await syncSNData(context);
 
-    final scannedSnData = await DatabaseHelper.instance.getLastScannedSn();
-    for (var item in scannedSnData) {
-      await DatabaseHelper.instance.removeScannedSn(item['sn']);
-      await Future.delayed(const Duration(seconds: 1));
+      final scannedSnData = await DatabaseHelper.instance.getLastScannedSn();
+      for (var item in scannedSnData) {
+        await DatabaseHelper.instance.removeScannedSn(item['sn']);
+        await Future.delayed(const Duration(seconds: 1));
+      }
+      await Future.delayed(const Duration(seconds: 3));
+      OverlayLoadingProgress.stop();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error : $e')),
+      );
     }
-    await Future.delayed(const Duration(seconds: 3));
-    OverlayLoadingProgress.stop();
   }
 
   Future<void> uploadReport({
@@ -156,85 +167,86 @@ class MenuSelectCustomerController extends GetxController {
     List<Map<dynamic, dynamic>> result =
         await DatabaseHelper.instance.getOrderServices();
     final OrderServiceController ctk = Get.put(OrderServiceController());
-
+    print(result);
     for (var item in result) {
-      var tokoId = item['toko_id'];
+      // var tokoId = item['toko_id'];
 
-      var request = http.Request('POST',
-          Uri.parse('${kURL_ORIGIN}supir-get-toko-by-id?toko_id=$tokoId'));
+      // var request = http.Request('POST',
+      //     Uri.parse('${kURL_ORIGIN}supir-get-toko-by-id?toko_id=$tokoId'));
 
-      http.StreamedResponse response = await request.send();
+      // http.StreamedResponse response = await request.send();
 
-      if (response.statusCode == 200) {
-        var resp = await response.stream.bytesToString();
+      // if (response.statusCode == 200) {
+      //   var resp = await response.stream.bytesToString();
 
-        var jsonResponse = jsonDecode(resp);
+      // var jsonResponse = jsonDecode(resp);
 
-        if (!jsonResponse['success']) {
-          if (!context.mounted) return;
+      // if (!jsonResponse['success']) {
+      //   if (!context.mounted) return;
 
-          // Handle failure by showing a SnackBar
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${jsonResponse['msg']}'),
-              action: SnackBarAction(
-                label: 'Undo',
-                onPressed: () {
-                  // Code to execute when "Undo" is pressed
-                  print('Undo action pressed!');
-                },
-              ),
-            ),
-          );
-          return;
-        }
+      //   // Handle failure by showing a SnackBar
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(
+      //       content: Text('${jsonResponse['msg']}'),
+      //       action: SnackBarAction(
+      //         label: 'Undo',
+      //         onPressed: () {
+      //           // Code to execute when "Undo" is pressed
+      //           print('Undo action pressed!');
+      //         },
+      //       ),
+      //     ),
+      //   );
+      //   return;
+      // }
 
-        var toko = jsonResponse['result'];
-        if (jsonResponse['result'] == []) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('An error occurred. Please try again.')),
-          );
-          return;
-        }
+      // var toko = jsonResponse['result'];
+      // if (jsonResponse['result'] == []) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(content: Text('An error occurred. Please try again.')),
+      //   );
+      //   return;
+      // }
 
-        var swcId = toko['swc_id'];
+      // var swcId = toko['swc_id'];
 
-        var address = toko['swc_address'];
+      // var address = toko['swc_address'];
 
-        var customerName = '${toko['swc_shop_name']} (${toko['swc_fullname']})';
+      // var customerName = '${toko['swc_shop_name']} (${toko['swc_fullname']})';
 
-        List<Map<dynamic, dynamic>> imgsAttachment = await DatabaseHelper
-            .instance
-            .getOrderServicesAttachment(item['id']);
+      List<Map<dynamic, dynamic>> imgsAttachment =
+          await DatabaseHelper.instance.getOrderServicesAttachment(item['id']);
 
-        List<File> imageList = [];
-        for (var att in imgsAttachment) {
-          imageList.add(File(att['path']));
-        }
-
-        final username = await SharedToken.univGetterString('username');
-        final platNo = await SharedToken.univGetterString('no_plat');
-        final apiUrl =
-            // ignore: unnecessary_brace_in_string_interps
-            '${kURL_ORIGIN}supir-titip-service?keterangan=${item['keterangan']}&username=$username&location_id=${item['location_id']}&plat_no=${platNo}&barang_tidak_muat=${item['tidak_muat']}';
-
-        List<Map<dynamic, dynamic>> listSn =
-            await DatabaseHelper.instance.getOrderServicesSN(item['id']);
-
-        final dataToSend = listSn.map((item3) {
-          return {'sn': item3['sn'], 'product_id': item3['product_id']};
-        }).toList();
-
-        final dataSend = jsonEncode(dataToSend);
-
-        print(apiUrl);
-
-        await ctk.uploadImagesAndFormData(
-            imageList, {'data_send': dataSend}, apiUrl);
+      List<File> imageList = [];
+      for (var att in imgsAttachment) {
+        imageList.add(File(att['path']));
       }
+
+      final username = await SharedToken.univGetterString('username');
+      final platNo = await SharedToken.univGetterString('no_plat');
+      final apiUrl =
+          // ignore: unnecessary_brace_in_string_interps
+          '${kURL_ORIGIN}supir-titip-service?keterangan=${item['keterangan']}&username=$username&location_id=${item['location_id']}&plat_no=${platNo}&barang_tidak_muat=${item['tidak_muat']}&customer_id=${item['customer_id']}';
+
+      List<Map<dynamic, dynamic>> listSn =
+          await DatabaseHelper.instance.getOrderServicesSN(item['id']);
+
+      final dataToSend = listSn.map((item3) {
+        return {'sn': item3['sn'], 'product_id': item3['product_id']};
+      }).toList();
+
+      final dataSend = jsonEncode(dataToSend);
+
+      print(apiUrl);
+
+      await ctk.uploadImagesAndFormData(
+          imageList, {'data_send': dataSend}, apiUrl);
+      // }
+      await DatabaseHelper.instance.deleteOrderService(item['id']);
     }
   }
 
+  // TABLE NOT EXIST WHY I MADE THIS??
   Future<void> syncSupirUploadAttachmentTask(BuildContext context) async {
     List<Map<String, dynamic>> data =
         await DatabaseHelper.instance.getSupirUploadAttachmentTask();
@@ -309,6 +321,40 @@ class MenuSelectCustomerController extends GetxController {
         SnackBar(
           content:
               Text('File upload failed with status: ${response.statusCode}'),
+        ),
+      );
+    }
+  }
+
+  syncSNData(BuildContext context) async {
+    final dataSN = await DatabaseHelper.instance.getLastScannedSn();
+
+    var headers = {
+      'Content-Type': 'application/json',
+      'Cookie': 'PHPSESSID=h5atvnk8jg9ikejkskh0sguc2b'
+    };
+    var request = http.Request('POST', Uri.parse('${kURL_ORIGIN}sync-sn'));
+    request.body = json.encode({"scanned_sn": jsonEncode(dataSN)});
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      // print(await response.stream.bytesToString());
+      String responseBody = await response.stream.bytesToString();
+      var jsonResponse = jsonDecode(responseBody);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${response.statusCode}, ${jsonResponse['msg']}'),
+        ),
+      );
+
+      // print(jsonResponse); // Handle the JSON response here
+    } else {
+      // print(response.reasonPhrase);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${response.statusCode}, ${response.reasonPhrase}'),
         ),
       );
     }

@@ -49,7 +49,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
 
   late double latitude;
   late double longitude;
-
+  bool locationGetted = false;
   TextEditingController textController = TextEditingController();
   TextEditingController TapperTextController = TextEditingController();
 
@@ -281,30 +281,35 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       print("Error getting location: $error");
       // Handle error appropriately
     });
-    Timer.periodic(const Duration(seconds: 3), (Timer timer) async {
-      try {
-        await _getLocationData();
-      } catch (e) {
-        // Handle the exception as per your requirement
-        print('Error we: $e');
-      }
-    });
+    // Timer.periodic(const Duration(seconds: 3), (Timer timer) async {
+    //   try {
+    //     await _getLocationData();
+    //   } catch (e) {
+    //     // Handle the exception as per your requirement
+    //     print('Error we: $e');
+    //   }
+    // });
   }
 
   _getLocationData() async {
     try {
+      print('nigger');
       LocationData locationData = await location.getLocation();
       if (mounted) {
         setState(() {
+          print('yyee nigger');
+
           latitude = locationData.latitude!;
           longitude = locationData.longitude!;
           textController.text = '${latitude}, ${longitude}';
-
+          locationGetted = true;
           final TurunBarangOnlineController ctl =
               Get.put(TurunBarangOnlineController());
           ctl.coordinate['lat'] = latitude.toString();
           ctl.coordinate['long'] = longitude.toString();
         });
+
+        print(textController.text);
       }
     } catch (e) {
       print("Error getting location: $e");
@@ -1069,8 +1074,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                           child: ElevatedButton(
                                               style: ElevatedButton.styleFrom(
                                                   backgroundColor:
-                                                      textController.text
-                                                                  .isNotEmpty &&
+                                                      locationGetted &&
                                                               !sjDibatalkan
                                                           ? Colors.blue
                                                           : Colors.blue[200]),
@@ -1091,8 +1095,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                                   );
                                                 }
                                               },
-                                              child: textController
-                                                      .text.isNotEmpty
+                                              child: locationGetted
                                                   ? const Text(
                                                       'Scan SN dan Identifier',
                                                       style: TextStyle(
@@ -1100,7 +1103,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                                           fontWeight:
                                                               FontWeight.bold),
                                                     )
-                                                  : const Text(
+                                                  : Text(
                                                       'Getting current location..',
                                                       style: TextStyle(
                                                           color: Colors.white,

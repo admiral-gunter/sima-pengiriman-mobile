@@ -39,13 +39,13 @@ class OrderServiceController extends GetxController {
     // Add image files
     int index = 0;
     for (var image in images) {
-      var mimeType = lookupMimeType(image.path);
+      // var mimeType = lookupMimeType(image.path);
       // var imageName = basename(image.path);
       request.files.add(await http.MultipartFile.fromPath(
-        'images_$index', // Field name for the image (change as needed)
-        image.path,
-        contentType: mimeType != null ? MediaType.parse(mimeType) : null,
-      ));
+          'images[]', // Field name for the image (change as needed)
+          image.path
+          // contentType: mimeType != null ? MediaType.parse(mimeType) : null,
+          ));
       index++;
     }
 
