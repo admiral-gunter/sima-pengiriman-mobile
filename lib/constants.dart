@@ -52,11 +52,11 @@ OutlineInputBorder outlineInputBorder() {
 }
 
 const pfixRnded18 = 5.0;
-
+//
 // String HOST = 'http://192.168.1.5/simait';
 
-String HOST = 'http://192.168.1.4/simait';
-// String HOST = 'https://devgrobx.sinarmaju.co.id';
+// String HOST = 'http://192.168.1.4/simait';
+String HOST = 'https://devgrobx.sinarmaju.co.id';
 // String HOST = 'https://grobx.sinarmaju.co.id';
 
 // String HOST = 'https://grobx.sinarmaju.co.id';
@@ -67,3 +67,18 @@ final kURL_ORIGIN = '$HOST/api/';
 // const kURL_ORIGIN = 'https://devgrobx.sinarmaju.co.id/api/';
 
 final kURL_ORIGIN_ASSET = '$HOST/uploads/image/';
+
+void showSuccessMessage(BuildContext context, String message) {
+  final snackBar = SnackBar(
+    content: Text(
+      message,
+      style: TextStyle(color: Colors.white),
+    ),
+    backgroundColor: Colors.green, // Success color
+    behavior: SnackBarBehavior.floating, // Makes it float
+    shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8)), // Rounded corners
+  );
+
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+}

@@ -5,6 +5,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
+import 'package:sima_pengiriman/screens/menu_select_customer/menu_select_customer.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
@@ -243,7 +244,7 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
           // Use Navigator to navigate to another screen when back button is pressed
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => MenuScreen()),
+            MaterialPageRoute(builder: (context) => MenuSelectCustomer()),
           );
 
           // Return true to allow back navigation, false to prevent it

@@ -79,29 +79,31 @@ class _BodyState extends State<Body> {
   @override
   void initState() {
     checkTokenAndNavigate().then((value) {
-      _cekAbsensi();
+      _cekAbsensi().then((value) => {
+            SharedToken.univGetterString('user_id').then(((value) async {
+              int val = int.parse(value);
+
+              try {
+                final result = await InternetAddress.lookup('example.com');
+
+                if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+                  await getCustomerBySupir(val);
+                  await DatabaseHelper.instance.getLastDailyReportSupir();
+
+                  final MenuSelectCustomerController ctl =
+                      Get.put(MenuSelectCustomerController());
+
+                  if (!mounted) return;
+
+                  ctl.syncApp(context);
+                }
+              } on SocketException catch (_) {
+                getCustomersOffline();
+              }
+            }))
+          });
     });
-    SharedToken.univGetterString('user_id').then(((value) async {
-      int val = int.parse(value);
 
-      try {
-        final result = await InternetAddress.lookup('example.com');
-
-        if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-          await getCustomerBySupir(val);
-          await DatabaseHelper.instance.getLastDailyReportSupir();
-
-          final MenuSelectCustomerController ctl =
-              Get.put(MenuSelectCustomerController());
-
-          if (!mounted) return;
-
-          ctl.syncApp(context);
-        }
-      } on SocketException catch (_) {
-        getCustomersOffline();
-      }
-    }));
     super.initState();
   }
 
@@ -155,6 +157,8 @@ class _BodyState extends State<Body> {
       }
       return;
     }
+
+    return;
 
     var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
     var request = http.Request(

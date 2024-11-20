@@ -11,6 +11,8 @@ import 'package:geolocator/geolocator.dart';
 import '../../../shared_preferences/shared_token.dart';
 import 'dart:math';
 
+import '../../menu_select_customer/controllers/menu_select_customer_controller.dart';
+
 class TurunBarangOnlineController extends GetxController {
   RxList<dynamic> listSJ = [].obs;
   RxList<dynamic> listSelected = [].obs;
@@ -402,10 +404,21 @@ class TurunBarangOnlineController extends GetxController {
     }
   }
 
-  Future SJBatalKirim() async {
+  Future SJBatalKirim(BuildContext context) async {
+    final username = await SharedToken.univGetterString('username');
+
+    MenuSelectCustomerController ctk = Get.put(MenuSelectCustomerController());
+
+    if (!ctk.internetConnected.value) {
+      await DatabaseHelper.instance.insertDataSjBatalKirim(
+          nomorSJ.value, alasanBataltextController.text, username);
+      showSuccessMessage(context, 'Berhasil!');
+      return;
+    }
+
     final url =
         Uri.parse(kURL_ORIGIN + 'pengiriman/mobile-pending-batal-kirim');
-    final username = await SharedToken.univGetterString('username');
+
     Map<String, dynamic> requestBody = {
       "no_surat_jalan": nomorSJ.value,
       "alasan": alasanBataltextController.text,
@@ -420,6 +433,8 @@ class TurunBarangOnlineController extends GetxController {
       );
 
       if (response.statusCode == 200) {
+        showSuccessMessage(context, 'Berhasil!');
+
         print('POST request successful! Response:');
         print(response.body);
         // await DatabaseHelper.instance.insertHistorySuratJalanBatal(requestBody);

@@ -1079,9 +1079,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                                           ? Colors.blue
                                                           : Colors.blue[200]),
                                               onPressed: () async {
-                                                if (textController
-                                                        .text.isNotEmpty &&
-                                                    !sjDibatalkan) {
+                                                if (!sjDibatalkan) {
                                                   sJDalamPengiriman("17");
                                                   Navigator.pushReplacement(
                                                     context,
@@ -1192,8 +1190,8 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                                   ),
                                                   TextButton(
                                                       onPressed: () async {
-                                                        await ctl
-                                                            .SJBatalKirim();
+                                                        await ctl.SJBatalKirim(
+                                                            context);
                                                         if (mounted) {
                                                           setState(() {
                                                             sjDibatalkan = true;

@@ -359,4 +359,47 @@ class MenuSelectCustomerController extends GetxController {
       );
     }
   }
+
+  Future syncDataCancel(BuildContext context) async {
+    try {
+      final data = await DatabaseHelper.instance.getCanceledFiveData();
+
+      for (var item in data) {
+        final url =
+            Uri.parse(kURL_ORIGIN + 'pengiriman/mobile-pending-batal-kirim');
+
+        Map<String, dynamic> requestBody = {
+          "no_surat_jalan": item['no_surat_jalan'],
+          "alasan": item['alasan'],
+          "creator": item['creator']
+        };
+
+        final response = await http.post(
+          url,
+          headers: {"Content-Type": "application/x-www-form-urlencoded"},
+          body: requestBody,
+        );
+
+        if (response.statusCode == 200) {
+          await DatabaseHelper.instance.deleteDataSJBatalById(item['id']);
+          showSuccessMessage(context, 'Berhasil!');
+
+          print('POST request successful! Response:');
+          print(response.body);
+          // await DatabaseHelper.instance.insertHistorySuratJalanBatal(requestBody);
+          // await DatabaseHelper.instance
+          //     .deleteRecordTugasByNomorOrder(nomorSJ.value);
+        } else {
+          print('POST request failed with status: ${response.statusCode}');
+          print(response.body);
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Errpr ${e}'),
+        ),
+      );
+    }
+  }
 }

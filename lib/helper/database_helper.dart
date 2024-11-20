@@ -314,6 +314,51 @@ class DatabaseHelper {
         product_id TEXT,
         order_services_id INTEGER
       )''');
+
+    await db.execute('''
+    CREATE TABLE sj_batal_kirim (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      no_surat_jalan TEXT NOT NULL,
+      alasan TEXT NOT NULL,
+      creator TEXT NOT NULL
+    )''');
+  }
+
+  Future<int> insertDataSjBatalKirim(
+      String noSuratJalan, String alasan, String creator) async {
+    final Database db = await instance.database;
+
+    final data = {
+      'no_surat_jalan': noSuratJalan,
+      'alasan': alasan,
+      'creator': creator,
+    };
+
+    return await db.insert(
+      'sj_batal_kirim',
+      data,
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  Future<int> deleteDataSJBatalById(int id) async {
+    final Database db = await instance.database;
+
+    return await db.delete(
+      'sj_batal_kirim',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getCanceledFiveData() async {
+    final Database db = await instance.database;
+
+    return await db.query(
+      'sj_batal_kirim',
+      orderBy: 'id ASC', // Ensures consistent order
+      limit: 5, // Fetch only the first 5 rows
+    );
   }
 
   // Insert a record into the order_services table
