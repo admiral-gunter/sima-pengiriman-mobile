@@ -250,7 +250,7 @@ class _BodyState extends State<Body> {
                 if (ctl.inventoryLocationIdSelected.value == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Lokasi boleh kosong!'),
+                      content: const Text('Lokasi tidak boleh kosong!'),
                       duration: const Duration(seconds: 2),
                       action: SnackBarAction(
                         label: 'Close',

@@ -55,12 +55,17 @@ class OrderServiceController extends GetxController {
       var responseBody = await response.stream.bytesToString();
 
       if (response.statusCode == 200) {
+        uploadsukses.value = true;
         print('Upload successful');
         print(responseBody);
       } else {
+        uploadsukses.value = false;
+
         print('Upload failed with status code: ${response.statusCode}');
       }
     } catch (e) {
+      uploadsukses.value = false;
+
       print('Error during upload: $e');
     }
   }

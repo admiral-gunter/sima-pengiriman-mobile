@@ -28,7 +28,7 @@ class _BodyState extends State<Body> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       cekStatusAbsen();
     });
-
+    _checkLocationPermission();
     super.initState();
   }
 
@@ -71,6 +71,52 @@ class _BodyState extends State<Body> {
       print('An error occurred: $e');
     }
   }
+
+  bool _isLoading = false;
+  String _statusMessage = 'Checking permission...';
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _checkLocationPermission();
+  // }
+
+  Future<void> _checkLocationPermission() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    setState(() {
+      _isLoading = false;
+      _statusMessage = (permission == LocationPermission.always ||
+              permission == LocationPermission.whileInUse)
+          ? 'Permission Granted'
+          : 'Permission Denied';
+    });
+  }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     appBar: AppBar(
+  //       title: Text('Location Permission Example'),
+  //     ),
+  //     body: Center(
+  //       child: _isLoading
+  //           ? CircularProgressIndicator()
+  //           : Text(
+  //               'Location Permission Status: $_statusMessage',
+  //               style: TextStyle(fontSize: 18),
+  //             ),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -239,7 +285,11 @@ class _FormReportDialogState extends State<FormReportDialog> {
   }
 
   Future _pickImgFromGallery() async {
-    final img = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final img = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxHeight: 480,
+        maxWidth: 640,
+        imageQuality: 30);
 
     if (img == null) return;
     setState(() {
@@ -248,9 +298,17 @@ class _FormReportDialogState extends State<FormReportDialog> {
   }
 
   Future _pickImgFromCamera() async {
-    final img = await ImagePicker().pickImage(source: ImageSource.camera);
+    final img = await ImagePicker().pickImage(
+        source: ImageSource.camera,
+        maxHeight: 480,
+        maxWidth: 640,
+        imageQuality: 30);
 
     if (img == null) return;
+
+    // Compress the image
+    // final compressedImage = await compressImage(File(img.path));
+
     setState(() {
       _selectedImg = File(img.path);
     });

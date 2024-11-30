@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:sima_pengiriman/size_config.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import 'package:image/image.dart' as img;
 
 const kPrimaryColor = Color(0xFFFF7643);
 const kPrimaryLightColor = Color(0xFFFFECDF);
@@ -81,4 +84,29 @@ void showSuccessMessage(BuildContext context, String message) {
   );
 
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
+}
+
+Future<File> compressImage(File imageFile) async {
+  // Check if the file size is greater than 2MB
+  const int maxFileSize = 2 * 1024 * 1024; // 2MB in bytes
+  final int fileSize = await imageFile.length();
+
+  if (fileSize <= maxFileSize) {
+    // Return the original file if it's already less than or equal to 2MB
+    return imageFile;
+  }
+
+  // Decode the image
+  final originalImage = img.decodeImage(imageFile.readAsBytesSync());
+
+  // Resize and compress the image
+  final resizedImage = img.copyResize(originalImage!, width: 200);
+
+  // Save the compressed image to a temporary file
+  final tempDir = Directory.systemTemp;
+  final compressedImageFile = File('${tempDir.path}/compressed_image.jpg');
+  compressedImageFile
+      .writeAsBytesSync(img.encodeJpg(resizedImage, quality: 10));
+
+  return compressedImageFile;
 }

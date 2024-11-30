@@ -18,7 +18,11 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     final String path = join(await getDatabasesPath(), 'my_database.db');
-    return await openDatabase(path, version: 2, onCreate: _createDatabase);
+    return await openDatabase(
+      path,
+      version: 2,
+      onCreate: _createDatabase,
+    );
   }
 
   Future<void> _createDatabase(Database db, int version) async {
@@ -296,7 +300,7 @@ class DatabaseHelper {
         barang_tidak_muat TEXT,
         customer_id INTEGER
       )
-    '''); // barang_tidak_muat TEXT YES OR NO
+    ''');
 
     await db.execute('''
     CREATE TABLE  order_services_offline_attachment 
@@ -349,6 +353,43 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<void> createOrderServicesTable() async {
+    final Database db = await instance.database;
+
+    await db.execute('''
+    CREATE TABLE IF NOT EXISTS order_services (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, 
+      keterangan TEXT, 
+      username TEXT, 
+      location_id TEXT, 
+      plat_no TEXT, 
+      date_added TEXT,
+      barang_tidak_muat TEXT,
+      customer_id INTEGER
+    )
+  ''');
+  }
+
+  Future<void> createDailyReportSupirTable() async {
+    final Database db = await instance.database;
+
+    await db.execute('''CREATE TABLE NOT EXISTS daily_report_supir (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        liter TEXT
+        km TEXT 
+        tipe TEXT
+        attachment TEXT
+        tipe_attachment TEXT
+        keterangan TEXT
+        username TEXT
+        plat_no TEXT
+        latitude TEXT
+        longitude TEXT
+        date_added TEXT 
+    )
+    ''');
   }
 
   Future<List<Map<String, dynamic>>> getCanceledFiveData() async {

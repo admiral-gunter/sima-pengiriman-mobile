@@ -101,9 +101,13 @@ class MenuSelectCustomerController extends GetxController {
       await Future.delayed(const Duration(seconds: 3));
       OverlayLoadingProgress.stop();
     } catch (e) {
+      isLoading.value = false;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error : $e')),
       );
+
+      OverlayLoadingProgress.stop();
     }
   }
 

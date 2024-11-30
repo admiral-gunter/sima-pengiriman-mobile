@@ -69,6 +69,10 @@ class _BodyState extends State<Body> {
   }
 
   initReportTable() async {
+    final re = await DatabaseHelper.instance.getOrderServices();
+
+    print('nigger');
+    print(re);
     final tbSetted = await SharedToken.univGetterString('tb_setted');
     if (tbSetted == null) {
       await DatabaseHelper.instance.updateTb();
@@ -83,23 +87,44 @@ class _BodyState extends State<Body> {
             SharedToken.univGetterString('user_id').then(((value) async {
               int val = int.parse(value);
 
-              try {
-                final result = await InternetAddress.lookup('example.com');
+              await getCustomerBySupir(val);
+              await DatabaseHelper.instance.getLastDailyReportSupir();
 
-                if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-                  await getCustomerBySupir(val);
-                  await DatabaseHelper.instance.getLastDailyReportSupir();
+              final MenuSelectCustomerController ctl =
+                  Get.put(MenuSelectCustomerController());
 
-                  final MenuSelectCustomerController ctl =
-                      Get.put(MenuSelectCustomerController());
+              if (!mounted) return;
 
-                  if (!mounted) return;
-
-                  ctl.syncApp(context);
-                }
-              } on SocketException catch (_) {
+              if (ctl.internetConnected.value) {
+                ctl.syncApp(context);
+              } else {
+                showErrorSnackbar('Tidak ada koneksi internet!');
                 getCustomersOffline();
               }
+
+              // try {
+              //   final result = await InternetAddress.lookup('example.com');
+
+              //   if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+              //     await getCustomerBySupir(val);
+              //     await DatabaseHelper.instance.getLastDailyReportSupir();
+
+              //     final MenuSelectCustomerController ctl =
+              //         Get.put(MenuSelectCustomerController());
+
+              //     if (!mounted) return;
+
+              //     if (ctl.internetConnected.value) {
+              //       ctl.syncApp(context);
+              //     } else {
+              //       getCustomersOffline();
+              //     }
+
+              //     ctl.syncApp(context);
+              //   }
+              // } on SocketException catch (_) {
+              //   getCustomersOffline();
+              // }
             }))
           });
     });
@@ -117,29 +142,35 @@ class _BodyState extends State<Body> {
   }
 
   Future<void> checkTokenAndNavigate() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final uRole = await SharedToken.univGetterString('USER_ROLE');
-    String? token = prefs.getString('token');
-    await initReportTable();
-    if (!mounted) return;
-
-    String? currentRoute = ModalRoute.of(context)?.settings.name;
-
-    if (token != null && uRole == 'USER_SENDER') {
-      // print('retard');
-      Navigator.pushReplacementNamed(context, DeliverOrderMenu.routeName);
-      return;
-    }
-
-    if (token != null && currentRoute != MenuSelectCustomer.routeName) {
-      Navigator.pushReplacementNamed(context, MenuSelectCustomer.routeName);
-    } else if (token == null && currentRoute != SignInScreen.routeName) {
-      await DatabaseHelper.instance.emptyAllTables();
-
-      await SharedToken.tokenRemover();
+    try {
+      await DatabaseHelper.instance.createOrderServicesTable();
+      await DatabaseHelper.instance.createDailyReportSupirTable();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      final uRole = await SharedToken.univGetterString('USER_ROLE');
+      String? token = prefs.getString('token');
+      await initReportTable();
       if (!mounted) return;
+      print('migger sukses');
+      String? currentRoute = ModalRoute.of(context)?.settings.name;
 
-      Navigator.pushReplacementNamed(context, SignInScreen.routeName);
+      if (token != null && uRole == 'USER_SENDER') {
+        // print('retard');
+        Navigator.pushReplacementNamed(context, DeliverOrderMenu.routeName);
+        return;
+      }
+
+      if (token != null && currentRoute != MenuSelectCustomer.routeName) {
+        Navigator.pushReplacementNamed(context, MenuSelectCustomer.routeName);
+      } else if (token == null && currentRoute != SignInScreen.routeName) {
+        await DatabaseHelper.instance.emptyAllTables();
+
+        await SharedToken.tokenRemover();
+        if (!mounted) return;
+
+        Navigator.pushReplacementNamed(context, SignInScreen.routeName);
+      }
+    } catch (e) {
+      print('Error $e');
     }
   }
 
@@ -158,7 +189,7 @@ class _BodyState extends State<Body> {
       return;
     }
 
-    return;
+    // return;
 
     var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
     var request = http.Request(
@@ -204,13 +235,7 @@ class _BodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    if (customerList.isEmpty && !_isLoading) {
+    if (customerList.isEmpty) {
       return const Center(
         child: Text('Surat Jalan belum dibuat'),
       );
