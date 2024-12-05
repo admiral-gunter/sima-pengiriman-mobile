@@ -29,42 +29,46 @@ class _BodyState extends State<Body> {
   List<Customer> customerList = [];
 
   Future<void> getCustomerBySupir(int supirId) async {
-    var request = http.Request(
-      'POST',
-      Uri.parse('${kURL_ORIGIN}get-customer-by-supir?supir_id=$supirId'),
-    );
-    request.body = '''''';
+    try {
+      var request = http.Request(
+        'POST',
+        Uri.parse('${kURL_ORIGIN}get-customer-by-supir?supir_id=$supirId'),
+      );
+      request.body = '''''';
 
-    http.StreamedResponse response = await request.send();
+      http.StreamedResponse response = await request.send();
 
-    if (response.statusCode == 200) {
-      // print(await response.stream.bytesToString());
-      String responseBody = await response.stream.bytesToString();
-      var jsonResponse = jsonDecode(responseBody);
-      var result = GetCustomerBySupirResponse.fromJson(jsonResponse);
+      if (response.statusCode == 200) {
+        // print(await response.stream.bytesToString());
+        String responseBody = await response.stream.bytesToString();
+        var jsonResponse = jsonDecode(responseBody);
+        var result = GetCustomerBySupirResponse.fromJson(jsonResponse);
 
-      for (var value in result.result) {
-        String res = await DatabaseHelper.instance.insertAssignedCustomer(
-            value.fullname,
-            value.shopName,
-            int.parse(value.saleWholesaleCustomerId),
-            int.parse(value.supirId),
-            value.namaSupir);
+        for (var value in result.result) {
+          String res = await DatabaseHelper.instance.insertAssignedCustomer(
+              value.fullname,
+              value.shopName,
+              int.parse(value.saleWholesaleCustomerId),
+              int.parse(value.supirId),
+              value.namaSupir);
 
-        if (res != 'SUKSES') {
-          showErrorSnackbar(res);
-          return;
+          if (res != 'SUKSES') {
+            showErrorSnackbar(res);
+            return;
+          }
         }
+
+        if (!mounted) return;
+
+        setState(() {
+          _isLoading = false;
+          customerList.addAll(result.result);
+        });
+      } else {
+        showErrorSnackbar(response.reasonPhrase);
       }
-
-      if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-        customerList.addAll(result.result);
-      });
-    } else {
-      showErrorSnackbar(response.reasonPhrase);
+    } catch (e) {
+      showErrorSnackbar('ERROR : $e, running app in offline mode');
     }
   }
 
@@ -75,7 +79,10 @@ class _BodyState extends State<Body> {
     print(re);
     final tbSetted = await SharedToken.univGetterString('tb_setted');
     if (tbSetted == null) {
+      await DatabaseHelper.instance.createOrderServicesTable();
+      await DatabaseHelper.instance.createDailyReportSupirTable();
       await DatabaseHelper.instance.updateTb();
+      await DatabaseHelper.instance.createOrderServicesOfflineAttachment();
       await SharedToken.univSetterString('tb_setted', 'yes');
     }
   }
@@ -87,7 +94,6 @@ class _BodyState extends State<Body> {
             SharedToken.univGetterString('user_id').then(((value) async {
               int val = int.parse(value);
 
-              await getCustomerBySupir(val);
               await DatabaseHelper.instance.getLastDailyReportSupir();
 
               final MenuSelectCustomerController ctl =
@@ -97,6 +103,7 @@ class _BodyState extends State<Body> {
 
               if (ctl.internetConnected.value) {
                 ctl.syncApp(context);
+                await getCustomerBySupir(val);
               } else {
                 showErrorSnackbar('Tidak ada koneksi internet!');
                 getCustomersOffline();
@@ -143,8 +150,6 @@ class _BodyState extends State<Body> {
 
   Future<void> checkTokenAndNavigate() async {
     try {
-      await DatabaseHelper.instance.createOrderServicesTable();
-      await DatabaseHelper.instance.createDailyReportSupirTable();
       SharedPreferences prefs = await SharedPreferences.getInstance();
       final uRole = await SharedToken.univGetterString('USER_ROLE');
       String? token = prefs.getString('token');

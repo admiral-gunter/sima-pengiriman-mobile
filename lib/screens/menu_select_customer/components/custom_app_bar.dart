@@ -92,6 +92,9 @@ class CustomAppBarState extends State<CustomAppBar> {
           icon: Icon(Icons.refresh), // Example icon for the opposite side
           onPressed: () async {
             // await DatabaseHelper.instance.updateTb();
+            await DatabaseHelper.instance.createOrderServicesTable();
+            await DatabaseHelper.instance.createDailyReportSupirTable();
+            await DatabaseHelper.instance.updateTb();
 
             final MenuSelectCustomerController ctl =
                 Get.put(MenuSelectCustomerController());

@@ -20,7 +20,7 @@ class DatabaseHelper {
     final String path = join(await getDatabasesPath(), 'my_database.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 1,
       onCreate: _createDatabase,
     );
   }
@@ -275,16 +275,16 @@ class DatabaseHelper {
 
     await db.execute('''CREATE TABLE daily_report_supir (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        liter TEXT
-        km TEXT 
-        tipe TEXT
-        attachment TEXT
-        tipe_attachment TEXT
-        keterangan TEXT
-        username TEXT
-        plat_no TEXT
-        latitude TEXT
-        longitude TEXT
+        liter TEXT,
+        km TEXT ,
+        tipe TEXT,
+        attachment TEXT,
+        tipe_attachment TEXT,
+        keterangan TEXT,
+        username TEXT,
+        plat_no TEXT,
+        latitude TEXT,
+        longitude TEXT,
         date_added TEXT 
     )
     ''');
@@ -372,21 +372,33 @@ class DatabaseHelper {
   ''');
   }
 
+  Future<void> createOrderServicesOfflineAttachment() async {
+    final Database db = await instance.database;
+
+    await db.execute('''
+    CREATE TABLE IF NOT EXISTS order_services_offline_attachment 
+      (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        path TEXT,
+        order_services_id INTEGER
+      )''');
+  }
+
   Future<void> createDailyReportSupirTable() async {
     final Database db = await instance.database;
 
-    await db.execute('''CREATE TABLE NOT EXISTS daily_report_supir (
+    await db.execute('''CREATE TABLE IF NOT EXISTS daily_report_supir (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        liter TEXT
-        km TEXT 
-        tipe TEXT
-        attachment TEXT
-        tipe_attachment TEXT
-        keterangan TEXT
-        username TEXT
-        plat_no TEXT
-        latitude TEXT
-        longitude TEXT
+        liter TEXT,
+        km TEXT, 
+        tipe TEXT,
+        attachment TEXT,
+        tipe_attachment TEXT,
+        keterangan TEXT,
+        username TEXT,
+        plat_no TEXT,
+        latitude TEXT,
+        longitude TEXT,
         date_added TEXT 
     )
     ''');

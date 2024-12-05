@@ -18,6 +18,5 @@ class OrderDeliveryScreen extends StatelessWidget {
       bottomNavigationBar:
           CustomBottomNavBar(selectedMenu: MenuState.orderDelivery),
     );
-    ;
   }
 }

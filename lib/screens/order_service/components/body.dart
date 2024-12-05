@@ -9,6 +9,7 @@ import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/screens/menu_select_customer/menu_select_customer.dart';
 import 'package:sima_pengiriman/screens/order_service/components/order_service_scanner_sn.dart';
+import 'package:sima_pengiriman/screens/order_service/order_service_screen.dart';
 import '../../../shared_preferences/shared_token.dart';
 import '../../menu_select_customer/controllers/menu_select_customer_controller.dart';
 import '../components/product_select_component.dart';
@@ -300,6 +301,11 @@ class _BodyState extends State<Body> {
                         ),
                       ),
                     );
+
+                    await Future.delayed(Duration(seconds: 3));
+
+                    Navigator.popAndPushNamed(
+                        context, OrderServiceScreen.routeName);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
