@@ -326,6 +326,8 @@ class DatabaseHelper {
       alasan TEXT NOT NULL,
       creator TEXT NOT NULL
     )''');
+
+    await createOrderSupirUploadAttOfflineTable();
   }
 
   Future<int> insertDataSjBatalKirim(
@@ -368,6 +370,23 @@ class DatabaseHelper {
       date_added TEXT,
       barang_tidak_muat TEXT,
       customer_id INTEGER
+    )
+  ''');
+  }
+
+  Future<void> createOrderSupirUploadAttOfflineTable() async {
+    final Database db = await instance.database;
+
+    await db.execute('''
+    CREATE TABLE IF NOT EXISTS supir_upload_attachment_task_offline (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, 
+      file TEXT, 
+      nomor_order TEXT, 
+      username TEXT, 
+      keterangan TEXT, 
+      plat_no TEXT,
+      latitude TEXT,
+      longitude TEXT
     )
   ''');
   }
@@ -948,6 +967,7 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getRecordTugas() async {
     final db = await instance.database;
+
     List<Map<String, dynamic>> result =
         await db.rawQuery('SELECT * FROM record_tugas GROUP BY nomor_order');
 
@@ -1062,7 +1082,8 @@ class DatabaseHelper {
     final db = await instance.database;
 
     try {
-      await db.insert('record_tugas_history', data);
+      await db.insert('record_tugas_history', data,
+          conflictAlgorithm: ConflictAlgorithm.ignore);
       return {'result': true, 'message': 'Data inserted successfully.'};
     } catch (e) {
       return {'result': false, 'message': 'Failed to insert data: $e'};

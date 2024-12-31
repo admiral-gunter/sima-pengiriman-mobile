@@ -110,3 +110,5 @@ Future<File> compressImage(File imageFile) async {
 
   return compressedImageFile;
 }
+
+const UNASSIGNED = 'UNASSIGNED';

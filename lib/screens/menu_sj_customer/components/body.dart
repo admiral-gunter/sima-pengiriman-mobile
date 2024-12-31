@@ -70,9 +70,20 @@ class _BodyState extends State<Body> {
     }
   }
 
+  var isUnassignedSJ = false;
+
   @override
   void initState() {
     SharedToken.univGetterString('customer_id').then((value) {
+      if (value == UNASSIGNED) {
+        setState(() {
+          isUnassignedCustomersSJ = true;
+        });
+        print('niggas');
+        getunassignedSJ();
+        return;
+      }
+
       MenuSelectCustomerController ctl =
           Get.put(MenuSelectCustomerController());
 
@@ -118,6 +129,32 @@ class _BodyState extends State<Body> {
   }
 
   bool _isLoading = true;
+
+  var unassignedCustomersSJ = [];
+  bool isUnassignedCustomersSJ = false;
+
+  Future<void> getunassignedSJ() async {
+    try {
+      var data = (await DatabaseHelper.instance.getRecordTugas());
+
+      // Create a mutable copy of the list
+      var mutableData = data.map((e) => Map<String, dynamic>.from(e)).toList();
+
+      for (var i = 0; i < mutableData.length; i++) {
+        mutableData[i]['nomer_surat_jalan'] = mutableData[i]['nomor_order'];
+      }
+
+      print('w new');
+      print(mutableData);
+
+      setState(() {
+        _isLoading = false;
+        suratJalanList.addAll(mutableData);
+      });
+    } catch (e) {
+      showErrorSnackbar('Error fetching nomor_sj: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -190,99 +227,103 @@ class _BodyState extends State<Body> {
             },
           ),
         ),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () async {
-              try {
-                MenuSelectCustomerController ctl =
-                    Get.put(MenuSelectCustomerController());
+        isUnassignedCustomersSJ
+            ? SizedBox.shrink()
+            : SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    try {
+                      MenuSelectCustomerController ctl =
+                          Get.put(MenuSelectCustomerController());
 
-                if (!ctl.internetConnected.value) {
-                  Navigator.pushReplacementNamed(
-                      context, OrderServiceScreen.routeName);
+                      if (!ctl.internetConnected.value) {
+                        Navigator.pushReplacementNamed(
+                            context, OrderServiceScreen.routeName);
 
-                  return;
-                }
-                final tokoId =
-                    await SharedToken.univGetterString('customer_id');
-                var request = http.Request(
-                    'POST',
-                    Uri.parse(
-                        '${kURL_ORIGIN}supir-get-toko-by-id?toko_id=$tokoId'));
+                        return;
+                      }
+                      final tokoId =
+                          await SharedToken.univGetterString('customer_id');
+                      var request = http.Request(
+                          'POST',
+                          Uri.parse(
+                              '${kURL_ORIGIN}supir-get-toko-by-id?toko_id=$tokoId'));
 
-                http.StreamedResponse response = await request.send();
+                      http.StreamedResponse response = await request.send();
 
-                if (response.statusCode == 200) {
-                  var resp = await response.stream.bytesToString();
+                      if (response.statusCode == 200) {
+                        var resp = await response.stream.bytesToString();
 
-                  var jsonResponse = jsonDecode(resp);
+                        var jsonResponse = jsonDecode(resp);
 
-                  if (!jsonResponse['success']) {
-                    // Handle failure by showing a SnackBar
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${jsonResponse['msg']}'),
-                        action: SnackBarAction(
-                          label: 'Undo',
-                          onPressed: () {
-                            // Code to execute when "Undo" is pressed
-                            print('Undo action pressed!');
-                          },
-                        ),
-                      ),
-                    );
+                        if (!jsonResponse['success']) {
+                          // Handle failure by showing a SnackBar
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${jsonResponse['msg']}'),
+                              action: SnackBarAction(
+                                label: 'Undo',
+                                onPressed: () {
+                                  // Code to execute when "Undo" is pressed
+                                  print('Undo action pressed!');
+                                },
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+
+                        var item = jsonResponse['result'];
+                        if (jsonResponse['result'] == []) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                    'An error occurred. Please try again.')),
+                          );
+                          return;
+                        }
+                        final OrderServiceController ctl =
+                            Get.put(OrderServiceController());
+
+                        // Safely parse swc_id as an int
+                        ctl.saleWholesaleCustomerIdSelected.value =
+                            int.tryParse(item['swc_id']) ??
+                                0; // Default to 0 if parsing fails
+
+                        ctl.saleWholesaleCustomerNamenAddress['address'] =
+                            item['swc_address'];
+
+                        ctl.saleWholesaleCustomerNamenAddress['customer_name'] =
+                            '${item['swc_shop_name']} (${item['swc_fullname']})';
+
+                        if (!mounted) return;
+
+                        Navigator.pushReplacementNamed(
+                            context, OrderServiceScreen.routeName);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  'An error occurred. ERROR : ${response.statusCode}')),
+                        );
+                      }
+                    } catch (e) {
+                      // Catch and handle any exceptions that occur
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text('An error occurred. ERROR : $e')),
+                      );
+                    }
+
                     return;
-                  }
-
-                  var item = jsonResponse['result'];
-                  if (jsonResponse['result'] == []) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content:
-                              Text('An error occurred. Please try again.')),
-                    );
-                    return;
-                  }
-                  final OrderServiceController ctl =
-                      Get.put(OrderServiceController());
-
-                  // Safely parse swc_id as an int
-                  ctl.saleWholesaleCustomerIdSelected.value =
-                      int.tryParse(item['swc_id']) ??
-                          0; // Default to 0 if parsing fails
-
-                  ctl.saleWholesaleCustomerNamenAddress['address'] =
-                      item['swc_address'];
-
-                  ctl.saleWholesaleCustomerNamenAddress['customer_name'] =
-                      '${item['swc_shop_name']} (${item['swc_fullname']})';
-
-                  if (!mounted) return;
-
-                  Navigator.pushReplacementNamed(
-                      context, OrderServiceScreen.routeName);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            'An error occurred. ERROR : ${response.statusCode}')),
-                  );
-                }
-              } catch (e) {
-                // Catch and handle any exceptions that occur
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('An error occurred. ERROR : $e')),
-                );
-              }
-
-              return;
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-            child:
-                Text('Service Titipan', style: TextStyle(color: Colors.white)),
-          ),
-        ),
+                  },
+                  style:
+                      ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                  child: Text('Service Titipan',
+                      style: TextStyle(color: Colors.white)),
+                ),
+              ),
       ],
     );
   }

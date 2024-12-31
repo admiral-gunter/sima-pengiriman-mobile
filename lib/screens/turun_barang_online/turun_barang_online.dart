@@ -757,100 +757,110 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   }
 
   Future<void> uploadFile() async {
-    String uname = await SharedToken.univGetterString('username');
-    final platNo = await SharedToken.univGetterString('no_plat');
+    try {
+      String uname = await SharedToken.univGetterString('username');
+      final platNo = await SharedToken.univGetterString('no_plat');
 
-    LocationData locationData = await location.getLocation();
+      LocationData locationData = await location.getLocation();
 
-    final MenuSelectCustomerController ctk =
-        Get.put(MenuSelectCustomerController());
+      final MenuSelectCustomerController ctk =
+          Get.put(MenuSelectCustomerController());
 
-    final TurunBarangOnlineController ctl =
-        Get.put(TurunBarangOnlineController());
+      final TurunBarangOnlineController ctl =
+          Get.put(TurunBarangOnlineController());
 
-    if (!ctk.internetConnected.value) {
-      Map<String, dynamic> insertData = {
-        'file': _selectedImgpath,
-        'nomor_order': ctl.noSuratJalanSelected.value,
-        'username': uname,
-        'keterangan': keteranganTxt.text,
-        'plat_no': platNo,
-        'latitude': locationData.latitude.toString(),
-        'longitude': locationData.longitude.toString(),
-      };
-      try {
-        await DatabaseHelper.instance
-            .insertSupirUploadAttachmentTask(insertData);
-        return;
-      } catch (err) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('File upload failed: $err')),
-        );
-        return;
+      if (!ctk.internetConnected.value) {
+        Map<String, dynamic> insertData = {
+          'file': _selectedImgpath,
+          'nomor_order': ctl.noSuratJalanSelected.value,
+          'username': uname,
+          'keterangan': keteranganTxt.text,
+          'plat_no': platNo,
+          'latitude': locationData.latitude.toString(),
+          'longitude': locationData.longitude.toString(),
+        };
+        try {
+          await DatabaseHelper.instance
+              .insertSupirUploadAttachmentTask(insertData);
+          return;
+        } catch (err) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('File upload failed: $err')),
+          );
+          return;
+        }
       }
-    }
 
-    ctl.noSuratJalanSelected.value;
-    var url = Uri.parse(
-        '${kURL_ORIGIN}pengiriman/supir-upload-attachment-task?nomor_order=${ctl.noSuratJalanSelected.value}&username=$uname&keterangan=${keteranganTxt.text}&plat_no=$platNo&lat=${locationData.latitude}&long=${locationData.longitude}');
+      ctl.noSuratJalanSelected.value;
+      var url = Uri.parse(
+          '${kURL_ORIGIN}pengiriman/supir-upload-attachment-task?nomor_order=${ctl.noSuratJalanSelected.value}&username=$uname&keterangan=${keteranganTxt.text}&plat_no=$platNo&lat=${locationData.latitude}&long=${locationData.longitude}');
 
-    var request = http.MultipartRequest('POST', url);
+      var request = http.MultipartRequest('POST', url);
 
-    var fileStream = http.ByteStream(_selectedImg!.openRead());
-    var length = await _selectedImg!.length();
-    var multipartFile = http.MultipartFile(
-      'file',
-      fileStream,
-      length,
-      filename: _selectedImg!.path,
-    );
-
-    request.files.add(multipartFile);
-
-    var response = await request.send();
-
-    // Handle the response
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('File uploaded successfully!')),
+      var fileStream = http.ByteStream(_selectedImg!.openRead());
+      var length = await _selectedImg!.length();
+      var multipartFile = http.MultipartFile(
+        'file',
+        fileStream,
+        length,
+        filename: _selectedImg!.path,
       );
-    } else {
+
+      request.files.add(multipartFile);
+
+      var response = await request.send();
+
+      // Handle the response
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('File uploaded successfully!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'File upload failed with status: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content:
-                Text('File upload failed with status: ${response.statusCode}')),
+        SnackBar(content: Text('ERROR: ${e}')),
       );
     }
   }
 
   Future getAttachment() async {
-    final MenuSelectCustomerController ctk =
-        Get.put(MenuSelectCustomerController());
+    try {
+      final MenuSelectCustomerController ctk =
+          Get.put(MenuSelectCustomerController());
 
-    ;
+      if (!ctk.internetConnected.value) {
+        return;
+      }
+      final TurunBarangOnlineController ctl =
+          Get.put(TurunBarangOnlineController());
+      var url = Uri.parse(
+          '${kURL_ORIGIN}pengiriman/get-supir-upload-attachment-task?nomor_order=${ctl.noSuratJalanSelected.value}');
 
-    if (!ctk.internetConnected.value) {
-      return;
-    }
-    final TurunBarangOnlineController ctl =
-        Get.put(TurunBarangOnlineController());
-    var url = Uri.parse(
-        '${kURL_ORIGIN}pengiriman/get-supir-upload-attachment-task?nomor_order=${ctl.noSuratJalanSelected.value}');
+      // Make the POST request
+      http.Response response = await http.post(url);
 
-    // Make the POST request
-    http.Response response = await http.post(url);
+      if (response.statusCode == 200) {
+        // If the server returns an OK response, parse the JSON
+        var responseBody = json.decode(response.body)['data'];
 
-    if (response.statusCode == 200) {
-      // If the server returns an OK response, parse the JSON
-      var responseBody = json.decode(response.body)['data'];
-
-      setState(() {
-        attachments = responseBody;
-      });
-      print('Response body: $responseBody');
-    } else {
-      // If the server returns an error response, throw an exception
-      print('Failed to load post');
+        setState(() {
+          attachments = responseBody;
+        });
+        print('Response body: $responseBody');
+      } else {
+        // If the server returns an error response, throw an exception
+        print('Failed to load post');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('ERROR: ${e}')),
+      );
     }
   }
 
