@@ -58,9 +58,9 @@ const pfixRnded18 = 5.0;
 //
 // String HOST = 'http://192.168.1.5/simait';
 
-String HOST = 'http://192.168.1.4/simait';
+// String HOST = 'http://192.168.1.4/simait';
 // String HOST = 'https://devgrobx.sinarmaju.co.id';
-// String HOST = 'https://grobx.sinarmaju.co.id';
+String HOST = 'https://grobx.sinarmaju.co.id';
 
 // String HOST = 'https://grobx.sinarmaju.co.id';
 
@@ -110,3 +110,5 @@ Future<File> compressImage(File imageFile) async {
 
   return compressedImageFile;
 }
+
+const UNASSIGNED = 'UNASSIGNED';

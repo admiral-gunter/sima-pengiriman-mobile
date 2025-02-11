@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:location/location.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:sima_pengiriman/constants.dart';
@@ -11,6 +12,8 @@ import '../../components/coustom_bottom_nav_bar.dart';
 import '../../enums.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+
+import '../menu_select_customer/controllers/menu_select_customer_controller.dart';
 // import 'components/body.dart';
 
 class ScanPengirimanScreen extends StatefulWidget {
@@ -164,12 +167,36 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
                       data["qty_sum"] = noOrderNitem[2];
                     }
 
+                    print(data);
+                    final res =
+                        await DatabaseHelper.instance.insertRecordTugas(data);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(res['message']),
+                        duration: const Duration(seconds: 1),
+                        action: SnackBarAction(
+                          label: 'ACTION',
+                          onPressed: () {},
+                        ),
+                      ),
+                    );
+
+                    final MenuSelectCustomerController ctl =
+                        Get.put(MenuSelectCustomerController());
+
+                    if (!ctl.internetConnected.value) {
+                      Navigator.pop(context);
+                    }
+
                     await kirimData(data);
                     await SJDalamPengiriman(noOrderNitem[0]);
-                    await DatabaseHelper.instance.insertRecordTugas(data);
                   }
                 }
-                Navigator.pushReplacementNamed(context, MenuScreen.routeName);
+                Navigator.pushReplacementNamed(
+                    context, MenuSelectCustomer.routeName);
+
+                // Navigator.pushReplacementNamed(context, MenuScreen.routeName);
               },
             ),
           ],
@@ -254,7 +281,11 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
           controller: cameraController,
           // fit: BoxFit.contain,
           onDetect: (capture) async {
+            final MenuSelectCustomerController ctl =
+                Get.put(MenuSelectCustomerController());
+
             final List<Barcode> barcodes = capture.barcodes;
+
             for (final barcode in barcodes) {
               noOrder = barcode.rawValue!;
               debugPrint('Barcode found! ${barcode.rawValue}');
@@ -285,6 +316,12 @@ class _ScanPengirimanScreenState extends State<ScanPengirimanScreen> {
                 showErrorSupirMismatchDialog(context);
                 return;
               }
+            }
+
+            if (!ctl.internetConnected.value) {
+              showCustomDialog(context);
+              AudioPlayer().play(AssetSource('audio/success.mp3'));
+              return;
             }
 
             final cekDuplicate = await sendPostRequest();

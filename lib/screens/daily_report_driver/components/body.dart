@@ -50,7 +50,9 @@ class _BodyState extends State<Body> {
   }
 
   Future getData() async {
-    final url = Uri.parse('${kURL_ORIGIN}pengiriman/get-supir-upload-report');
+    final creatdBy = await SharedToken.univGetterString('username');
+    final url = Uri.parse(
+        '${kURL_ORIGIN}pengiriman/get-supir-upload-report?created_by=${creatdBy}');
 
     try {
       final response = await http.post(url);

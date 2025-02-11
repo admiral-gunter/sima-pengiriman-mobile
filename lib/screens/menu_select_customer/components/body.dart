@@ -83,6 +83,8 @@ class _BodyState extends State<Body> {
       await DatabaseHelper.instance.createDailyReportSupirTable();
       await DatabaseHelper.instance.updateTb();
       await DatabaseHelper.instance.createOrderServicesOfflineAttachment();
+
+      await DatabaseHelper.instance.createOrderSupirUploadAttOfflineTable();
       await SharedToken.univSetterString('tb_setted', 'yes');
     }
   }
@@ -108,6 +110,8 @@ class _BodyState extends State<Body> {
                 showErrorSnackbar('Tidak ada koneksi internet!');
                 getCustomersOffline();
               }
+
+              await getunassignedSJ();
 
               // try {
               //   final result = await InternetAddress.lookup('example.com');
@@ -139,12 +143,28 @@ class _BodyState extends State<Body> {
     super.initState();
   }
 
+  var unassignedCustomersSJ = [];
+  bool unassignedCustomersSJExists = false;
   Future<void> getCustomersOffline() async {
     List<Customer> customers =
         (await DatabaseHelper.instance.getAssignedCustomers()).cast<Customer>();
     setState(() {
       _isLoading = false;
       customerList.addAll(customers);
+    });
+  }
+
+  Future<void> getunassignedSJ() async {
+    var data = (await DatabaseHelper.instance.getRecordTugas());
+    print('w');
+    print(data);
+    setState(() {
+      _isLoading = false;
+      if (data.isNotEmpty) {
+        unassignedCustomersSJExists = true;
+      }
+      // unassignedCustomersSJ.addAll(unassignedCustomersSJ);
+      // customerList.addAll(unassignedCustomers);
     });
   }
 
@@ -240,13 +260,13 @@ class _BodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
-    if (customerList.isEmpty) {
-      return const Center(
-        child: Text('Surat Jalan belum dibuat'),
-      );
-    }
     return Column(
       children: [
+        customerList.isEmpty
+            ? Center(
+                child: Text('Surat Jalan belum dibuat'),
+              )
+            : SizedBox.shrink(),
         Expanded(
           child: ListView.builder(
             itemCount: customerList.length,
@@ -268,6 +288,24 @@ class _BodyState extends State<Body> {
             },
           ),
         ),
+        unassignedCustomersSJExists
+            ? ListTile(
+                leading: const Icon(Icons.info),
+                title: const Text('SJ OFFLINE'),
+                subtitle: const Text(
+                    'klik disini untuk klik melihat  sj ter scan OFFLINE'),
+                trailing: const Icon(Icons.arrow_forward),
+                onTap: () {
+                  SharedToken.univSetterString('customer_id', 'UNASSIGNED')
+                      .then((value) => {
+                            Navigator.pushNamed(
+                                context, MenuSJCustomerScreen.routeName)
+                          });
+                  // Add your action here
+                  print('Static item tapped');
+                },
+              )
+            : SizedBox.shrink(),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
           child: SizedBox(
