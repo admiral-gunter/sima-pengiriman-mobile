@@ -589,6 +589,22 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
   var attachments = [];
 
   final keteranganTxt = TextEditingController();
+  void _openFullScreen(BuildContext context, XFile img) {
+    showDialog(
+      context: context,
+      builder: (_) => GestureDetector(
+        onTap: () => Navigator.of(context).pop(),
+        child: Container(
+          color: Colors.black87,
+          alignment: Alignment.center,
+          child: Image.file(
+            File(img.path),
+            fit: BoxFit.contain,
+          ),
+        ),
+      ),
+    );
+  }
 
   void _showTakeEvidncDialog(BuildContext context) {
     showDialog(
@@ -652,6 +668,46 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
+                  SizedBox(
+                    height: 120,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: _images.map((img) {
+                          return Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 5.0),
+                            child: InkWell(
+                              onTap: () => _openFullScreen(context, img),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  File(img.path),
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 100,
+                                    height: 100,
+                                    color: Colors.grey[300],
+                                    child: const Center(
+                                      child: Text(
+                                        'Load\nError',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -673,7 +729,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                       ),
                     ],
                   ),
-                  Text('File Selected : $_selectedImgNm'),
+                  Text('File Selected : $_imageNames'),
                   const SizedBox(height: 10),
                   TextFormField(
                     controller: keteranganTxt,
@@ -727,104 +783,111 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     );
   }
 
-  File? _selectedImg;
+  final ImagePicker _picker = ImagePicker();
 
-  String _selectedImgNm = 'None';
-  String _selectedImgpath = '';
+  // Hold picked images
+  List<XFile> _images = [];
+  // Optionally hold just names or paths for display
+  List<String> _imageNames = [];
+  List<String> _imagePaths = [];
 
-  Future _pickImgFromGallery() async {
-    final img = await ImagePicker().pickImage(source: ImageSource.gallery);
+  final TextEditingController _keteranganTxt = TextEditingController();
 
-    if (img == null) return;
+  Future<void> _pickImgFromGallery() async {
+    final List<XFile>? picked = await _picker.pickMultiImage();
+    if (picked == null || picked.isEmpty) return;
+
     setState(() {
-      _selectedImg = File(img.path);
-      _selectedImgpath = img.path;
-
-      _selectedImgNm = img.name;
+      _images = picked;
+      _imageNames = picked.map((img) => img.name).toList();
+      _imagePaths = picked.map((img) => img.path).toList();
     });
   }
 
-  Future _pickImgFromCamera() async {
-    final img = await ImagePicker().pickImage(source: ImageSource.camera);
-
+  /// If you really want to allow multiple camera shots in one go,
+  /// you could call pickImage repeatedly in a loop/callback.
+  Future<void> _pickImgFromCamera() async {
+    final XFile? img = await _picker.pickImage(source: ImageSource.camera);
     if (img == null) return;
-    setState(() {
-      _selectedImg = File(img.path);
-      _selectedImgpath = img.path;
 
-      _selectedImgNm = img.name;
+    setState(() {
+      _images.add(img);
+      _imageNames.add(img.name);
+      _imagePaths.add(img.path);
     });
   }
 
   Future<void> uploadFile() async {
+    if (_images.isEmpty) return;
+
     try {
-      String uname = await SharedToken.univGetterString('username');
+      final uname = await SharedToken.univGetterString('username');
       final platNo = await SharedToken.univGetterString('no_plat');
+      final locData = await Location().getLocation();
 
-      LocationData locationData = await location.getLocation();
+      final ctk = Get.put(MenuSelectCustomerController());
+      final ctl = Get.put(TurunBarangOnlineController());
 
-      final MenuSelectCustomerController ctk =
-          Get.put(MenuSelectCustomerController());
-
-      final TurunBarangOnlineController ctl =
-          Get.put(TurunBarangOnlineController());
-
+      // Offline: save tasks locally
       if (!ctk.internetConnected.value) {
-        Map<String, dynamic> insertData = {
-          'file': _selectedImgpath,
-          'nomor_order': ctl.noSuratJalanSelected.value,
-          'username': uname,
-          'keterangan': keteranganTxt.text,
-          'plat_no': platNo,
-          'latitude': locationData.latitude.toString(),
-          'longitude': locationData.longitude.toString(),
-        };
-        try {
+        for (var path in _imagePaths) {
+          final insertData = {
+            'file': path,
+            'nomor_order': ctl.noSuratJalanSelected.value,
+            'username': uname,
+            'keterangan': _keteranganTxt.text,
+            'plat_no': platNo,
+            'latitude': locData.latitude.toString(),
+            'longitude': locData.longitude.toString(),
+          };
           await DatabaseHelper.instance
               .insertSupirUploadAttachmentTask(insertData);
-          return;
-        } catch (err) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('File upload failed: $err')),
-          );
-          return;
         }
+        return;
       }
 
-      ctl.noSuratJalanSelected.value;
-      var url = Uri.parse(
-          '${kURL_ORIGIN}pengiriman/supir-upload-attachment-task?nomor_order=${ctl.noSuratJalanSelected.value}&username=$uname&keterangan=${keteranganTxt.text}&plat_no=$platNo&lat=${locationData.latitude}&long=${locationData.longitude}');
-
-      var request = http.MultipartRequest('POST', url);
-
-      var fileStream = http.ByteStream(_selectedImg!.openRead());
-      var length = await _selectedImg!.length();
-      var multipartFile = http.MultipartFile(
-        'file',
-        fileStream,
-        length,
-        filename: _selectedImg!.path,
-      );
-
-      request.files.add(multipartFile);
-
-      var response = await request.send();
-
-      // Handle the response
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('File uploaded successfully!')),
+      // Online: upload each image one by one
+      for (var img in _images) {
+        final uri = Uri.parse(
+          '${kURL_ORIGIN}pengiriman/supir-upload-attachment-task'
+          '?nomor_order=${ctl.noSuratJalanSelected.value}'
+          '&username=$uname'
+          '&keterangan=${_keteranganTxt.text}'
+          '&plat_no=$platNo'
+          '&lat=${locData.latitude}'
+          '&long=${locData.longitude}',
         );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+
+        final request = http.MultipartRequest('POST', uri);
+
+        final fileBytes = await File(img.path).readAsBytes();
+        final multipartFile = http.MultipartFile.fromBytes(
+          'file',
+          fileBytes,
+          filename: img.name,
+        );
+
+        request.files.add(multipartFile);
+
+        final response = await request.send();
+
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Uploaded ${img.name} successfully!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
               content: Text(
-                  'File upload failed with status: ${response.statusCode}')),
-        );
+                'Upload of ${img.name} failed: ${response.statusCode}',
+              ),
+            ),
+          );
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ERROR: ${e}')),
+        SnackBar(content: Text('ERROR: $e')),
       );
     }
   }
