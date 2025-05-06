@@ -29,6 +29,7 @@ import '../order_service/controll.ers/order_service_controller.dart';
 import '../turun_barang_offline_scanner/turun_barang_offline_scanner.dart';
 import 'components/form_report_dialog.dart';
 import '../order_service/order_service_screen.dart';
+import 'components/take_evidence_dialog.dart';
 import 'controllers/turun_barang_online_controller.dart';
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:mime/mime.dart';
@@ -1220,7 +1221,15 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                         await getAttachment();
                                         // _launchMapsUrl(ctl.listLoc);
                                         // return;
-                                        _showTakeEvidncDialog(context);
+
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  TakeEvidenceDialog()),
+                                        );
+
+                                        // _showTakeEvidncDialog(context);
                                       },
                                       style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.purple),

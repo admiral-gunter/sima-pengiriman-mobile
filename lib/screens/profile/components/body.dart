@@ -15,28 +15,28 @@ class Body extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 20),
       child: Column(
         children: [
-          ProfilePic(),
-          SizedBox(height: 20),
-          ProfileMenu(
-            text: "My Account",
-            icon: "assets/icons/User Icon.svg",
-            press: () => {},
-          ),
-          ProfileMenu(
-            text: "History Order",
-            icon: "assets/icons/Bell.svg",
-            press: () {
-              Navigator.pushReplacementNamed(
-                  context, HistoryOrderScreen.routeName);
-            },
-          ),
-          ProfileMenu(
-            text: "Settings",
-            icon: "assets/icons/Settings.svg",
-            press: () => {
-              Navigator.pushReplacementNamed(context, SignInScreen.routeName)
-            },
-          ),
+          // ProfilePic(),
+          // SizedBox(height: 20),
+          // ProfileMenu(
+          //   text: "My Account",
+          //   icon: "assets/icons/User Icon.svg",
+          //   press: () => {},
+          // ),
+          // ProfileMenu(
+          //   text: "History Order",
+          //   icon: "assets/icons/Bell.svg",
+          //   press: () {
+          //     Navigator.pushReplacementNamed(
+          //         context, HistoryOrderScreen.routeName);
+          //   },
+          // ),
+          // ProfileMenu(
+          //   text: "Settings",
+          //   icon: "assets/icons/Settings.svg",
+          //   press: () => {
+          //     Navigator.pushReplacementNamed(context, SignInScreen.routeName)
+          //   },
+          // ),
           ProfileMenu(
             text: "Log Out",
             icon: "assets/icons/Log out.svg",

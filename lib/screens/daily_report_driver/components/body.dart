@@ -289,9 +289,9 @@ class _FormReportDialogState extends State<FormReportDialog> {
   Future _pickImgFromGallery() async {
     final img = await ImagePicker().pickImage(
         source: ImageSource.gallery,
-        maxHeight: 480,
-        maxWidth: 640,
-        imageQuality: 30);
+        // maxHeight: 480,
+        // maxWidth: 640,
+        imageQuality: 80);
 
     if (img == null) return;
     setState(() {
@@ -302,9 +302,9 @@ class _FormReportDialogState extends State<FormReportDialog> {
   Future _pickImgFromCamera() async {
     final img = await ImagePicker().pickImage(
         source: ImageSource.camera,
-        maxHeight: 480,
-        maxWidth: 640,
-        imageQuality: 30);
+        // maxHeight: 480,
+        // maxWidth: 640,
+        imageQuality: 80);
 
     if (img == null) return;
 
@@ -327,6 +327,8 @@ class _FormReportDialogState extends State<FormReportDialog> {
   String errMsgKmKendaraan = '';
   String errMsgStruk = '';
   String errMsgTipeLaporan = '';
+  String errMsgTextKm = '';
+  String errMsgTextLiter = '';
 
   @override
   Widget build(BuildContext context) {
@@ -341,6 +343,10 @@ class _FormReportDialogState extends State<FormReportDialog> {
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                   labelText: 'KM', hintText: 'Masukkan kilometer...'),
+            ),
+            Text(
+              errMsgTextKm,
+              style: TextStyle(fontSize: 10, color: Colors.red),
             ),
             SizedBox(
               height: 20,
@@ -399,6 +405,10 @@ class _FormReportDialogState extends State<FormReportDialog> {
                             decoration: InputDecoration(
                                 labelText: 'Liter',
                                 hintText: 'Masukkan Liter Pengisian Bensin'),
+                          ),
+                          Text(
+                            errMsgTextLiter,
+                            style: TextStyle(fontSize: 10, color: Colors.red),
                           ),
                           SizedBox(
                             height: 20,
@@ -685,7 +695,7 @@ class _FormReportDialogState extends State<FormReportDialog> {
           },
         ),
         TextButton(
-          child: btnDisabled ? Text('Submitting...') : Text('Submit'),
+          child: btnDisabled ? Text('Mohon Tunggu...') : Text('Submit'),
           onPressed: () async {
             if (btnDisabled) {
               return;
@@ -709,6 +719,13 @@ class _FormReportDialogState extends State<FormReportDialog> {
 
             if (dropdownValue == 'LAPORAN_KM' ||
                 dropdownValue == 'PENGISIAN_BBM') {
+              if (kmTextController.text.isEmpty) {
+                setState(() {
+                  errMsgTextKm = 'Harap isi KM!';
+                });
+                return;
+              }
+
               if (_listImgs['indikator_bensin'] == null) {
                 setState(() {
                   errMsgIndikator = 'Harap isi foto indikator!';
@@ -720,19 +737,23 @@ class _FormReportDialogState extends State<FormReportDialog> {
                   errMsgKmKendaraan = 'Harap isi foto KM Kendaraan!';
                 });
               }
-
-              return;
             }
 
             if (dropdownValue == 'PENGISIAN_BBM') {
+              if (literTextController.text.isEmpty) {
+                setState(() {
+                  errMsgTextLiter = 'Harap isi Liter!';
+                });
+                return;
+              }
               if (_listImgs['foto_struck'] == null) {
                 setState(() {
                   errMsgStruk = 'Harap isi foto struk!';
                 });
+                return;
               }
-
-              return;
             }
+
             setState(() {
               btnDisabled = true;
             });
@@ -744,41 +765,5 @@ class _FormReportDialogState extends State<FormReportDialog> {
         ),
       ],
     );
-  }
-
-  validation() {
-    if (dropdownValue == '-') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Harap Pilih tipe laporan!')),
-      );
-
-      return;
-    }
-
-    if (dropdownValue == 'LAPORAN_KM' || dropdownValue == 'PENGISIAN_BBM') {
-      if (_listImgs['indikator_bensin'] == null) {
-        setState(() {
-          errMsgIndikator = 'Harap isi foto indikator!';
-        });
-      }
-
-      if (_listImgs['km_kendaraan'] == null) {
-        setState(() {
-          errMsgKmKendaraan = 'Harap isi foto KM Kendaraan!';
-        });
-      }
-
-      return;
-    }
-
-    if (dropdownValue == 'PENGISIAN_BBM') {
-      if (_listImgs['foto_struck'] == null) {
-        setState(() {
-          errMsgKmKendaraan = 'Harap isi foto struk!';
-        });
-      }
-
-      return;
-    }
   }
 }
