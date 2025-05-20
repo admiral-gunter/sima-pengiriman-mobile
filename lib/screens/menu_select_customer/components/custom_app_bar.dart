@@ -8,6 +8,7 @@ import 'package:sima_pengiriman/helper/database_helper.dart';
 
 import '../../../shared_preferences/shared_token.dart';
 import '../controllers/menu_select_customer_controller.dart';
+import 'tap_order_page.dart';
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   const CustomAppBar({super.key});
@@ -77,7 +78,7 @@ class CustomAppBarState extends State<CustomAppBar> {
 
     return AppBar(
       centerTitle: true,
-      title: Text('Hi $username'), // Access the widget properties with `widget`
+      title: TapOrderPage(), // Access the widget properties with `widget`
       leading: IconButton(
         icon: Obx(
           () => Icon(Icons.circle,

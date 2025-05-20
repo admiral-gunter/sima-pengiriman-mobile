@@ -36,16 +36,22 @@ class _BodyState extends State<Body> {
     final stsAbsen = await SharedToken.univGetterString('STS_ABSEN');
 
     if (stsAbsen == 'BELUM_ABSEN') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text(
-            'BUAT LAPORAN KM UNTUK MELANJUTKAN TUGAS',
-            style: TextStyle(color: Colors.white),
+      List? dbCheck =
+          await DatabaseHelper.instance.getLastDailyReportSupirToday();
+
+      if (dbCheck.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red,
+            content: Text(
+              'BUAT LAPORAN KM UNTUK MELANJUTKAN TUGAS',
+              style: TextStyle(color: Colors.white),
+            ),
+            duration: Duration(days: 1),
+            action: SnackBarAction(label: 'Ok', onPressed: () {}),
           ),
-          duration: Duration(days: 1),
-        ),
-      );
+        );
+      }
     }
   }
 
@@ -64,7 +70,16 @@ class _BodyState extends State<Body> {
         print('Response data: ${response.body}');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${response.body}')),
+          SnackBar(
+              action: SnackBarAction(
+                label: 'Ok',
+                onPressed: () {
+                  // Some code to undo the change.
+                },
+              ),
+              content: Text(
+                '${response.body}',
+              )),
         );
         print('Request failed with status: ${response.statusCode}.');
         print('Response body: ${response.body}');
@@ -230,7 +245,14 @@ class _FormReportDialogState extends State<FormReportDialog> {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Laporan berhasil dicatat!')),
+        SnackBar(
+            action: SnackBarAction(
+              label: 'Ok',
+              onPressed: () {
+                // Some code to undo the change.
+              },
+            ),
+            content: Text('Laporan berhasil dicatat!')),
       );
       return;
     }

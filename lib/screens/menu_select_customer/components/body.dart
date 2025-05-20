@@ -252,6 +252,7 @@ class _BodyState extends State<Body> {
     final snackBar = SnackBar(
       content: Text(message ?? 'An error occurred'),
       backgroundColor: Colors.red,
+      action: SnackBarAction(label: 'Ok', onPressed: () {}),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }

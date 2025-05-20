@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -339,6 +340,21 @@ class DatabaseHelper {
       longitude TEXT
     )
   ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS product_validation (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id TEXT,
+        identifier TEXT,
+        inventory_id TEXT TEXT UNIQUE,
+        product_name TEXT,
+        no_order TEXT,
+        dest_loc_name TEXT,
+        dest_loc_latitude TEXT,
+        dest_loc_longitude TEXT,
+        nomor_sj TEXT
+      )
+    ''');
 
     // await createOrderSupirUploadAttOfflineTable();
   }
@@ -733,6 +749,23 @@ class DatabaseHelper {
     }
   }
 
+  Future<List<Map>> getLastDailyReportSupirToday() async {
+    final db = await instance.database;
+
+    // 1. Compute today's date string in the same format as your TEXT.
+    final String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    //    e.g. "2025-05-20"
+
+    // 2. Query with a parameterized LIKE clause.
+    return await db.query(
+      'daily_report_supir',
+      where: 'date_added LIKE ?',
+      whereArgs: ['$today%'], // matches anything that starts with "YYYY-MM-DD"
+      orderBy: 'id DESC',
+      limit: 5,
+    );
+  }
+
   Future<String> removeScannedSn(String snValue) async {
     try {
       final Database db = await instance.database;
@@ -1043,6 +1076,17 @@ class DatabaseHelper {
     return result;
   }
 
+  Future<List<Map<String, dynamic>>> getAllBarangTapV2(
+      String inventoryId) async {
+    final db = await instance.database;
+
+    // Execute the query to get all rows
+    List<Map<String, dynamic>> result = await db.query('barang_turun_tap',
+        distinct: true, where: ' sn = ?', whereArgs: [inventoryId]);
+
+    return result;
+  }
+
   Future<List<Map<String, dynamic>>> getAllDataFromTable() async {
     final db = await instance.database;
 
@@ -1163,6 +1207,51 @@ class DatabaseHelper {
     } catch (e) {
       return {'result': false, 'message': 'Failed to insert data: $e'};
     }
+  }
+
+  Future<void> insertInventoryProductValidation(
+      Map<String, dynamic> data) async {
+    final db = await instance.database;
+    await db.insert(
+      'product_validation',
+      data,
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  Future<int> deleteInventoryProductValidationByNomorSJ(String nomorSJ) async {
+    final db = await instance.database;
+    return await db.delete(
+      'product_validation',
+      where: 'nomor_sj = ?',
+      whereArgs: [nomorSJ],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getInventoryProductValidationByNomorSJ(
+      String nomorSJ) async {
+    final db = await instance.database;
+    return await db.query(
+      'product_validation',
+      where: 'nomor_sj = ?',
+      whereArgs: [nomorSJ],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>?>
+      getInventoryProductValidationByInventoryId(String invId) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'product_validation',
+      where: 'inventory_id = ?',
+      whereArgs: [invId],
+    );
+
+    if (result.isEmpty) {
+      return null; // Return null if no data found
+    }
+
+    return result;
   }
 
   Future<Map<String, dynamic>> insertServiceOffline(data) async {

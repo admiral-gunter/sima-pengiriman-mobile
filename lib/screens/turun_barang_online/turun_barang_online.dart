@@ -13,6 +13,7 @@ import 'package:sima_pengiriman/constants.dart';
 import 'package:sima_pengiriman/helper/database_helper.dart';
 import 'package:sima_pengiriman/screens/maps_view/controllers/maps_view_controller.dart';
 import 'package:sima_pengiriman/screens/menu/menu_screen.dart';
+import 'package:sima_pengiriman/screens/menu_select_customer/menu_select_customer.dart';
 import 'package:sima_pengiriman/screens/universal_scannner/universal_scanner_screen.dart';
 import 'package:sima_pengiriman/shared_preferences/shared_token.dart';
 import 'package:sqflite/sqflite.dart';
@@ -356,19 +357,54 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     Map<String, int> productCount = {};
     Map<String, int> totalQtyMap = {};
 
-    for (var item in ctl.listInv) {
-      String productName = item['product_name'] ?? 'Unknown??';
-      int totalQty = await DatabaseHelper.instance
-          .countBarangTap(item['product_name'], item['no_order']);
+    ctl.listInv.value = await DatabaseHelper.instance
+        .getInventoryProductValidationByNomorSJ(ctl.nomorSJ.value);
 
-      final barangTap = await DatabaseHelper.instance.getAllBarangTap(
-          item['product_name'], item['no_order'], item['inventory_id']);
+    if (ctl.listInv.isEmpty) {
+      for (var item in ctl.listInv) {
+        String productName = item['product_name'] ?? 'Unknown??';
+        int totalQty = await DatabaseHelper.instance
+            .countBarangTap(item['product_name'], item['no_order']);
 
-      listBarangTapped.addAll(barangTap);
+        final barangTap = await DatabaseHelper.instance.getAllBarangTap(
+            item['product_name'], item['no_order'], item['inventory_id']);
 
-      productCount[productName] = (productCount[productName] ?? 0) + 1;
-      totalQtyMap[productName] = totalQty;
+        listBarangTapped.addAll(barangTap);
+
+        productCount[productName] = (productCount[productName] ?? 0) + 1;
+        totalQtyMap[productName] = totalQty;
+
+        item['nomor_sj'] = ctl.nomorSJ.value;
+
+        await DatabaseHelper.instance.insertInventoryProductValidation(item);
+      }
     }
+
+    if (ctl.listInv.isEmpty) {
+      ctl.listInv.value = await DatabaseHelper.instance
+          .getInventoryProductValidationByNomorSJ(ctl.nomorSJ.value);
+      print(ctl.listInv);
+
+      if (ctl.listInv.isNotEmpty) {
+        for (var item in ctl.listInv) {
+          String productName = item['product_name'] ?? 'Unknown??';
+          int totalQty = await DatabaseHelper.instance
+              .countBarangTap(item['product_name'], item['no_order']);
+
+          final barangTap = await DatabaseHelper.instance
+              .getAllBarangTapV2(item['inventory_id']);
+
+          print('barangTap es');
+          print(barangTap);
+
+          listBarangTapped.addAll(barangTap);
+
+          productCount[productName] = (productCount[productName] ?? 0) + 1;
+          totalQtyMap[productName] = totalQty;
+        }
+      }
+    }
+
     List listBarangTappedTemp = [];
 
     listBarangTapped.forEach((element) {
@@ -983,7 +1019,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              "Turun Barang (Online)",
+              "Turun Barang",
               style: TextStyle(
                 color: Colors.black,
               ),
@@ -1012,8 +1048,9 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
             action: SnackBarAction(
               label: 'Ya',
               onPressed: () {
-                ctl.listInv.clear();
-                Navigator.pop(context);
+                // ctl.listInv.clear();
+                Navigator.pushReplacementNamed(
+                    context, MenuSelectCustomer.routeName);
               },
             ),
           );
@@ -1142,61 +1179,60 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                             child: SingleChildScrollView(
                               child: Column(
                                 children: [
-                                  ctr.internetConnected == true
-                                      ? SizedBox(
-                                          width: double.infinity,
-                                          child: ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      locationGetted &&
-                                                              !sjDibatalkan
-                                                          ? Colors.blue
-                                                          : Colors.blue[200]),
-                                              onPressed: () async {
-                                                if (!sjDibatalkan) {
-                                                  sJDalamPengiriman("17");
-                                                  Navigator.pushReplacement(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          UniversalScannerSCreen(
-                                                              goBackRouteName:
-                                                                  TurunBarangOnlineScreen
-                                                                      .routeName),
-                                                    ),
-                                                  );
-                                                }
-                                              },
-                                              child: locationGetted
-                                                  ? const Text(
-                                                      'Scan SN dan Identifier',
-                                                      style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    )
-                                                  : Text(
-                                                      'Getting current location..',
-                                                      style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontWeight: FontWeight
-                                                              .bold))))
-                                      : SizedBox(
-                                          width: double.infinity,
-                                          child: ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.blue),
-                                            onPressed: () {
-                                              Navigator.pushNamed(
-                                                  context,
-                                                  TurunBarangOfflineScanner
-                                                      .routeName);
-                                            },
-                                            child: Text('Scan SN',
-                                                style: TextStyle(
-                                                    color: Colors.white)),
-                                          ),
-                                        ),
+                                  // ctr.internetConnected == true ?
+                                  SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor: locationGetted &&
+                                                      !sjDibatalkan
+                                                  ? Colors.blue
+                                                  : Colors.blue[200]),
+                                          onPressed: () async {
+                                            if (!sjDibatalkan) {
+                                              sJDalamPengiriman("17");
+                                              Navigator.pushReplacement(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      UniversalScannerSCreen(
+                                                          goBackRouteName:
+                                                              TurunBarangOnlineScreen
+                                                                  .routeName),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          child: locationGetted
+                                              ? const Text(
+                                                  'Scan SN dan Identifier',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )
+                                              : Text(
+                                                  'Getting current location..',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold)))),
+                                  // : SizedBox(
+                                  //     width: double.infinity,
+                                  //     child: ElevatedButton(
+                                  //       style: ElevatedButton.styleFrom(
+                                  //           backgroundColor: Colors.blue),
+                                  //       onPressed: () {
+                                  //         Navigator.pushNamed(
+                                  //             context,
+                                  //             TurunBarangOfflineScanner
+                                  //                 .routeName);
+                                  //       },
+                                  //       child: Text('Scan SN',
+                                  //           style: TextStyle(
+                                  //               color: Colors.white)),
+                                  //     ),
+                                  //   ),
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton(

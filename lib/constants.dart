@@ -59,8 +59,8 @@ const pfixRnded18 = 5.0;
 // String HOST = 'http://192.168.1.5/simait';
 
 // String HOST = 'http://192.168.1.5/simait';
-// String HOST = 'https://devgrobx.sinarmaju.co.id';
-String HOST = 'https://grobx.sinarmaju.co.id';
+String HOST = 'https://devgrobx.sinarmaju.co.id';
+// String HOST = 'https://grobx.sinarmaju.co.id';
 
 // String HOST = 'https://grobx.sinarmaju.co.id';
 
@@ -73,6 +73,12 @@ final kURL_ORIGIN_ASSET = '$HOST/uploads/image/';
 
 void showSuccessMessage(BuildContext context, String message) {
   final snackBar = SnackBar(
+    action: SnackBarAction(
+      label: 'Ok',
+      onPressed: () {
+        // Some code to undo the change.
+      },
+    ),
     content: Text(
       message,
       style: TextStyle(color: Colors.white),

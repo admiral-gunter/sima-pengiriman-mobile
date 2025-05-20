@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import '../../constants.dart';
 import '../scanner_offline/controller/scanner_offline_controller.dart';
 import '../turun_barang_online/controllers/turun_barang_online_controller.dart';
+import '../turun_barang_online/turun_barang_online.dart';
 import 'controller/universal_scanner_data.dart';
 
 class UniversalScannerSCreen extends StatefulWidget {
@@ -35,8 +36,9 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
 
   @override
   void initState() {
-    ctl.clearSnIdentifier();
+    print('kms');
     cameraController.stop();
+    ctl.clearSnIdentifier();
     checkInternetConn();
     super.initState();
   }
@@ -78,7 +80,7 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
         print('Response body: ${response.body}');
       }
     } catch (error) {
-      print('Error: $error');
+      print('Error sync: $error');
     }
   }
 
@@ -86,7 +88,8 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
     final TurunBarangOnlineController ctr =
         Get.put(TurunBarangOnlineController());
     final username = await SharedToken.univGetterString('username');
-
+    print('lis sj');
+    print(ctr.listSJ);
     if (!hasInternet) {
       for (var element in ctr.listSJ) {
         final data = {
@@ -218,10 +221,42 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () =>
-              Navigator.pushReplacementNamed(context, widget.goBackRouteName),
-        ),
+            icon: Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () async {
+              final TurunBarangOnlineController ctl =
+                  Get.put(TurunBarangOnlineController());
+              final snackBar = SnackBar(
+                content: Text('Mohon Tunggu...'),
+                backgroundColor: Colors.black,
+                duration: Duration(seconds: 2),
+              );
+
+              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+              ctl.listSJ.value = [];
+              ctl.listSelected.value = [];
+              ctl.listInv.value = [];
+              ctl.tapper.value = "";
+              ctl.listBarangPrioritas.value = [];
+              // ctl.nomorSJ.value = "";
+              // ctl.coordinate.value = {
+              //   'lat': '',
+              //   'long': ''
+              // };
+              // ctl.suratJalanCredential.value = {
+              //   'nama_toko': '',
+              //   'no_surat_jalan': ''
+              // };
+              // ctl.listLoc.value = [
+              //   {'': ''}
+              // ];
+              ctl.barangTap.value = 0;
+              ctl.barangHarusTap.value = 0;
+              await ctl.getItemsByNoSJStr(ctl.nomorSJ.value).then((value) =>
+                  Navigator.pushNamed(
+                      context, TurunBarangOnlineScreen.routeName));
+              // Navigator.pushReplacementNamed(context, widget.goBackRouteName);
+            }),
         title: Text('Scanner ${hasInternet ? 'ONLINE' : 'OFFLINE'}'),
         actions: [
           IconButton(
@@ -256,6 +291,12 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
             iconSize: 32.0,
             onPressed: () => cameraController.switchCamera(),
           ),
+          IconButton(
+            color: Colors.black,
+            icon: Icon(Icons.start),
+            iconSize: 32.0,
+            onPressed: () => cameraController.start(),
+          ),
         ],
       ),
       body: Stack(
@@ -288,11 +329,20 @@ class _UniversalScannerSCreenState extends State<UniversalScannerSCreen> {
               final username = await SharedToken.univGetterString('username');
 
               if (!hasInternet) {
+                final invId = await DatabaseHelper.instance
+                    .getInventoryProductValidationByInventoryId(barcode);
+
+                if (invId == null) {
+                  AudioPlayer().play(AssetSource('audio/failed.mp3'));
+                  _dialogBuilder(context, 'DATA TIDAK VALID').then((value) {});
+                  return;
+                }
+
                 final dataTurun = {
-                  "nomor_order": ctr.listSJ[0]['nomor_order'],
+                  "nomor_order": invId[0]['nomor_order'],
                   "sn": barcode,
                   "identifier": 'IDENTIFIER',
-                  "product_name": 'PRODUCT_NAME',
+                  "product_name": invId[0]['product_name'],
                   "long": "dummy_value",
                   "lat": "dummy_value",
                   "location_id": 0,
