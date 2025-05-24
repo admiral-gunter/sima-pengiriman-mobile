@@ -195,7 +195,7 @@ class _BodyState extends State<Body> {
         Navigator.pushReplacementNamed(context, SignInScreen.routeName);
       }
     } catch (e) {
-      print('Error $e');
+      print('Error menu select customer $e');
     }
   }
 

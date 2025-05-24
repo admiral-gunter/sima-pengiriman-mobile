@@ -1148,20 +1148,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                       child: Text('Batal/Gagal Kirim'),
                                     ),
                                   ),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        _launchMapsUrl(ctl.listLoc);
-                                        return;
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.green),
-                                      child: Text('Buka Maps',
-                                          style:
-                                              TextStyle(color: Colors.white)),
-                                    ),
-                                  ),
+                               
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton(

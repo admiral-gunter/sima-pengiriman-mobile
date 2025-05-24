@@ -92,6 +92,29 @@ void showSuccessMessage(BuildContext context, String message) {
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 
+void showErrorMessage(BuildContext context, String message) {
+  final snackBar = SnackBar(
+    action: SnackBarAction(
+      label: 'Dismiss',
+      textColor: Colors.white,
+      onPressed: () {
+        // Optional: Handle dismissal or retry logic
+      },
+    ),
+    content: Text(
+      message,
+      style: TextStyle(color: Colors.white),
+    ),
+    backgroundColor: Colors.red, // Error color
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8),
+    ),
+  );
+
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+}
+
 Future<File> compressImage(File imageFile) async {
   // Check if the file size is greater than 2MB
   const int maxFileSize = 2 * 1024 * 1024; // 2MB in bytes

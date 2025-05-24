@@ -207,11 +207,23 @@ class _BodyState extends State<Body> {
                     // ];
                     ctl.barangTap.value = 0;
                     ctl.barangHarusTap.value = 0;
-                    await ctl
-                        .getItemsByNoSJStr(
-                            suratJalanList[index]['nomer_surat_jalan'])
-                        .then((value) => Navigator.pushNamed(
-                            context, TurunBarangOnlineScreen.routeName));
+
+                    if (suratJalanList[index]['nomer_surat_jalan'] == null) {
+                      showErrorMessage(context, 'Sj tidak ditemukan');
+
+                      return;
+                    }
+
+                    await ctl.getItemsByNoSJStr(
+                        suratJalanList[index]['nomer_surat_jalan']);
+
+                    Navigator.pushNamed(
+                        context, TurunBarangOnlineScreen.routeName);
+                    // await ctl
+                    //     .getItemsByNoSJStr(
+                    //         suratJalanList[index]['nomer_surat_jalan'])
+                    //     .then((value) => Navigator.pushNamed(
+                    //         context, TurunBarangOnlineScreen.routeName));
                     // SharedToken.univSetterString('suratJalan_id', suratJalanList[index].id)
                     //     .then((value) => {
                     //           Navigator.pushReplacementNamed(

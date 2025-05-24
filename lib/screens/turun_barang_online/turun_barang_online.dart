@@ -357,9 +357,14 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
     Map<String, int> productCount = {};
     Map<String, int> totalQtyMap = {};
 
-    ctl.listInv.value = await DatabaseHelper.instance
+    final orders = await DatabaseHelper.instance
         .getInventoryProductValidationByNomorSJ(ctl.nomorSJ.value);
 
+    if (orders.isNotEmpty) {
+      ctl.listInv.value = orders;
+    }
+
+    print(ctl.listInv);
     if (ctl.listInv.isEmpty) {
       for (var item in ctl.listInv) {
         String productName = item['product_name'] ?? 'Unknown??';
@@ -380,28 +385,22 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
       }
     }
 
-    if (ctl.listInv.isEmpty) {
-      ctl.listInv.value = await DatabaseHelper.instance
-          .getInventoryProductValidationByNomorSJ(ctl.nomorSJ.value);
-      print(ctl.listInv);
+    if (ctl.listInv.isNotEmpty) {
+      for (var item in ctl.listInv) {
+        String productName = item['product_name'] ?? 'Unknown??';
+        int totalQty = await DatabaseHelper.instance
+            .countBarangTap(item['product_name'], item['no_order']);
 
-      if (ctl.listInv.isNotEmpty) {
-        for (var item in ctl.listInv) {
-          String productName = item['product_name'] ?? 'Unknown??';
-          int totalQty = await DatabaseHelper.instance
-              .countBarangTap(item['product_name'], item['no_order']);
+        final barangTap = await DatabaseHelper.instance
+            .getAllBarangTapV2(item['inventory_id']);
 
-          final barangTap = await DatabaseHelper.instance
-              .getAllBarangTapV2(item['inventory_id']);
+        print('barangTap es');
+        print(barangTap);
 
-          print('barangTap es');
-          print(barangTap);
+        listBarangTapped.addAll(barangTap);
 
-          listBarangTapped.addAll(barangTap);
-
-          productCount[productName] = (productCount[productName] ?? 0) + 1;
-          totalQtyMap[productName] = totalQty;
-        }
+        productCount[productName] = (productCount[productName] ?? 0) + 1;
+        totalQtyMap[productName] = totalQty;
       }
     }
 
@@ -1018,8 +1017,8 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
             title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              "Turun Barang",
+            Text(
+              "Turun Barang ${ctl.listInv.length}/${output.length}",
               style: TextStyle(
                 color: Colors.black,
               ),
@@ -1327,20 +1326,7 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                       child: const Text('Batal/Gagal Kirim'),
                                     ),
                                   ),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        _launchMapsUrl(ctl.listLoc);
-                                        return;
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.green),
-                                      child: const Text('Buka Maps',
-                                          style:
-                                              TextStyle(color: Colors.white)),
-                                    ),
-                                  ),
+
                                   // SizedBox(
                                   //   width: double.infinity,
                                   //   child: ElevatedButton(

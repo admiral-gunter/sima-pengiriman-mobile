@@ -78,6 +78,7 @@ class TurunBarangOnlineController extends GetxController {
 
   var latlongSJ = {}.obs;
   Future<void> getItemsByNoSJ(dynamic listNoSJ) async {
+    print('saya disini');
     print(listNoSJ);
     listSJ.clear();
     String noSj = '';
@@ -228,6 +229,8 @@ class TurunBarangOnlineController extends GetxController {
   }
 
   Future<void> getItemsByNoSJStr(dynamic noSj) async {
+    print('saya disini w');
+
     // print(listNoSJ);
     listSJ.clear();
     // String noSj = ;
