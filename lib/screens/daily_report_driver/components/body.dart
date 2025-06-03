@@ -137,51 +137,69 @@ class _BodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          flex: 1,
-          child: Container(
-            // padding: EdgeInsets.symmetric(horizontal: 1.0),
-            child: Column(
-              children: [
-                TextFormField(
-                  decoration: InputDecoration(hintText: 'Cari...'),
-                  autocorrect: false,
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          formReportDialog(context);
-                        },
-                        child: Text('Tambah'),
-                      ),
-                    ]),
-              ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          // 1. Cari... field
+          TextFormField(
+            decoration: InputDecoration(
+              hintText: 'Cari...',
+              border: OutlineInputBorder(),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+            autocorrect: false,
+          ),
+
+          SizedBox(height: 12),
+
+          // 2. “Tambah Laporan” button aligned to the right
+          Align(
+            alignment: Alignment.centerLeft,
+            child: ElevatedButton(
+              onPressed: () {
+                formReportDialog(context);
+              },
+              style: ElevatedButton.styleFrom(
+                primary: Colors.orange, // background color
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                textStyle: TextStyle(fontSize: 14),
+              ),
+              child: Text(
+                'Tambah Laporan',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
-        ),
-        Flexible(
-          flex: 5,
-          child: ListView.builder(
-            itemCount: supirReport.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text('${supirReport[index]['tipe']}'),
-                subtitle: Text(
-                    'KM : ${supirReport[index]['km']},  Liter : ${supirReport[index]['liter']}'),
-                trailing: Text('${supirReport[index]['created_at']}'),
-              );
-            },
+
+          SizedBox(height: 16),
+
+          // 3. The list takes all remaining space
+          Expanded(
+            child: ListView.builder(
+              itemCount: supirReport.length,
+              itemBuilder: (context, index) {
+                final report = supirReport[index];
+                return Card(
+                  margin: EdgeInsets.symmetric(vertical: 6),
+                  child: ListTile(
+                    title: Text('${report['tipe']}'),
+                    subtitle: Text(
+                      'KM: ${report['km']}   Liter: ${report['liter']}',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                    trailing: Text(
+                      '${report['created_at']}',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-        // Another component taking the remaining 25% of the height
-      ],
+        ],
+      ),
     );
   }
 }

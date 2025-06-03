@@ -1277,11 +1277,11 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
                                     width: double.infinity,
                                     child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        primary: ctl.barangTap.value == 0
-                                            ? Colors.red
-                                            : Colors
-                                                .red[200], // Background color
-                                        onPrimary: Colors.white, // Text color
+                                        // primary: ctl.barangTap.value == 0
+                                        //     ? Colors.red
+                                        //     : Colors
+                                        //         .red[200], // Background color
+                                        // onPrimary: Colors.white, // Text color
                                         elevation: 5, // Elevation (shadow)
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(
