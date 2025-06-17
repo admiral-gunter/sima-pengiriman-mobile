@@ -295,11 +295,11 @@ class _TurunBarangOnlineScreenState extends State<TurunBarangOnlineScreen> {
 
   _getLocationData() async {
     try {
-      print('nigger');
+      print('TEST');
       LocationData locationData = await location.getLocation();
       if (mounted) {
         setState(() {
-          print('yyee nigger');
+          print('yyee TEST');
 
           latitude = locationData.latitude!;
           longitude = locationData.longitude!;

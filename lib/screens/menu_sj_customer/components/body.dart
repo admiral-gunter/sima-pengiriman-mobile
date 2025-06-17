@@ -79,7 +79,7 @@ class _BodyState extends State<Body> {
         setState(() {
           isUnassignedCustomersSJ = true;
         });
-        print('niggas');
+        print('TESTs');
         getunassignedSJ();
         return;
       }
@@ -90,7 +90,7 @@ class _BodyState extends State<Body> {
       if (ctl.internetConnected.value) {
         getsuratJalanBySupir(value);
       } else {
-        print('niggas offline');
+        print('TESTs offline');
         getSjOffline();
       }
     });

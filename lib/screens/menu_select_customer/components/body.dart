@@ -75,7 +75,7 @@ class _BodyState extends State<Body> {
   initReportTable() async {
     final re = await DatabaseHelper.instance.getOrderServices();
 
-    print('nigger');
+    print('TEST');
     print(re);
     final tbSetted = await SharedToken.univGetterString('tb_setted');
     if (tbSetted == null) {
