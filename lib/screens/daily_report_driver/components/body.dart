@@ -221,11 +221,51 @@ class FormReportDialog extends StatefulWidget {
 
 class _FormReportDialogState extends State<FormReportDialog> {
   String dropdownValue = '-';
+  bool btnDisabled = false;
 
-  File? _selectedImg;
+  // Instead of three separate maps/keys, we keep a fixed-length List<File?> of size 3.
+  //  index 0: foto_struck
+  //  index 1: indikator_bensin
+  //  index 2: km_kendaraan
+  List<File?> images = List<File?>.filled(3, null);
+  List<String> imageNames = List<String>.filled(3, '');
 
-  Map<String, dynamic> _listImgs = {};
-  Map<String, String> _listImgsNm = {};
+  // Error messages
+  String errMsgStruk = '';
+  String errMsgIndikator = '';
+  String errMsgKmKendaraan = '';
+  String errMsgTipeLaporan = '';
+  String errMsgTextKm = '';
+  String errMsgTextLiter = '';
+
+  final kmTextController = TextEditingController();
+  final literTextController = TextEditingController();
+  final keteranganTextController = TextEditingController();
+
+  Future<void> _pickMultipleImages() async {
+    // Allow picking up to 3 images. The user can choose fewer, but we will map them by index.
+    final pickedFiles = await ImagePicker().pickMultiImage(
+      imageQuality: 80,
+    );
+    if (pickedFiles == null || pickedFiles.isEmpty) return;
+
+    // Reset before assigning
+    setState(() {
+      for (int i = 0; i < 3; i++) {
+        images[i] = null;
+        imageNames[i] = '';
+      }
+      // Assign up to the first 3 picked images
+      for (int i = 0; i < pickedFiles.length && i < 3; i++) {
+        images[i] = File(pickedFiles[i].path);
+        imageNames[i] = File(pickedFiles[i].path)
+            .uri
+            .pathSegments
+            .last; // just the filename
+      }
+      // If fewer than 3 picked, any leftover entries stay null/empty.
+    });
+  }
 
   Future<void> uploadFiles() async {
     final username = await SharedToken.univGetterString('username');
@@ -237,138 +277,106 @@ class _FormReportDialogState extends State<FormReportDialog> {
     final MenuSelectCustomerController ctl =
         Get.put(MenuSelectCustomerController());
 
+    // If offline, insert into local DB per image
     if (!ctl.internetConnected.value) {
-      _listImgs.forEach((key, value) async {
-        // print('$key: $value');
-        int liter = 0;
-        if (literTextController.text.isNotEmpty) {
-          int.parse(literTextController.text);
-        }
-        final resp = await DatabaseHelper.instance.insertDailyReportSupir(
+      for (int i = 0; i < 3; i++) {
+        final filePath = images[i]?.path;
+        if (filePath != null) {
+          // Parse liter if needed; original code wasn’t actually using the parsed value.
+          int liter = 0;
+          if (literTextController.text.isNotEmpty) {
+            liter = int.parse(literTextController.text);
+          }
+          final fieldName =
+              ['foto_struck', 'indikator_bensin', 'km_kendaraan'][i];
+
+          final resp = await DatabaseHelper.instance.insertDailyReportSupir(
             literTextController.text,
             kmTextController.text,
             dropdownValue,
-            value,
-            key,
+            filePath,
+            fieldName,
             keteranganTextController.text,
             username,
             platNo,
             position.latitude.toString(),
-            position.longitude.toString());
+            position.longitude.toString(),
+          );
+          print(resp);
+        }
+      }
 
-        print(resp);
-      });
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            action: SnackBarAction(
-              label: 'Ok',
-              onPressed: () {
-                // Some code to undo the change.
-              },
-            ),
-            content: Text('Laporan berhasil dicatat!')),
+          action: SnackBarAction(
+            label: 'Ok',
+            onPressed: () {},
+          ),
+          content: Text('Laporan berhasil dicatat!'),
+        ),
       );
       return;
     }
 
-    var request = http.MultipartRequest(
-        'POST',
-        Uri.parse(
-            '${kURL_ORIGIN}pengiriman/supir-upload-report?tipe=$dropdownValue&username=$username&km=${kmTextController.text}&liter=${literTextController.text}&plat_no=$platNo&keterangan=${keteranganTextController.text}&lat=${position.latitude}&long=${position.longitude}'));
-    // for (var file in selectedFiles) {
-    //   request.files.add(await http.MultipartFile.fromPath('files', file.path));
-    // }
-    if (_listImgs['foto_struck'] != null) {
-      request.files.add(await http.MultipartFile.fromPath(
-          'foto_struck', _listImgs['foto_struck']));
-    }
+    // Online: prepare MultipartRequest
+    final uri = Uri.parse(
+      '${kURL_ORIGIN}pengiriman/supir-upload-report'
+      '?tipe=$dropdownValue'
+      '&username=$username'
+      '&km=${kmTextController.text}'
+      '&liter=${literTextController.text}'
+      '&plat_no=$platNo'
+      '&keterangan=${keteranganTextController.text}'
+      '&lat=${position.latitude}'
+      '&long=${position.longitude}',
+    );
+    final request = http.MultipartRequest('POST', uri);
 
-    if (_listImgs['indikator_bensin'] != null) {
-      request.files.add(await http.MultipartFile.fromPath(
-          'indikator_bensin', _listImgs['indikator_bensin']));
-    }
-    if (_listImgs['km_kendaraan'] != null) {
-      request.files.add(await http.MultipartFile.fromPath(
-          'km_kendaraan', _listImgs['km_kendaraan']));
+    // Field names in order
+    final fieldNames = ['foto_struck', 'indikator_bensin', 'km_kendaraan'];
+
+    // Attach each non-null image
+    for (int i = 0; i < images.length; i++) {
+      final file = images[i];
+      if (file != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(fieldNames[i], file.path),
+        );
+      }
     }
 
     try {
-      var response = await request.send();
-      var responseBody = await response.stream.bytesToString();
-      if (!mounted) return;
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
       setState(() {
         btnDisabled = false;
       });
+
       if (response.statusCode == 200) {
         print('Files uploaded successfully');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${responseBody}')),
+          SnackBar(content: Text(responseBody)),
         );
       } else {
         print('File upload failed with status: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('File upload failed: ${responseBody}')),
+          SnackBar(content: Text('File upload failed: $responseBody')),
         );
       }
     } catch (e) {
       if (!mounted) return;
-
       print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
     }
   }
-
-  Future _pickImgFromGallery() async {
-    final img = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        // maxHeight: 480,
-        // maxWidth: 640,
-        imageQuality: 80);
-
-    if (img == null) return;
-    setState(() {
-      _selectedImg = File(img.path);
-    });
-  }
-
-  Future _pickImgFromCamera() async {
-    final img = await ImagePicker().pickImage(
-        source: ImageSource.camera,
-        // maxHeight: 480,
-        // maxWidth: 640,
-        imageQuality: 80);
-
-    if (img == null) return;
-
-    // Compress the image
-    // final compressedImage = await compressImage(File(img.path));
-
-    setState(() {
-      _selectedImg = File(img.path);
-    });
-  }
-
-  var kmTextController = TextEditingController();
-  var literTextController = TextEditingController();
-
-  var keteranganTextController = TextEditingController();
-
-  var btnDisabled = false;
-
-  String errMsgIndikator = '';
-  String errMsgKmKendaraan = '';
-  String errMsgStruk = '';
-  String errMsgTipeLaporan = '';
-  String errMsgTextKm = '';
-  String errMsgTextLiter = '';
 
   @override
   Widget build(BuildContext context) {
@@ -378,35 +386,37 @@ class _FormReportDialogState extends State<FormReportDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // KM input
             TextFormField(
               controller: kmTextController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                  labelText: 'KM', hintText: 'Masukkan kilometer...'),
+                labelText: 'KM',
+                hintText: 'Masukkan kilometer...',
+              ),
             ),
-            Text(
-              errMsgTextKm,
-              style: TextStyle(fontSize: 10, color: Colors.red),
-            ),
-            SizedBox(
-              height: 20,
-            ),
+            if (errMsgTextKm.isNotEmpty)
+              Text(
+                errMsgTextKm,
+                style: TextStyle(fontSize: 10, color: Colors.red),
+              ),
+            SizedBox(height: 20),
+
+            // Dropdown tipe laporan
             Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
                   'Pilih Tipe Laporan:',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                if (errMsgTipeLaporan.isNotEmpty)
+                  Text(
+                    errMsgTipeLaporan,
+                    style: TextStyle(color: Colors.red),
                   ),
-                ),
-                Text(
-                  errMsgTipeLaporan,
-                  style: TextStyle(color: Colors.red),
-                ),
-                SizedBox(height: 1),
+                SizedBox(height: 4),
                 SizedBox(
                   width: double.infinity,
                   child: DropdownButton<String>(
@@ -433,290 +443,83 @@ class _FormReportDialogState extends State<FormReportDialog> {
                     }).toList(),
                   ),
                 ),
-                SizedBox(
-                  height: 20,
-                ),
-                dropdownValue == 'PENGISIAN_BBM'
-                    ? Column(
-                        children: [
-                          TextFormField(
-                            controller: literTextController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                                labelText: 'Liter',
-                                hintText: 'Masukkan Liter Pengisian Bensin'),
-                          ),
-                          Text(
-                            errMsgTextLiter,
-                            style: TextStyle(fontSize: 10, color: Colors.red),
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Foto Struck'),
-                              Text(
-                                '${_listImgsNm['foto_struck']}',
-                                style: TextStyle(fontSize: 8.0),
-                              ),
-                              Text(
-                                errMsgStruk,
-                                style: TextStyle(
-                                    fontSize: 12.0, color: Colors.red),
-                              ),
-                              Row(children: [
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    await _pickImgFromGallery();
-                                    setState(() {
-                                      _listImgsNm['foto_struck'] =
-                                          File(_selectedImg!.path)
-                                              .uri
-                                              .pathSegments
-                                              .last;
-                                      _listImgs['foto_struck'] =
-                                          _selectedImg!.path;
-                                    });
-                                  },
-                                  child: Text('Galeri'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    await _pickImgFromCamera();
-                                    setState(() {
-                                      _listImgsNm['foto_struck'] =
-                                          File(_selectedImg!.path)
-                                              .uri
-                                              .pathSegments
-                                              .last;
-                                      _listImgs['foto_struck'] =
-                                          _selectedImg!.path;
-                                    });
-                                  },
-                                  child: Text('Kamera'),
-                                ),
-                              ]),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Indikator Bensin'),
-                              Text(
-                                '${_listImgsNm['indikator_bensin']}',
-                                style: TextStyle(fontSize: 8.0),
-                              ),
-                              Text(
-                                errMsgIndikator,
-                                style: TextStyle(
-                                    fontSize: 12.0, color: Colors.red),
-                              ),
-                              Row(children: [
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    await _pickImgFromGallery();
-                                    setState(() {
-                                      _listImgsNm['indikator_bensin'] =
-                                          File(_selectedImg!.path)
-                                              .uri
-                                              .pathSegments
-                                              .last;
-                                      _listImgs['indikator_bensin'] =
-                                          _selectedImg!.path;
-                                    });
-                                  },
-                                  child: Text('Galeri'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    await _pickImgFromCamera();
-                                    setState(() {
-                                      _listImgsNm['indikator_bensin'] =
-                                          File(_selectedImg!.path)
-                                              .uri
-                                              .pathSegments
-                                              .last;
-                                      _listImgs['indikator_bensin'] =
-                                          _selectedImg!.path;
-                                    });
-                                  },
-                                  child: Text('Kamera'),
-                                ),
-                              ]),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('KM Kendaraan'),
-                              Text(
-                                '${_listImgsNm['km_kendaraan']}',
-                                style: TextStyle(fontSize: 8.0),
-                              ),
-                              Text(
-                                errMsgKmKendaraan,
-                                style: TextStyle(
-                                    fontSize: 12.0, color: Colors.red),
-                              ),
-                              Row(children: [
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    setState(() {});
-                                    await _pickImgFromGallery();
-                                    setState(() {
-                                      _listImgsNm['km_kendaraan'] =
-                                          File(_selectedImg!.path)
-                                              .uri
-                                              .pathSegments
-                                              .last;
-                                      _listImgs['km_kendaraan'] =
-                                          _selectedImg!.path;
-                                    });
-                                  },
-                                  child: Text('Galeri'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    await _pickImgFromCamera();
-                                    setState(() {
-                                      _listImgsNm['km_kendaraan'] =
-                                          File(_selectedImg!.path)
-                                              .uri
-                                              .pathSegments
-                                              .last;
-                                      _listImgs['km_kendaraan'] =
-                                          _selectedImg!.path;
-                                    });
-                                  },
-                                  child: Text('Kamera'),
-                                ),
-                              ]),
-                            ],
-                          ),
-                        ],
-                      )
-                    : dropdownValue == 'LAPORAN_KM'
-                        ? Column(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Indikator Bensin'),
-                                  Text(
-                                    '${_listImgsNm['indikator_bensin']}',
-                                    style: TextStyle(fontSize: 8.0),
-                                  ),
-                                  Text(
-                                    errMsgIndikator,
-                                    style: TextStyle(
-                                        fontSize: 12.0, color: Colors.red),
-                                  ),
-                                  Row(children: [
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        setState(() {});
-                                        await _pickImgFromGallery();
-                                        setState(() {
-                                          _listImgsNm['indikator_bensin'] =
-                                              File(_selectedImg!.path)
-                                                  .uri
-                                                  .pathSegments
-                                                  .last;
-                                          _listImgs['indikator_bensin'] =
-                                              _selectedImg!.path;
-                                        });
-                                      },
-                                      child: Text('Galeri'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        await _pickImgFromCamera();
-                                        setState(() {
-                                          _listImgsNm['indikator_bensin'] =
-                                              File(_selectedImg!.path)
-                                                  .uri
-                                                  .pathSegments
-                                                  .last;
-                                          _listImgs['indikator_bensin'] =
-                                              _selectedImg!.path;
-                                        });
-                                      },
-                                      child: Text('Kamera'),
-                                    ),
-                                  ]),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Foto KM Kendaraan'),
-                                  Text(
-                                    '${_listImgsNm['km_kendaraan']}',
-                                    style: TextStyle(fontSize: 8.0),
-                                  ),
-                                  Text(
-                                    errMsgKmKendaraan,
-                                    style: TextStyle(
-                                        fontSize: 12.0, color: Colors.red),
-                                  ),
-                                  Row(children: [
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        setState(() {});
-                                        await _pickImgFromGallery();
-                                        setState(() {
-                                          _listImgsNm['km_kendaraan'] =
-                                              File(_selectedImg!.path)
-                                                  .uri
-                                                  .pathSegments
-                                                  .last;
-                                          _listImgs['km_kendaraan'] =
-                                              _selectedImg!.path;
-                                        });
-                                      },
-                                      child: Text('Galeri'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        await _pickImgFromCamera();
-                                        setState(() {
-                                          _listImgsNm['km_kendaraan'] =
-                                              File(_selectedImg!.path)
-                                                  .uri
-                                                  .pathSegments
-                                                  .last;
-                                          _listImgs['km_kendaraan'] =
-                                              _selectedImg!.path;
-                                        });
-                                      },
-                                      child: Text('Kamera'),
-                                    ),
-                                  ]),
-                                ],
-                              ),
-                            ],
-                          )
-                        : Text(''),
+                SizedBox(height: 20),
+
+                // If PENGISIAN_BBM: show field for liter
+                if (dropdownValue == 'PENGISIAN_BBM') ...[
+                  TextFormField(
+                    controller: literTextController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Liter',
+                      hintText: 'Masukkan Liter Pengisian Bensin',
+                    ),
+                  ),
+                  if (errMsgTextLiter.isNotEmpty)
+                    Text(
+                      errMsgTextLiter,
+                      style: TextStyle(fontSize: 10, color: Colors.red),
+                    ),
+                  SizedBox(height: 20),
+                ],
+
+                // Single button to pick up to 3 images at once
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Keterangan', // Label for the textarea
+                      'Unggah Foto KM mobil, spidometer, dan struk (max 3 foto)',
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                    ),
+                    SizedBox(height: 4),
+                    ElevatedButton(
+                      onPressed: _pickMultipleImages,
+                      child: Text('Pilih Foto (max 3)'),
+                    ),
+                    SizedBox(height: 8),
+
+                    // Show filenames and any individual errors
+                    _buildImageInfoRow(
+                      index: 0,
+                      // label: 'Foto Struk',
+                      fileName: imageNames[0],
+                      errMsg: errMsgStruk,
+                    ),
+                    _buildImageInfoRow(
+                      index: 1,
+                      // label: 'Indikator BBM',
+                      fileName: imageNames[1],
+                      errMsg: errMsgIndikator,
+                    ),
+                    _buildImageInfoRow(
+                      index: 2,
+                      // label: 'KM Kendaraan',
+                      fileName: imageNames[2],
+                      errMsg: errMsgKmKendaraan,
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 20),
+
+                // Keterangan field
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Keterangan',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(
-                        height:
-                            8), // Adds some space between the label and the input field
+                    SizedBox(height: 8),
                     TextField(
                       controller: keteranganTextController,
                       maxLines: 5,
                       decoration: InputDecoration(
-                        hintText: 'Isi Keterangan disini',
+                        hintText: 'Isi Keterangan di sini',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -727,58 +530,48 @@ class _FormReportDialogState extends State<FormReportDialog> {
           ],
         ),
       ),
+
+      // Actions: Close & Submit
       actions: <Widget>[
         TextButton(
           child: Text('Close'),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         TextButton(
           child: btnDisabled ? Text('Mohon Tunggu...') : Text('Submit'),
           onPressed: () async {
-            if (btnDisabled) {
-              return;
-            }
+            if (btnDisabled) return;
+
+            // Reset per-image errors
+            setState(() {
+              errMsgStruk = '';
+              errMsgIndikator = '';
+              errMsgKmKendaraan = '';
+              errMsgTipeLaporan = '';
+              errMsgTextKm = '';
+              errMsgTextLiter = '';
+            });
+
+            // Validate tipe laporan
             if (dropdownValue == '-') {
               setState(() {
                 errMsgTipeLaporan = 'HARAP PILIH TIPE LAPORAN!';
               });
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Harap Pilih tipe laporan!')),
+                SnackBar(content: Text('Harap pilih tipe laporan!')),
               );
-
               return;
             }
 
-            setState(() {
-              errMsgIndikator = '';
-              errMsgKmKendaraan = '';
-              errMsgStruk = '';
-            });
-
-            if (dropdownValue == 'LAPORAN_KM' ||
-                dropdownValue == 'PENGISIAN_BBM') {
-              if (kmTextController.text.isEmpty) {
-                setState(() {
-                  errMsgTextKm = 'Harap isi KM!';
-                });
-                return;
-              }
-
-              if (_listImgs['indikator_bensin'] == null) {
-                setState(() {
-                  errMsgIndikator = 'Harap isi foto indikator!';
-                });
-              }
-
-              if (_listImgs['km_kendaraan'] == null) {
-                setState(() {
-                  errMsgKmKendaraan = 'Harap isi foto KM Kendaraan!';
-                });
-              }
+            // Always require KM
+            if (kmTextController.text.isEmpty) {
+              setState(() {
+                errMsgTextKm = 'Harap isi KM!';
+              });
+              return;
             }
 
+            // If PENGISIAN_BBM, require liter and struk
             if (dropdownValue == 'PENGISIAN_BBM') {
               if (literTextController.text.isEmpty) {
                 setState(() {
@@ -786,23 +579,67 @@ class _FormReportDialogState extends State<FormReportDialog> {
                 });
                 return;
               }
-              if (_listImgs['foto_struck'] == null) {
+              if (images[0] == null) {
                 setState(() {
-                  errMsgStruk = 'Harap isi foto struk!';
+                  errMsgStruk = 'Harap unggah foto struk!';
                 });
                 return;
               }
             }
 
+            // For either LAPORAN_KM or PENGISIAN_BBM, require indikator and KM kendaraan
+            if (dropdownValue == 'LAPORAN_KM' ||
+                dropdownValue == 'PENGISIAN_BBM') {
+              if (images[1] == null) {
+                setState(() {
+                  errMsgIndikator = 'Harap unggah foto indikator!';
+                });
+              }
+              if (images[2] == null) {
+                setState(() {
+                  errMsgKmKendaraan = 'Harap unggah foto KM kendaraan!';
+                });
+              }
+              if (errMsgIndikator.isNotEmpty || errMsgKmKendaraan.isNotEmpty) {
+                return;
+              }
+            }
+
+            // If validation passes:
             setState(() {
               btnDisabled = true;
             });
             await uploadFiles();
+            // Assuming you still want to call getData on body state:
             await _BodyState().getData();
             Navigator.pop(context);
-            // Handle form submission logic here
           },
         ),
+      ],
+    );
+  }
+
+  /// Helper to build a row showing a single image’s filename + error
+  Widget _buildImageInfoRow({
+    required int index,
+    // required String label,
+    required String fileName,
+    required String errMsg,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (fileName.isNotEmpty)
+          Text(
+            fileName,
+            style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+          ),
+        if (errMsg.isNotEmpty)
+          Text(
+            errMsg,
+            style: TextStyle(fontSize: 12, color: Colors.red),
+          ),
+        SizedBox(height: 8),
       ],
     );
   }
